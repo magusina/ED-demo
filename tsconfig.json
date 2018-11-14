@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "lib": ["dom", "es2015", "scripthost"],
+    "module": "es6",
+    "moduleResolution": "node",
+    "outDir": "./dist",
+    "removeComments": true,
+    "target": "es5"
+  },
+  "exclude": [
+    "node_modules",
+    "src/**/*.test.ts"
+  ],
+  "include": [
+    "src/**/*.ts"
+  ]
+}

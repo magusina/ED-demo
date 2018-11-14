@@ -1,0 +1,22 @@
+{
+  "name": "demo",
+  "namespace": "Demo",
+  "version": "0.1.0",
+  "description": "",
+  "scripts": {
+    "http": "http-server ./docs -p 8000 -o",
+    "minify": "uglifyjs docs/scripts/demo.js --compress --mangle -o docs/scripts/demo.min.js",
+    "publish": "npm run pub:ts && npm run minify",
+    "pub:ts": "rollup -c",
+    "test": "npm run http",
+    "build": "rollup -cw"
+  },
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "rollup": "^0.67.1",
+    "rollup-plugin-node-resolve": "^3.4.0",
+    "rollup-plugin-typescript2": "^0.18.0",
+    "typescript": "^3.1.6"
+  }
+}
