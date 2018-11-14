@@ -8494,7 +8494,7 @@ var Demo = (function (exports) {
                           return d.fill + " " + d.shape;
                       });
                       var contour = new Contour(plot);
-                      _this.getJSON("../data/slide4.json", function (data) {
+                      _this.getJSON("data/slide4.json", function (data) {
                           var plotData = transform(data);
                           var contourData = flatten(data);
                           contour.data(contourData);

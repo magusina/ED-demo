@@ -34,7 +34,7 @@ export class Start {
 
         const contour = new Contour(plot);
 
-        this.getJSON("../data/slide4.json", data => {
+        this.getJSON("data/slide4.json", data => {
           const plotData = transform(data);
           const contourData = flatten(data);
           contour.data(contourData);
