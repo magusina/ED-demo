@@ -3,7 +3,6 @@ logs
 npm-debug.log*
 typings/
 .npm
-lib
 coverage
 .nyc_output
 .rpt2_cache
