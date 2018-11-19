@@ -4,5 +4,9 @@ body {
   padding: 0;
 }
 
+h1 { font-size: 1.5em }
+h2 { font-size: 1.3em }
+h3 { font-size: 1.1em }
+
 .logo-bottom-left { font-size: 1.5em; position: absolute; bottom: 0.8vh; left: 2% }
 .logo-bottom-right { position: absolute; bottom: 0; right: 2% }
