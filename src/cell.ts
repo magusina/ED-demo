@@ -1,77 +1,64 @@
 declare var d3: any;
 
+export type TCellLink = { fill: string, from: string, id: string, to: string, value: number }
+export type TCellData = { from: any[], links: TCellLink[], to: any[] }
+
 export class Cell {
   private _data: any;
-  private _parent: any;
+  private _gen = { arc: undefined, bubble: undefined, chord: undefined, diag: undefined };
+  private _pos = { chords: 0, nodes: 0 };
+  public _search = { chord: {}, from: {}, node: {} };
+  private _svg: any;
 
-  public svg: any;
-  public renderLinks: any[] = [];
-  public outerRadius: number;
-  public innerRadius: number;
-  public bubbleRadius: number;
-  public linkRadius: number;
-  public nodesTranslate: any;
-  public chordsTranslate: number;
-  public topMargin: number;
-  public chordsSvg: any;
-  public linksSvg: any;
-  public nodesSvg: any;
-  public bubble: any;
-  public chord: any;
-  public diagonal: any;
-  public arc: any;
-  public labelChords: any[];
-  public format: any = d3.format(",d");
-  public linkGroup: any;
-  public circleList: any = [];
-  public listFromById: any = {};
-  public chordsById: any = {};
-  public nodesById: any = {};
-  public formatNumber: any = d3.format(",.0f");
-  public indexByName: any = {};
-  public nameByIndex: any;
-  public chords: any = [];
+  public radius = { bubble: 0, inner: 0, link: 0, outer: 0 };
 
   constructor(containerId: string, chartId: string) {
-    this._parent = d3.select(`#${containerId}`);
-    const box = this._parent.node().getBoundingClientRect();
-    this._parent.node().appendChild(this._toSVG(chartId, box.width * 0.6, box.height * 0.6));
-    this.svg = this._parent.select("svg");
-    this.svg.select("defs")
+    const parent = d3.select(`#${containerId}`);
+    const box = parent.node().getBoundingClientRect();
+    this.radius.outer = Math.min(box.width * 0.27, box.height * 0.27);
+    this.radius.inner = this.radius.outer * 0.9;
+    this.radius.bubble = this.radius.inner - 50;
+    this.radius.link = this.radius.inner * 0.95;
+    this._pos.nodes = this.radius.outer - this.radius.inner + (this.radius.inner - this.radius.bubble);
+    this._pos.chords = this.radius.outer;
+
+    parent.node().appendChild(this._toSVG(chartId, box.width * 0.6, box.height * 0.6));
+    this._svg = parent.select("svg");
+    this._svg.select("defs")
       .append("style")
         .text(`.link { fill: none; stroke: #ccc; stroke-width: 1.5px; stroke-linecap: round }
         text.chord { font-size: 8px }`);
-    this.outerRadius = box.width * .25;
-    this.innerRadius = .9 * this.outerRadius;
-    this.bubbleRadius = this.innerRadius - 50;
-    this.linkRadius = .95 * this.innerRadius;
-    this.nodesTranslate = this.outerRadius - this.innerRadius + (this.innerRadius - this.bubbleRadius);
-    this.chordsTranslate = this.outerRadius;
-    this.topMargin = .15 * this.innerRadius;
-    this.chordsSvg = this.svg.append("g")
+
+    this._svg.append("g")
       .attr("class", "chords")
-      .attr("transform", "translate(" + this.chordsTranslate + "," + (this.chordsTranslate + this.topMargin) + ")");
-    this.linksSvg = this.svg.append("g")
+      .attr("transform", `translate(${this._pos.chords},${this._pos.chords + this.radius.inner * 0.15})`);
+
+    this._svg.append("g")
       .attr("class", "links")
-      .attr("transform", "translate(" + this.chordsTranslate + "," + (this.chordsTranslate + this.topMargin) + ")");
-    this.nodesSvg = this.svg.append("g")
+      .attr("transform", `translate(${this._pos.chords},${this._pos.chords + this.radius.inner * 0.15})`);
+
+    this._svg.append("g")
       .attr("class", "nodes")
-      .attr("transform", "translate(" + this.nodesTranslate + "," + (this.nodesTranslate + this.topMargin) + ")");
-    this.bubble = d3.layout.pack()
+      .attr("transform", `translate(${this._pos.nodes},${this._pos.nodes + this.radius.inner * 0.15})`);
+
+    this._gen.bubble = d3.layout.pack()
       .sort(null)
-      .size([2 * this.bubbleRadius, 2 * this.bubbleRadius])
+      .size([2 * this.radius.bubble, 2 * this.radius.bubble])
       .padding(1.5);
-    this.chord = d3.layout.chord()
+    
+    this._gen.chord = d3.layout.chord()
       .padding(.05)
       .sortSubgroups(d3.descending)
       .sortChords(d3.descending);
-    this.diagonal = d3.svg.diagonal.radial();
-    this.arc = d3.svg.arc()
-      .innerRadius(this.innerRadius)
-      .outerRadius(this.innerRadius + 10);
+
+    this._gen.diag = d3.svg.diagonal.radial();
+
+    this._gen.arc = d3.svg.arc()
+      .innerRadius(this.radius.inner)
+      .outerRadius(this.radius.inner + 10);
   }
 
-  public data(data: any): Cell {
+  public data(data: TCellData): Cell {
     this._data = data;
     this._data.from.forEach(fr => fr.value = 0);
     this._data.to.forEach(to => to.forEach(t => t.value = 0));
@@ -91,49 +78,53 @@ export class Cell {
         j++;
       }
     });
-    this._data.from.forEach(fr => this.listFromById[fr.id] = fr);
+    this._data.from.forEach(fr => this._search.from[fr.id] = fr);
     return this;
   }
 
-  public draw() {
+  public draw(): Cell {
     const toList = [];
     this._data.to.forEach(to => toList.push({ children: to, value: 0 }));
 
-    const nodes = this.bubble.nodes({ children: toList, type: "root" });
+    const nodes = this._gen.bubble.nodes({ children: toList, type: "root" });
+    const circles = [];
     nodes.forEach(a => {
       if (a.depth === 2) {
-        this.nodesById[a.id] = a;
+        this._search.node[a.id] = a;
         a.relatedLinks = [];
         a.currentValue = a.value;
-        this.circleList.push(a);
+        circles.push(a);
       }
     });
 
-    this.buildChords();
+    const chords = this.buildChords();
     this._data.links.forEach(tr => {
-      this.nodesById[tr.to].relatedLinks.push(tr);
-      this.chordsById[tr.from].relatedLinks.push(tr);
+      this._search.node[tr.to].relatedLinks.push(tr);
+      this._search.chord[tr.from].relatedLinks.push(tr);
     });
-    this.updateNodes();
-    this.updateChords();
+    this.updateNodes(circles);
+    this.updateChords(chords);
 
     let i = this._data.links.length - 1;
     const nibble = i * 0.25;
+    const renderLinks: TCellLink[] = [];
     const intervalId = window.setInterval(() => {
       if (i < 0) {
         window.clearInterval(intervalId);
       } else {
         for (let a = 0; a < nibble; a++) {
           if (i > -1) {
-            this.renderLinks.push(this._data.links[i--]);
+            renderLinks.push(this._data.links[i--]);
           }
         }
-        this.updateLinks(this.renderLinks);
+        this.updateLinks(renderLinks);
       }
     }, 1);
+
+    return this;
   }
 
-  public tooltipHide() {
+  public tooltipHide(): void {
     const toolTip = d3.select("#toolTip");
     toolTip.transition()
       .duration(500)
@@ -156,25 +147,25 @@ export class Cell {
     } else {
       if (category === "TRANSACTION") {
         this.tooltipMessage(pos,
-          this.nodesById[data.to].label,
-          this.listFromById[data.from].label,
+          this._search.node[data.to].label,
+          this._search.from[data.from].label,
           data.value
         );
         this.highlightLink(data, true);
       } else {
         if (category === "FROM") {
           this.tooltipMessage(d3.event.pageX + 15,
-            this.listFromById[data.from].label,
+            this._search.from[data.from].label,
             "From",
-            "Total: " + this.listFromById[data.from].value
+            "Total: " + this._search.from[data.from].value
           );
-          this.highlightLinks(this.chordsById[data.from], true);
+          this.highlightLinks(this._search.chord[data.from], true);
         }
       }
     }
   }
 
-  public node_onMouseOut(a: any, b: string) {
+  public node_onMouseOut(a: any, b: string): void {
     if (b === "TO") {
       this.highlightLinks(a, false);
     } else {
@@ -182,20 +173,19 @@ export class Cell {
         this.highlightLink(a, false);
       } else {
         if (b === "FROM") {
-          this.highlightLinks(this.chordsById[a.from], false);
+          this.highlightLinks(this._search.chord[a.from], false);
         }
       }
     }
     this.tooltipHide();
   }
 
-  public highlightLinks(data: any, show: boolean) {
+  public highlightLinks(data: any, show: boolean): void {
     data.relatedLinks.forEach((a: any) => this.highlightLink(a, show));
   }
 
-  public buildChords() {
+  public buildChords(): { chords: any[], labels: any[] } {
     const a = [];
-    this.labelChords = [];
     const indexByName = [];
     const nameByIndex = [];
     let n = 0;
@@ -217,16 +207,16 @@ export class Cell {
       d[indexByName[fr.id]] = fr.value;
     });
 
-    this.chord.matrix(a);
-    this.chords = this.chord.chords();
+    this._gen.chord.matrix(a);
+    const chords = this._gen.chord.chords();
     const adj = 90 * Math.PI / 180;
-    let b = 0;
+    const labels = [];
 
-    this.chords.forEach((d: any, i: number) => {
+    chords.forEach((d: any, i: number) => {
       d.id = nameByIndex[i];
       d.angle = (d.source.startAngle + d.source.endAngle) / 2;
 
-      this.chordsById[d.id] = {
+      this._search.chord[d.id] = {
         currentAngle: d.source.startAngle,
         currentLinkAngle: d.source.startAngle,
         endAngle: d.source.endAngle,
@@ -237,54 +227,45 @@ export class Cell {
         value: d.source.value
       };
 
-      this.labelChords.push({
+      labels.push({
         angle: d.angle + adj,
         endAngle: d.source.endAngle + adj / 2,
         id: d.id,
         startAngle: d.source.startAngle - adj / 2
       });
-
-      b++;
     });
+
+    return { chords: chords, labels: labels };
   }
 
-  public b(a: any) {
-    const b = { x: undefined, y: undefined };
-    const c = { x: undefined, y: undefined };
-    const d = { source: undefined, target: undefined };
-    const e = { source: undefined, target: undefined };
-    const f = { x: undefined, y: undefined };
-    const g = this.chordsById[a.from];
-    const h = this.nodesById[a.to];
-    const i = this.linkRadius;
-    const j = (
-      i * Math.cos(g.currentLinkAngle - 1.57079633),
-      i * Math.sin(g.currentLinkAngle - 1.57079633),
-      g.currentLinkAngle - 1.57079633);
+  private _updateLinks(a: any): [{ source: any, target: any }, { source: any, target: any }] {
+    const b: { x: number, y: number } = { x: undefined, y: undefined };
+    const d: { source: any, target: any } = { source: undefined, target: undefined };
+    const e: { source: any, target: any } = { source: undefined, target: undefined };
+    const g = this._search.chord[a.from];
+    const h = this._search.node[a.to];
+    const j = g.currentLinkAngle - 1.57079633;
     g.currentLinkAngle = g.currentLinkAngle + a.value / g.value * (g.endAngle - g.startAngle);
     const k = g.currentLinkAngle - 1.57079633;
-    c.x = i * Math.cos(j);
-    c.y = i * Math.sin(j);
-    b.x = h.x - (this.chordsTranslate - this.nodesTranslate);
-    b.y = h.y - (this.chordsTranslate - this.nodesTranslate);
-    f.x = i * Math.cos(k);
-    f.y = i * Math.sin(k);
-    d.source = c;
+    b.x = h.x - (this._pos.chords - this._pos.nodes);
+    b.y = h.y - (this._pos.chords - this._pos.nodes);
+    d.source = { x: this.radius.link * Math.cos(j), y: this.radius.link * Math.sin(j) };
     d.target = b;
     e.source = b;
-    e.target = f;
+    e.target = { x: this.radius.link * Math.cos(k), y: this.radius.link * Math.sin(k) };
     return [d, e];
   }
 
-  public updateLinks(a: any) {
-    this.linkGroup = this.linksSvg.selectAll("g.nodelink")
-      .data(a, d => d.id);
+  public updateLinks(data: TCellLink[]): void {
+    const lk = this._svg.select("g.links");
+    const lg = lk.selectAll("g.nodelink")
+      .data(data, d => d.id);
 
-    const c = this.linkGroup.enter()
+    const c = lg.enter()
       .append("g")
         .attr("class", "nodelink");
 
-    this.linkGroup.transition();
+    lg.transition();
 
     c.append("g")
       .attr("class", "arc")
@@ -293,7 +274,7 @@ export class Cell {
         .style("fill", d => d.fill)
         .style("fill-opacity", .2)
         .attr("d", (d: any, i: number) => {
-          const dp = this.chordsById[d.from];
+          const dp = this._search.chord[d.from];
           const dc = {
             endAngle: undefined,
             startAngle: dp.currentAngle,
@@ -302,8 +283,8 @@ export class Cell {
           dp.currentAngle = dp.currentAngle + d.value / dp.value * (dp.endAngle - dp.startAngle);
           dc.endAngle = dp.currentAngle;
           const ar = d3.svg.arc(d, i)
-            .innerRadius(this.linkRadius)
-            .outerRadius(this.innerRadius);
+            .innerRadius(this.radius.link)
+            .outerRadius(this.radius.inner);
           return ar(dc, i);
         })
         .on("mouseover", d => this.node_onMouseOver(d, "TRANSACTION"))
@@ -311,16 +292,16 @@ export class Cell {
 
     c.append("path")
       .attr("class", "link")
-      .attr("id", d => "l_" + d.id)
+      .attr("id", d => `l_${d.id}`)
       .attr("d", (d: any, i: number) => {
-        d.links = this.b(d);
-        let path = this.diagonal(d.links[0], i);
-        path += `L${String(this.diagonal(d.links[1], i)).substr(1)}A${this.linkRadius},${this.linkRadius} 0 0,0 ${d.links[0].source.x},${d.links[0].source.y}`;
+        d.links = this._updateLinks(d);
+        let path = this._gen.diag(d.links[0], i);
+        path += `L${String(this._gen.diag(d.links[1], i)).substr(1)}A${this.radius.link},${this.radius.link} 0 0,0 ${d.links[0].source.x},${d.links[0].source.y}`;
         return path;
       })
       .style("stroke", d => d.fill)
-      .style("stroke-opacity", .07)
-      .style("fill-opacity", .1)
+      .style("stroke-opacity", 0.1)
+      .style("fill-opacity", 0.2)
       .style("fill", d => d.fill)
       .on("mouseover", d => this.node_onMouseOver(d, "TRANSACTION"))
       .on("mouseout", d => this.node_onMouseOut(d, "TRANSACTION"));
@@ -332,23 +313,24 @@ export class Cell {
         .style("fill-opacity", .2)
         .style("stroke-opacity", 1)
         .attr("r", d => {
-          const b = this.nodesById[d.to];
+          const b = this._search.node[d.to];
           b.currentValue = b.currentValue - d.value;
           return b.r * ((b.value - b.currentValue) / b.value);
         })
-        .attr("transform", d => "translate(" + d.links[0].target.x + "," + d.links[0].target.y + ")");
+        .attr("transform", d => `translate(${d.links[0].target.x},${d.links[0].target.y})`);
 
-    this.linkGroup.exit().remove();
+    lg.exit().remove();
   }
 
-  public updateNodes() {
-    const a = this.nodesSvg.selectAll("g.node")
-      .data(this.circleList, d => d.id);
+  public updateNodes(data: any[]): void {
+    const gn = this._svg.select("g.nodes");
+    const a = gn.selectAll("g.node")
+      .data(data, d => d.id);
 
     const b = a.enter()
       .append("g")
         .attr("class", "node")
-        .attr("transform", d => "translate(" + d.x + "," + d.y + ")");
+        .attr("transform", d => `translate(${d.x},${d.y})`);
 
     b.append("circle")
       .attr("r", d => d.r)
@@ -364,7 +346,7 @@ export class Cell {
     c.append("circle")
       .attr("r", d => d.r + 2)
       .style("fill-opacity", 0)
-      .style("stroke", "#FFF")
+      .style("stroke", "#fff")
       .style("stroke-width", 2.5)
       .style("stroke-opacity", .7);
 
@@ -382,18 +364,19 @@ export class Cell {
       .style("opacity", 0);
   }
 
-  public updateChords() {
-    const a = this.chordsSvg.selectAll("g.arc")
-      .data(this.chords, d => d.id);
+  public updateChords(data: { chords: any, labels: any[] }): void {
+    const ch = this._svg.select("g.chords");
+    const a = ch.selectAll("g.arc")
+      .data(data.chords, d => d.id);
 
     const arcGroup = a.enter()
       .append("g")
         .attr("class", "arc");
 
-    const defs = this.svg.select("defs");
+    const defs = this._svg.select("defs");
 
     const c = defs.selectAll(".arcDefs")
-      .data(this.labelChords, d => d.id);
+      .data(data.labels, d => d.id);
 
     c.enter().append("path")
       .attr("class", "arcDefs")
@@ -412,7 +395,7 @@ export class Cell {
       .style("font-size", "0px")
       .style("fill", "#777")
       .append("textPath")
-      .text(d => this.listFromById[d.id].label)
+      .text(d => this._search.from[d.id].label)
       .attr("text-anchor", "middle")
       .attr("startOffset", "50%")
       .style("overflow", "visible")
@@ -420,8 +403,8 @@ export class Cell {
 
     c.attr("d", d => {
       const ac = d3.svg.arc()
-        .innerRadius(1.05 * this.innerRadius)
-        .outerRadius(1.05 * this.innerRadius)(d);
+        .innerRadius(1.05 * this.radius.inner)
+        .outerRadius(1.05 * this.radius.inner)(d);
       const re = /[Mm][\d\.\-e,\s]+[Aa][\d\.\-e,\s]+/;
       const path = re.exec(ac)[0];
       return path;
@@ -431,8 +414,8 @@ export class Cell {
       .select("path")
       .attr("d", (data: any, index: number) => {
         const ar = d3.svg.arc(data, index)
-          .innerRadius(.95 * this.innerRadius)
-          .outerRadius(this.innerRadius);
+          .innerRadius(.95 * this.radius.inner)
+          .outerRadius(this.radius.inner);
         return ar(data.source, index);
       });
 
@@ -440,7 +423,7 @@ export class Cell {
     a.exit().remove();
   }
 
-  public tooltipMessage(pos: number, h: string, h1: string, h2: string) {
+  public tooltipMessage(pos: number, h: string, h1: string, h2: string): void {
     const toolTip = d3.select("#toolTip");
     toolTip.transition().duration(200).style("opacity", ".9");
     toolTip.select("#header1").text(h1);
@@ -451,11 +434,11 @@ export class Cell {
       .style("height", "100px");
   }
 
-  public trimLabel(a: any) {
+  public trimLabel(a: any): string {
     return a.length > 25 ? String(a).substr(0, 25) + "..." : a;
   }
 
-  public highlightLink(a: any, show: boolean) {
+  public highlightLink(a: any, show: boolean): void {
     const opac = show ? .6 : .1;
     d3.select("#l_" + a.id)
       .transition(show ? 150 : 550)
@@ -470,7 +453,7 @@ export class Cell {
     d3.select("#t_" + a.from)
       .transition(show ? 0 : 550)
       .style("fill", show ? "#000" : "#777")
-      .style("font-size", show ? Math.round(.035 * this.innerRadius) + "px" : "0px");
+      .style("font-size", show ? Math.round(.035 * this.radius.inner) + "px" : "0px");
   }
 
   private _toNodes(template: string): any {

@@ -8511,50 +8511,44 @@ var Demo = (function (exports) {
 
   var Cell = (function () {
       function Cell(containerId, chartId) {
-          this.renderLinks = [];
-          this.format = d3.format(",d");
-          this.circleList = [];
-          this.listFromById = {};
-          this.chordsById = {};
-          this.nodesById = {};
-          this.formatNumber = d3.format(",.0f");
-          this.indexByName = {};
-          this.chords = [];
-          this._parent = d3.select("#" + containerId);
-          var box = this._parent.node().getBoundingClientRect();
-          this._parent.node().appendChild(this._toSVG(chartId, box.width * 0.6, box.height * 0.6));
-          this.svg = this._parent.select("svg");
-          this.svg.select("defs")
+          this._gen = { arc: undefined, bubble: undefined, chord: undefined, diag: undefined };
+          this._pos = { chords: 0, nodes: 0 };
+          this._search = { chord: {}, from: {}, node: {} };
+          this.radius = { bubble: 0, inner: 0, link: 0, outer: 0 };
+          var parent = d3.select("#" + containerId);
+          var box = parent.node().getBoundingClientRect();
+          this.radius.outer = Math.min(box.width * 0.27, box.height * 0.27);
+          this.radius.inner = this.radius.outer * 0.9;
+          this.radius.bubble = this.radius.inner - 50;
+          this.radius.link = this.radius.inner * 0.95;
+          this._pos.nodes = this.radius.outer - this.radius.inner + (this.radius.inner - this.radius.bubble);
+          this._pos.chords = this.radius.outer;
+          parent.node().appendChild(this._toSVG(chartId, box.width * 0.6, box.height * 0.6));
+          this._svg = parent.select("svg");
+          this._svg.select("defs")
               .append("style")
               .text(".link { fill: none; stroke: #ccc; stroke-width: 1.5px; stroke-linecap: round }\n        text.chord { font-size: 8px }");
-          this.outerRadius = box.width * .25;
-          this.innerRadius = .9 * this.outerRadius;
-          this.bubbleRadius = this.innerRadius - 50;
-          this.linkRadius = .95 * this.innerRadius;
-          this.nodesTranslate = this.outerRadius - this.innerRadius + (this.innerRadius - this.bubbleRadius);
-          this.chordsTranslate = this.outerRadius;
-          this.topMargin = .15 * this.innerRadius;
-          this.chordsSvg = this.svg.append("g")
+          this._svg.append("g")
               .attr("class", "chords")
-              .attr("transform", "translate(" + this.chordsTranslate + "," + (this.chordsTranslate + this.topMargin) + ")");
-          this.linksSvg = this.svg.append("g")
+              .attr("transform", "translate(" + this._pos.chords + "," + (this._pos.chords + this.radius.inner * 0.15) + ")");
+          this._svg.append("g")
               .attr("class", "links")
-              .attr("transform", "translate(" + this.chordsTranslate + "," + (this.chordsTranslate + this.topMargin) + ")");
-          this.nodesSvg = this.svg.append("g")
+              .attr("transform", "translate(" + this._pos.chords + "," + (this._pos.chords + this.radius.inner * 0.15) + ")");
+          this._svg.append("g")
               .attr("class", "nodes")
-              .attr("transform", "translate(" + this.nodesTranslate + "," + (this.nodesTranslate + this.topMargin) + ")");
-          this.bubble = d3.layout.pack()
+              .attr("transform", "translate(" + this._pos.nodes + "," + (this._pos.nodes + this.radius.inner * 0.15) + ")");
+          this._gen.bubble = d3.layout.pack()
               .sort(null)
-              .size([2 * this.bubbleRadius, 2 * this.bubbleRadius])
+              .size([2 * this.radius.bubble, 2 * this.radius.bubble])
               .padding(1.5);
-          this.chord = d3.layout.chord()
+          this._gen.chord = d3.layout.chord()
               .padding(.05)
               .sortSubgroups(d3.descending)
               .sortChords(d3.descending);
-          this.diagonal = d3.svg.diagonal.radial();
-          this.arc = d3.svg.arc()
-              .innerRadius(this.innerRadius)
-              .outerRadius(this.innerRadius + 10);
+          this._gen.diag = d3.svg.diagonal.radial();
+          this._gen.arc = d3.svg.arc()
+              .innerRadius(this.radius.inner)
+              .outerRadius(this.radius.inner + 10);
       }
       Cell.prototype.data = function (data) {
           var _this = this;
@@ -8576,31 +8570,33 @@ var Demo = (function (exports) {
                   j++;
               }
           });
-          this._data.from.forEach(function (fr) { return _this.listFromById[fr.id] = fr; });
+          this._data.from.forEach(function (fr) { return _this._search.from[fr.id] = fr; });
           return this;
       };
       Cell.prototype.draw = function () {
           var _this = this;
           var toList = [];
           this._data.to.forEach(function (to) { return toList.push({ children: to, value: 0 }); });
-          var nodes = this.bubble.nodes({ children: toList, type: "root" });
+          var nodes = this._gen.bubble.nodes({ children: toList, type: "root" });
+          var circles = [];
           nodes.forEach(function (a) {
               if (a.depth === 2) {
-                  _this.nodesById[a.id] = a;
+                  _this._search.node[a.id] = a;
                   a.relatedLinks = [];
                   a.currentValue = a.value;
-                  _this.circleList.push(a);
+                  circles.push(a);
               }
           });
-          this.buildChords();
+          var chords = this.buildChords();
           this._data.links.forEach(function (tr) {
-              _this.nodesById[tr.to].relatedLinks.push(tr);
-              _this.chordsById[tr.from].relatedLinks.push(tr);
+              _this._search.node[tr.to].relatedLinks.push(tr);
+              _this._search.chord[tr.from].relatedLinks.push(tr);
           });
-          this.updateNodes();
-          this.updateChords();
+          this.updateNodes(circles);
+          this.updateChords(chords);
           var i = this._data.links.length - 1;
           var nibble = i * 0.25;
+          var renderLinks = [];
           var intervalId = window.setInterval(function () {
               if (i < 0) {
                   window.clearInterval(intervalId);
@@ -8608,12 +8604,13 @@ var Demo = (function (exports) {
               else {
                   for (var a = 0; a < nibble; a++) {
                       if (i > -1) {
-                          _this.renderLinks.push(_this._data.links[i--]);
+                          renderLinks.push(_this._data.links[i--]);
                       }
                   }
-                  _this.updateLinks(_this.renderLinks);
+                  _this.updateLinks(renderLinks);
               }
           }, 1);
+          return this;
       };
       Cell.prototype.tooltipHide = function () {
           var toolTip = d3.select("#toolTip");
@@ -8635,13 +8632,13 @@ var Demo = (function (exports) {
           }
           else {
               if (category === "TRANSACTION") {
-                  this.tooltipMessage(pos, this.nodesById[data.to].label, this.listFromById[data.from].label, data.value);
+                  this.tooltipMessage(pos, this._search.node[data.to].label, this._search.from[data.from].label, data.value);
                   this.highlightLink(data, true);
               }
               else {
                   if (category === "FROM") {
-                      this.tooltipMessage(d3.event.pageX + 15, this.listFromById[data.from].label, "From", "Total: " + this.listFromById[data.from].value);
-                      this.highlightLinks(this.chordsById[data.from], true);
+                      this.tooltipMessage(d3.event.pageX + 15, this._search.from[data.from].label, "From", "Total: " + this._search.from[data.from].value);
+                      this.highlightLinks(this._search.chord[data.from], true);
                   }
               }
           }
@@ -8656,7 +8653,7 @@ var Demo = (function (exports) {
               }
               else {
                   if (b === "FROM") {
-                      this.highlightLinks(this.chordsById[a.from], false);
+                      this.highlightLinks(this._search.chord[a.from], false);
                   }
               }
           }
@@ -8669,7 +8666,6 @@ var Demo = (function (exports) {
       Cell.prototype.buildChords = function () {
           var _this = this;
           var a = [];
-          this.labelChords = [];
           var indexByName = [];
           var nameByIndex = [];
           var n = 0;
@@ -8688,13 +8684,14 @@ var Demo = (function (exports) {
               }
               d[indexByName[fr.id]] = fr.value;
           });
-          this.chord.matrix(a);
-          this.chords = this.chord.chords();
+          this._gen.chord.matrix(a);
+          var chords = this._gen.chord.chords();
           var adj = 90 * Math.PI / 180;
-          this.chords.forEach(function (d, i) {
+          var labels = [];
+          chords.forEach(function (d, i) {
               d.id = nameByIndex[i];
               d.angle = (d.source.startAngle + d.source.endAngle) / 2;
-              _this.chordsById[d.id] = {
+              _this._search.chord[d.id] = {
                   currentAngle: d.source.startAngle,
                   currentLinkAngle: d.source.startAngle,
                   endAngle: d.source.endAngle,
@@ -8704,48 +8701,41 @@ var Demo = (function (exports) {
                   startAngle: d.source.startAngle,
                   value: d.source.value
               };
-              _this.labelChords.push({
+              labels.push({
                   angle: d.angle + adj,
                   endAngle: d.source.endAngle + adj / 2,
                   id: d.id,
                   startAngle: d.source.startAngle - adj / 2
               });
           });
+          return { chords: chords, labels: labels };
       };
-      Cell.prototype.b = function (a) {
+      Cell.prototype._updateLinks = function (a) {
           var b = { x: undefined, y: undefined };
-          var c = { x: undefined, y: undefined };
           var d = { source: undefined, target: undefined };
           var e = { source: undefined, target: undefined };
-          var f = { x: undefined, y: undefined };
-          var g = this.chordsById[a.from];
-          var h = this.nodesById[a.to];
-          var i = this.linkRadius;
-          var j = (i * Math.cos(g.currentLinkAngle - 1.57079633),
-              i * Math.sin(g.currentLinkAngle - 1.57079633),
-              g.currentLinkAngle - 1.57079633);
+          var g = this._search.chord[a.from];
+          var h = this._search.node[a.to];
+          var j = g.currentLinkAngle - 1.57079633;
           g.currentLinkAngle = g.currentLinkAngle + a.value / g.value * (g.endAngle - g.startAngle);
           var k = g.currentLinkAngle - 1.57079633;
-          c.x = i * Math.cos(j);
-          c.y = i * Math.sin(j);
-          b.x = h.x - (this.chordsTranslate - this.nodesTranslate);
-          b.y = h.y - (this.chordsTranslate - this.nodesTranslate);
-          f.x = i * Math.cos(k);
-          f.y = i * Math.sin(k);
-          d.source = c;
+          b.x = h.x - (this._pos.chords - this._pos.nodes);
+          b.y = h.y - (this._pos.chords - this._pos.nodes);
+          d.source = { x: this.radius.link * Math.cos(j), y: this.radius.link * Math.sin(j) };
           d.target = b;
           e.source = b;
-          e.target = f;
+          e.target = { x: this.radius.link * Math.cos(k), y: this.radius.link * Math.sin(k) };
           return [d, e];
       };
-      Cell.prototype.updateLinks = function (a) {
+      Cell.prototype.updateLinks = function (data) {
           var _this = this;
-          this.linkGroup = this.linksSvg.selectAll("g.nodelink")
-              .data(a, function (d) { return d.id; });
-          var c = this.linkGroup.enter()
+          var lk = this._svg.select("g.links");
+          var lg = lk.selectAll("g.nodelink")
+              .data(data, function (d) { return d.id; });
+          var c = lg.enter()
               .append("g")
               .attr("class", "nodelink");
-          this.linkGroup.transition();
+          lg.transition();
           c.append("g")
               .attr("class", "arc")
               .append("path")
@@ -8753,7 +8743,7 @@ var Demo = (function (exports) {
               .style("fill", function (d) { return d.fill; })
               .style("fill-opacity", .2)
               .attr("d", function (d, i) {
-              var dp = _this.chordsById[d.from];
+              var dp = _this._search.chord[d.from];
               var dc = {
                   endAngle: undefined,
                   startAngle: dp.currentAngle,
@@ -8762,8 +8752,8 @@ var Demo = (function (exports) {
               dp.currentAngle = dp.currentAngle + d.value / dp.value * (dp.endAngle - dp.startAngle);
               dc.endAngle = dp.currentAngle;
               var ar = d3.svg.arc(d, i)
-                  .innerRadius(_this.linkRadius)
-                  .outerRadius(_this.innerRadius);
+                  .innerRadius(_this.radius.link)
+                  .outerRadius(_this.radius.inner);
               return ar(dc, i);
           })
               .on("mouseover", function (d) { return _this.node_onMouseOver(d, "TRANSACTION"); })
@@ -8772,14 +8762,14 @@ var Demo = (function (exports) {
               .attr("class", "link")
               .attr("id", function (d) { return "l_" + d.id; })
               .attr("d", function (d, i) {
-              d.links = _this.b(d);
-              var path = _this.diagonal(d.links[0], i);
-              path += "L" + String(_this.diagonal(d.links[1], i)).substr(1) + "A" + _this.linkRadius + "," + _this.linkRadius + " 0 0,0 " + d.links[0].source.x + "," + d.links[0].source.y;
+              d.links = _this._updateLinks(d);
+              var path = _this._gen.diag(d.links[0], i);
+              path += "L" + String(_this._gen.diag(d.links[1], i)).substr(1) + "A" + _this.radius.link + "," + _this.radius.link + " 0 0,0 " + d.links[0].source.x + "," + d.links[0].source.y;
               return path;
           })
               .style("stroke", function (d) { return d.fill; })
-              .style("stroke-opacity", .07)
-              .style("fill-opacity", .1)
+              .style("stroke-opacity", 0.1)
+              .style("fill-opacity", 0.2)
               .style("fill", function (d) { return d.fill; })
               .on("mouseover", function (d) { return _this.node_onMouseOver(d, "TRANSACTION"); })
               .on("mouseout", function (d) { return _this.node_onMouseOut(d, "TRANSACTION"); });
@@ -8790,17 +8780,18 @@ var Demo = (function (exports) {
               .style("fill-opacity", .2)
               .style("stroke-opacity", 1)
               .attr("r", function (d) {
-              var b = _this.nodesById[d.to];
+              var b = _this._search.node[d.to];
               b.currentValue = b.currentValue - d.value;
               return b.r * ((b.value - b.currentValue) / b.value);
           })
               .attr("transform", function (d) { return "translate(" + d.links[0].target.x + "," + d.links[0].target.y + ")"; });
-          this.linkGroup.exit().remove();
+          lg.exit().remove();
       };
-      Cell.prototype.updateNodes = function () {
+      Cell.prototype.updateNodes = function (data) {
           var _this = this;
-          var a = this.nodesSvg.selectAll("g.node")
-              .data(this.circleList, function (d) { return d.id; });
+          var gn = this._svg.select("g.nodes");
+          var a = gn.selectAll("g.node")
+              .data(data, function (d) { return d.id; });
           var b = a.enter()
               .append("g")
               .attr("class", "node")
@@ -8817,7 +8808,7 @@ var Demo = (function (exports) {
           c.append("circle")
               .attr("r", function (d) { return d.r + 2; })
               .style("fill-opacity", 0)
-              .style("stroke", "#FFF")
+              .style("stroke", "#fff")
               .style("stroke-width", 2.5)
               .style("stroke-opacity", .7);
           c.append("circle")
@@ -8832,16 +8823,17 @@ var Demo = (function (exports) {
               .transition(500)
               .style("opacity", 0);
       };
-      Cell.prototype.updateChords = function () {
+      Cell.prototype.updateChords = function (data) {
           var _this = this;
-          var a = this.chordsSvg.selectAll("g.arc")
-              .data(this.chords, function (d) { return d.id; });
+          var ch = this._svg.select("g.chords");
+          var a = ch.selectAll("g.arc")
+              .data(data.chords, function (d) { return d.id; });
           var arcGroup = a.enter()
               .append("g")
               .attr("class", "arc");
-          var defs = this.svg.select("defs");
+          var defs = this._svg.select("defs");
           var c = defs.selectAll(".arcDefs")
-              .data(this.labelChords, function (d) { return d.id; });
+              .data(data.labels, function (d) { return d.id; });
           c.enter().append("path")
               .attr("class", "arcDefs")
               .attr("id", function (d) { return "labelArc_" + d.id; });
@@ -8857,15 +8849,15 @@ var Demo = (function (exports) {
               .style("font-size", "0px")
               .style("fill", "#777")
               .append("textPath")
-              .text(function (d) { return _this.listFromById[d.id].label; })
+              .text(function (d) { return _this._search.from[d.id].label; })
               .attr("text-anchor", "middle")
               .attr("startOffset", "50%")
               .style("overflow", "visible")
               .attr("xlink:href", function (d) { return "#labelArc_" + d.id; });
           c.attr("d", function (d) {
               var ac = d3.svg.arc()
-                  .innerRadius(1.05 * _this.innerRadius)
-                  .outerRadius(1.05 * _this.innerRadius)(d);
+                  .innerRadius(1.05 * _this.radius.inner)
+                  .outerRadius(1.05 * _this.radius.inner)(d);
               var re = /[Mm][\d\.\-e,\s]+[Aa][\d\.\-e,\s]+/;
               var path = re.exec(ac)[0];
               return path;
@@ -8874,8 +8866,8 @@ var Demo = (function (exports) {
               .select("path")
               .attr("d", function (data, index) {
               var ar = d3.svg.arc(data, index)
-                  .innerRadius(.95 * _this.innerRadius)
-                  .outerRadius(_this.innerRadius);
+                  .innerRadius(.95 * _this.radius.inner)
+                  .outerRadius(_this.radius.inner);
               return ar(data.source, index);
           });
           c.exit().remove();
@@ -8909,7 +8901,7 @@ var Demo = (function (exports) {
           d3.select("#t_" + a.from)
               .transition(show ? 0 : 550)
               .style("fill", show ? "#000" : "#777")
-              .style("font-size", show ? Math.round(.035 * this.innerRadius) + "px" : "0px");
+              .style("font-size", show ? Math.round(.035 * this.radius.inner) + "px" : "0px");
       };
       Cell.prototype._toNodes = function (template) {
           return new DOMParser().parseFromString(template, "text/html").body.childNodes[0];
