@@ -1,6 +1,7 @@
 import { Legend } from "../lib/legend.es";
 import { Contour } from "../lib/contour.es";
 import { Plot } from "../lib/plot.es";
+import { Sankey } from "../lib/sankey.es";
 import { Cell } from "./cell";
 
 declare var d3: any;
@@ -10,6 +11,11 @@ export class Start {
     { /* Slide 1 */
       init: () => {
         console.log("Running slide 1");
+        const sankey = new Sankey("viz", "sankey1");
+
+        this.getJSON("data/slide1.json", data => {
+          sankey.data(data).draw();
+        });
       }
     },
     { /* Slide 2 */
