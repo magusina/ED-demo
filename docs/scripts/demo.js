@@ -8517,38 +8517,12 @@ var Demo = (function (exports) {
           this.radius = { bubble: 0, inner: 0, link: 0, outer: 0 };
           var parent = d3.select("#" + containerId);
           var box = parent.node().getBoundingClientRect();
-          this.radius.outer = Math.min(box.width * 0.27, box.height * 0.27);
-          this.radius.inner = this.radius.outer * 0.9;
-          this.radius.bubble = this.radius.inner - 50;
-          this.radius.link = this.radius.inner * 0.95;
-          this._pos.nodes = this.radius.outer - this.radius.inner + (this.radius.inner - this.radius.bubble);
-          this._pos.chords = this.radius.outer;
           parent.node().appendChild(this._toSVG(chartId, box.width * 0.6, box.height * 0.6));
           this._svg = parent.select("svg");
           this._svg.select("defs")
               .append("style")
-              .text(".link { fill: none; stroke: #ccc; stroke-width: 1.5px; stroke-linecap: round }\n        text.chord { font-size: 8px }");
-          this._svg.append("g")
-              .attr("class", "chords")
-              .attr("transform", "translate(" + this._pos.chords + "," + (this._pos.chords + this.radius.inner * 0.15) + ")");
-          this._svg.append("g")
-              .attr("class", "links")
-              .attr("transform", "translate(" + this._pos.chords + "," + (this._pos.chords + this.radius.inner * 0.15) + ")");
-          this._svg.append("g")
-              .attr("class", "nodes")
-              .attr("transform", "translate(" + this._pos.nodes + "," + (this._pos.nodes + this.radius.inner * 0.15) + ")");
-          this._gen.bubble = d3.layout.pack()
-              .sort(null)
-              .size([2 * this.radius.bubble, 2 * this.radius.bubble])
-              .padding(1.5);
-          this._gen.chord = d3.layout.chord()
-              .padding(.05)
-              .sortSubgroups(d3.descending)
-              .sortChords(d3.descending);
-          this._gen.diag = d3.svg.diagonal.radial();
-          this._gen.arc = d3.svg.arc()
-              .innerRadius(this.radius.inner)
-              .outerRadius(this.radius.inner + 10);
+              .attr("type", "text/css")
+              .text("\n        .link { fill: none; stroke: #ccc; stroke-width: 1.5px; stroke-linecap: round }\n        text.chord { fill: #777 }\n        text.chord > textPath { overflow: visible; text-anchor: middle }");
       }
       Cell.prototype.data = function (data) {
           var _this = this;
@@ -8574,71 +8548,71 @@ var Demo = (function (exports) {
           return this;
       };
       Cell.prototype.draw = function () {
-          var _this = this;
-          var toList = [];
-          this._data.to.forEach(function (to) { return toList.push({ children: to, value: 0 }); });
-          var nodes = this._gen.bubble.nodes({ children: toList, type: "root" });
-          var circles = [];
-          nodes.forEach(function (a) {
-              if (a.depth === 2) {
-                  _this._search.node[a.id] = a;
-                  a.relatedLinks = [];
-                  a.currentValue = a.value;
-                  circles.push(a);
-              }
-          });
-          var chords = this.buildChords();
-          this._data.links.forEach(function (tr) {
-              _this._search.node[tr.to].relatedLinks.push(tr);
-              _this._search.chord[tr.from].relatedLinks.push(tr);
-          });
-          this.updateNodes(circles);
-          this.updateChords(chords);
-          var i = this._data.links.length - 1;
-          var nibble = i * 0.25;
-          var renderLinks = [];
-          var intervalId = window.setInterval(function () {
-              if (i < 0) {
-                  window.clearInterval(intervalId);
-              }
-              else {
-                  for (var a = 0; a < nibble; a++) {
-                      if (i > -1) {
-                          renderLinks.push(_this._data.links[i--]);
-                      }
-                  }
-                  _this.updateLinks(renderLinks);
-              }
-          }, 1);
+          var box = this._svg.node().getBoundingClientRect();
+          this.radius.outer = Math.min(box.width * 0.27, box.height * 0.27);
+          this.radius.inner = this.radius.outer * 0.9;
+          this.radius.bubble = this.radius.inner - 50;
+          this.radius.link = this.radius.inner * 0.95;
+          this._pos.nodes = this.radius.outer - this.radius.inner + (this.radius.inner - this.radius.bubble);
+          this._pos.chords = this.radius.outer;
+          var canvas = this._svg.select("g.canvas");
+          canvas.append("g")
+              .attr("class", "chords")
+              .attr("transform", "translate(" + this._pos.chords + "," + (this._pos.chords + this.radius.inner * 0.15) + ")");
+          canvas.append("g")
+              .attr("class", "links")
+              .attr("transform", "translate(" + this._pos.chords + "," + (this._pos.chords + this.radius.inner * 0.15) + ")");
+          canvas.append("g")
+              .attr("class", "nodes")
+              .attr("transform", "translate(" + this._pos.nodes + "," + (this._pos.nodes + this.radius.inner * 0.15) + ")");
+          this._buildShapeGenerators();
+          var nodes = this._buildCircles();
+          var chords = this._buildChords();
+          this._buildSearchStructures();
+          this._updateNodes(nodes);
+          this._updateChords(chords);
+          this._updateLinks();
           return this;
       };
-      Cell.prototype.tooltipHide = function () {
-          var toolTip = d3.select("#toolTip");
-          toolTip.transition()
-              .duration(500)
-              .style("opacity", "0");
+      Cell.prototype.highlightLink = function (a, show) {
+          var opac = show ? .6 : .1;
+          d3.select("#l_" + a.id)
+              .classed("fade", false)
+              .transition(show ? 150 : 550)
+              .style("fill-opacity", opac)
+              .style("stroke-opacity", opac);
+          d3.select("#a_" + a.id)
+              .transition()
+              .style("fill-opacity", show ? opac : .2);
+          d3.select("#c_" + a.to)
+              .transition(show ? 150 : 550)
+              .style("opacity", show ? 1 : 0);
+          d3.select("#t_" + a.from)
+              .transition(show ? 0 : 550)
+              .style("fill", show ? "#000" : "#777")
+              .style("font-size", show ? Math.round(.035 * this.radius.inner) + "px" : "0px");
+      };
+      Cell.prototype.highlightLinks = function (data, show) {
+          var _this = this;
+          data.relatedLinks.forEach(function (link) { return _this.highlightLink(link, show); });
       };
       Cell.prototype.node_onMouseOver = function (data, category) {
-          var pos = d3.event.pageX + 15;
-          if (pos + 250 > window.innerWidth) {
-              pos = d3.event.pageX - 280;
-          }
           if (category === "TO") {
               if (data.depth < 2) {
                   return;
               }
-              this.tooltipMessage(pos, data.label, "To", "Total: " + data.value);
+              this.tooltip(true, "Metric: " + data.label, data.relatedLinks.length + " feeds", "Weight: " + data.value);
               this.highlightLinks(data, true);
           }
           else {
               if (category === "TRANSACTION") {
-                  this.tooltipMessage(pos, this._search.node[data.to].label, this._search.from[data.from].label, data.value);
+                  this.tooltip(true, "Metric: " + this._search.node[data.to].label, this._search.from[data.from].label, "Weight: " + data.value);
                   this.highlightLink(data, true);
               }
               else {
                   if (category === "FROM") {
-                      this.tooltipMessage(d3.event.pageX + 15, this._search.from[data.from].label, "From", "Total: " + this._search.from[data.from].value);
-                      this.highlightLinks(this._search.chord[data.from], true);
+                      this.tooltip(true, this._search.from[data.id].label, "", "Weight: " + this._search.from[data.id].value);
+                      this.highlightLinks(this._search.chord[data.id], true);
                   }
               }
           }
@@ -8653,17 +8627,33 @@ var Demo = (function (exports) {
               }
               else {
                   if (b === "FROM") {
-                      this.highlightLinks(this._search.chord[a.from], false);
+                      this.highlightLinks(this._search.chord[a.id], false);
                   }
               }
           }
-          this.tooltipHide();
+          this.tooltip(false);
       };
-      Cell.prototype.highlightLinks = function (data, show) {
-          var _this = this;
-          data.relatedLinks.forEach(function (a) { return _this.highlightLink(a, show); });
+      Cell.prototype.tooltip = function (show, h, h1, h2) {
+          var toolTip = d3.select("#toolTip");
+          if (show) {
+              var pos = { x: d3.event.pageX + 15, y: d3.event.pageY - 150 };
+              if (pos.x + 280 > window.innerWidth) {
+                  pos.x = d3.event.pageX - 280;
+              }
+              if (pos.y < 0) {
+                  pos.y = d3.event.pageY;
+              }
+              toolTip.transition().duration(200).style("opacity", ".9");
+              toolTip.select("#header1").text(h1);
+              toolTip.select("#head").text(h);
+              toolTip.select("#header2").text(h2);
+              toolTip.style("left", pos.x + "px").style("top", pos.y + "px");
+          }
+          else {
+              toolTip.transition().duration(500).style("opacity", "0");
+          }
       };
-      Cell.prototype.buildChords = function () {
+      Cell.prototype._buildChords = function () {
           var _this = this;
           var a = [];
           var indexByName = [];
@@ -8710,24 +8700,116 @@ var Demo = (function (exports) {
           });
           return { chords: chords, labels: labels };
       };
-      Cell.prototype._updateLinks = function (a) {
-          var b = { x: undefined, y: undefined };
-          var d = { source: undefined, target: undefined };
-          var e = { source: undefined, target: undefined };
-          var g = this._search.chord[a.from];
-          var h = this._search.node[a.to];
-          var j = g.currentLinkAngle - 1.57079633;
-          g.currentLinkAngle = g.currentLinkAngle + a.value / g.value * (g.endAngle - g.startAngle);
-          var k = g.currentLinkAngle - 1.57079633;
-          b.x = h.x - (this._pos.chords - this._pos.nodes);
-          b.y = h.y - (this._pos.chords - this._pos.nodes);
-          d.source = { x: this.radius.link * Math.cos(j), y: this.radius.link * Math.sin(j) };
-          d.target = b;
-          e.source = b;
-          e.target = { x: this.radius.link * Math.cos(k), y: this.radius.link * Math.sin(k) };
-          return [d, e];
+      Cell.prototype._buildCircles = function () {
+          var _this = this;
+          var toList = [];
+          this._data.to.forEach(function (to) { return toList.push({ children: to, value: 0 }); });
+          var nodes = this._gen.bubble.nodes({ children: toList, type: "root" });
+          var circles = [];
+          nodes.forEach(function (a) {
+              if (a.depth === 2) {
+                  _this._search.node[a.id] = a;
+                  a.relatedLinks = [];
+                  a.currentValue = a.value;
+                  circles.push(a);
+              }
+          });
+          return circles;
       };
-      Cell.prototype.updateLinks = function (data) {
+      Cell.prototype._buildShapeGenerators = function () {
+          this._gen.bubble = d3.layout.pack()
+              .sort(null)
+              .size([2 * this.radius.bubble, 2 * this.radius.bubble])
+              .padding(1.5);
+          this._gen.chord = d3.layout.chord()
+              .padding(.05)
+              .sortSubgroups(d3.descending)
+              .sortChords(d3.descending);
+          this._gen.diag = d3.svg.diagonal.radial();
+          this._gen.arc = d3.svg.arc()
+              .innerRadius(this.radius.inner)
+              .outerRadius(this.radius.inner + 10);
+      };
+      Cell.prototype._buildSearchStructures = function () {
+          var _this = this;
+          this._data.links.forEach(function (tr) {
+              _this._search.node[tr.to].relatedLinks.push(tr);
+              _this._search.chord[tr.from].relatedLinks.push(tr);
+          });
+      };
+      Cell.prototype._toNodes = function (template) {
+          return new DOMParser().parseFromString(template, "text/html").body.childNodes[0];
+      };
+      Cell.prototype._toSVG = function (id, width, height) {
+          return this._toNodes("<svg id =\"" + id + "\"\n      aria-labelledBy=\"title\" role=\"presentation\"\n      preserveAspectRatio=\"xMinYMin meet\"\n      height=\"100%\" width=\"100%\" viewBox=\"0 0 " + width + " " + height + "\"\n      xmlns=\"http://www.w3.org/2000/svg\"\n      xmlns:xlink=\"http://www.w3.org/1999/xlink\">\n      <title lang=\"en\">Chart</title>\n      <defs>\n        <style type=\"text/css\">\n          svg {\n            font-family: Arial, Helvetica, sans-serif;\n            font-size: 0.9em;\n            user-select: none\n          }\n        </style>\n      </defs>\n      <g class=\"canvas\"></g>\n    </svg>");
+      };
+      Cell.prototype._updateChords = function (data) {
+          var _this = this;
+          var ch = this._svg.select("g.chords");
+          var a = ch.selectAll("g.arc")
+              .data(data.chords, function (d) { return d.id; });
+          var arcGroup = a.enter()
+              .append("g")
+              .attr("class", "arc");
+          var defs = this._svg.select("defs");
+          var c = defs.selectAll(".arcDefs")
+              .data(data.labels, function (d) { return d.id; });
+          c.enter().append("path")
+              .attr("class", "arcDefs")
+              .attr("id", function (d) { return "labelArc_" + d.id; });
+          arcGroup.append("path")
+              .style("fill-opacity", 0)
+              .style("stroke", "#555")
+              .style("stroke-opacity", .4);
+          arcGroup.append("text")
+              .attr("class", "chord")
+              .attr("id", function (d) { return "t_" + d.id; })
+              .on("mouseover", function (d) { return _this.node_onMouseOver(d, "FROM"); })
+              .on("mouseout", function (d) { return _this.node_onMouseOut(d, "FROM"); })
+              .style("font-size", "0px")
+              .append("textPath")
+              .text(function (d) { return _this._search.from[d.id].label; })
+              .attr("startOffset", "50%")
+              .attr("xlink:href", function (d) { return "#labelArc_" + d.id; });
+          c.attr("d", function (d) {
+              var ac = d3.svg.arc()
+                  .innerRadius(1.05 * _this.radius.inner)
+                  .outerRadius(1.05 * _this.radius.inner)(d);
+              var re = /[Mm][\d\.\-e,\s]+[Aa][\d\.\-e,\s]+/;
+              var path = re.exec(ac)[0];
+              return path;
+          });
+          a.transition()
+              .select("path")
+              .attr("d", function (d, i) {
+              var ar = d3.svg.arc(d, i)
+                  .innerRadius(.95 * _this.radius.inner)
+                  .outerRadius(_this.radius.inner);
+              return ar(d.source, i);
+          });
+          c.exit().remove();
+          a.exit().remove();
+      };
+      Cell.prototype._updateLinks = function () {
+          var _this = this;
+          var i = this._data.links.length - 1;
+          var nibble = i * 0.25;
+          var renderLinks = [];
+          var intervalId = window.setInterval(function () {
+              if (i < 0) {
+                  window.clearInterval(intervalId);
+              }
+              else {
+                  for (var a = 0; a < nibble; a++) {
+                      if (i > -1) {
+                          renderLinks.push(_this._data.links[i--]);
+                      }
+                  }
+                  _this._updateLinksBase(renderLinks);
+              }
+          }, 1);
+      };
+      Cell.prototype._updateLinksBase = function (data) {
           var _this = this;
           var lk = this._svg.select("g.links");
           var lg = lk.selectAll("g.nodelink")
@@ -8762,7 +8844,7 @@ var Demo = (function (exports) {
               .attr("class", "link")
               .attr("id", function (d) { return "l_" + d.id; })
               .attr("d", function (d, i) {
-              d.links = _this._updateLinks(d);
+              d.links = _this._updateLinksHelper(d);
               var path = _this._gen.diag(d.links[0], i);
               path += "L" + String(_this._gen.diag(d.links[1], i)).substr(1) + "A" + _this.radius.link + "," + _this.radius.link + " 0 0,0 " + d.links[0].source.x + "," + d.links[0].source.y;
               return path;
@@ -8787,7 +8869,24 @@ var Demo = (function (exports) {
               .attr("transform", function (d) { return "translate(" + d.links[0].target.x + "," + d.links[0].target.y + ")"; });
           lg.exit().remove();
       };
-      Cell.prototype.updateNodes = function (data) {
+      Cell.prototype._updateLinksHelper = function (a) {
+          var b = { x: undefined, y: undefined };
+          var d = { source: undefined, target: undefined };
+          var e = { source: undefined, target: undefined };
+          var g = this._search.chord[a.from];
+          var h = this._search.node[a.to];
+          var j = g.currentLinkAngle - 1.57079633;
+          g.currentLinkAngle = g.currentLinkAngle + a.value / g.value * (g.endAngle - g.startAngle);
+          var k = g.currentLinkAngle - 1.57079633;
+          b.x = h.x - (this._pos.chords - this._pos.nodes);
+          b.y = h.y - (this._pos.chords - this._pos.nodes);
+          d.source = { x: this.radius.link * Math.cos(j), y: this.radius.link * Math.sin(j) };
+          d.target = b;
+          e.source = b;
+          e.target = { x: this.radius.link * Math.cos(k), y: this.radius.link * Math.sin(k) };
+          return [d, e];
+      };
+      Cell.prototype._updateNodes = function (data) {
           var _this = this;
           var gn = this._svg.select("g.nodes");
           var a = gn.selectAll("g.node")
@@ -8823,92 +8922,6 @@ var Demo = (function (exports) {
               .transition(500)
               .style("opacity", 0);
       };
-      Cell.prototype.updateChords = function (data) {
-          var _this = this;
-          var ch = this._svg.select("g.chords");
-          var a = ch.selectAll("g.arc")
-              .data(data.chords, function (d) { return d.id; });
-          var arcGroup = a.enter()
-              .append("g")
-              .attr("class", "arc");
-          var defs = this._svg.select("defs");
-          var c = defs.selectAll(".arcDefs")
-              .data(data.labels, function (d) { return d.id; });
-          c.enter().append("path")
-              .attr("class", "arcDefs")
-              .attr("id", function (d) { return "labelArc_" + d.id; });
-          arcGroup.append("path")
-              .style("fill-opacity", 0)
-              .style("stroke", "#555")
-              .style("stroke-opacity", .4);
-          arcGroup.append("text")
-              .attr("class", "chord")
-              .attr("id", function (d) { return "t_" + d.id; })
-              .on("mouseover", function (d) { return _this.node_onMouseOver(d, "FROM"); })
-              .on("mouseout", function (d) { return _this.node_onMouseOut(d, "FROM"); })
-              .style("font-size", "0px")
-              .style("fill", "#777")
-              .append("textPath")
-              .text(function (d) { return _this._search.from[d.id].label; })
-              .attr("text-anchor", "middle")
-              .attr("startOffset", "50%")
-              .style("overflow", "visible")
-              .attr("xlink:href", function (d) { return "#labelArc_" + d.id; });
-          c.attr("d", function (d) {
-              var ac = d3.svg.arc()
-                  .innerRadius(1.05 * _this.radius.inner)
-                  .outerRadius(1.05 * _this.radius.inner)(d);
-              var re = /[Mm][\d\.\-e,\s]+[Aa][\d\.\-e,\s]+/;
-              var path = re.exec(ac)[0];
-              return path;
-          });
-          a.transition()
-              .select("path")
-              .attr("d", function (data, index) {
-              var ar = d3.svg.arc(data, index)
-                  .innerRadius(.95 * _this.radius.inner)
-                  .outerRadius(_this.radius.inner);
-              return ar(data.source, index);
-          });
-          c.exit().remove();
-          a.exit().remove();
-      };
-      Cell.prototype.tooltipMessage = function (pos, h, h1, h2) {
-          var toolTip = d3.select("#toolTip");
-          toolTip.transition().duration(200).style("opacity", ".9");
-          toolTip.select("#header1").text(h1);
-          toolTip.select("#head").text(h);
-          toolTip.select("#header2").text(h2);
-          toolTip.style("left", pos + "px")
-              .style("top", d3.event.pageY - 150 + "px")
-              .style("height", "100px");
-      };
-      Cell.prototype.trimLabel = function (a) {
-          return a.length > 25 ? String(a).substr(0, 25) + "..." : a;
-      };
-      Cell.prototype.highlightLink = function (a, show) {
-          var opac = show ? .6 : .1;
-          d3.select("#l_" + a.id)
-              .transition(show ? 150 : 550)
-              .style("fill-opacity", opac)
-              .style("stroke-opacity", opac);
-          d3.select("#a_" + a.id)
-              .transition()
-              .style("fill-opacity", show ? opac : .2);
-          d3.select("#c_" + a.to)
-              .transition(show ? 150 : 550)
-              .style("opacity", show ? 1 : 0);
-          d3.select("#t_" + a.from)
-              .transition(show ? 0 : 550)
-              .style("fill", show ? "#000" : "#777")
-              .style("font-size", show ? Math.round(.035 * this.radius.inner) + "px" : "0px");
-      };
-      Cell.prototype._toNodes = function (template) {
-          return new DOMParser().parseFromString(template, "text/html").body.childNodes[0];
-      };
-      Cell.prototype._toSVG = function (id, width, height) {
-          return this._toNodes("<svg id =\"" + id + "\"\n      aria-labelledBy=\"title\" role=\"presentation\"\n      preserveAspectRatio=\"xMinYMin meet\"\n      height=\"100%\" width=\"100%\" viewBox=\"0 0 " + width + " " + height + "\"\n      xmlns=\"http://www.w3.org/2000/svg\"\n      xmlns:xlink=\"http://www.w3.org/1999/xlink\">\n      <title lang=\"en\">Chart</title>\n      <defs>\n        <style type=\"text/css\">\n          svg {\n            font-family: Arial, Helvetica, sans-serif;\n            font-size: 0.9em;\n            user-select: none\n          }\n        </style>\n      </defs>\n      <g class=\"canvas\"></g>\n    </svg>");
-      };
       return Cell;
   }());
 
@@ -8916,8 +8929,16 @@ var Demo = (function (exports) {
       function Start() {
           var _this = this;
           this.slides = [
-              {},
-              {},
+              {
+                  init: function () {
+                      console.log("Running slide 1");
+                  }
+              },
+              {
+                  init: function () {
+                      console.log("Running slide 2");
+                  }
+              },
               {
                   init: function () {
                       console.log("Running slide 3");

@@ -1,12 +1,26 @@
 body { 
   font-family: Arial, Helvetica, sans-serif; 
   margin: 0;
-  padding: 0;
+  overflow: hidden;
+  padding: 0
 }
 
 h1 { font-size: 1.5em }
 h2 { font-size: 1.3em }
 h3 { font-size: 1.1em }
 
+header { padding: 2px; padding-left: 5px }
+header > a { border: none }
+
+.home > path { fill: #0263b2 }
+.prev { transform: rotate(180deg) }
+.prev > path { fill: #0263b2 }
+.prev.inactive { pointer-events: none }
+.prev.inactive > path { fill: #ccc }
+.next > path { fill: #0263b2 }
+.next.inactive { pointer-events: none }
+.next.inactive > path { fill: #ccc }
+
+.nel > text { font-family: Arial; font-size: 1.5em; font-weight:700 }
 .logo-bottom-left { font-size: 1.5em; position: absolute; bottom: 0.8vh; left: 2% }
 .logo-bottom-right { position: absolute; bottom: 0; right: 2% }

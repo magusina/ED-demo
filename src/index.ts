@@ -8,10 +8,14 @@ declare var d3: any;
 export class Start {
   public slides: any[] = [
     { /* Slide 1 */
-
+      init: () => {
+        console.log("Running slide 1");
+      }
     },
     { /* Slide 2 */
-
+      init: () => {
+        console.log("Running slide 2");
+      }
     },
     { /* Slide 3 */
       init: () => {
