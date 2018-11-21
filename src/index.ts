@@ -3,6 +3,7 @@ import { Contour } from "../lib/contour.es";
 import { Plot } from "../lib/plot.es";
 import { Sankey } from "../lib/sankey.es";
 import { Cell } from "./cell";
+import { StreamGraph } from "../lib/stream.es";
 
 declare var d3: any;
 
@@ -21,6 +22,11 @@ export class Start {
     { /* Slide 2 */
       init: () => {
         console.log("Running slide 2");
+        const stream = new StreamGraph("viz", "stream1");
+
+        this.getJSON("data/slide2.json", data => {
+          stream.data(data).draw();
+        });
       }
     },
     { /* Slide 3 */
