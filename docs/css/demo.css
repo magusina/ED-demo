@@ -2,7 +2,7 @@ body {
   font-family: Arial, Helvetica, sans-serif; 
   font-size: 12px;
   margin: 0;
-  overflow: hidden;
+  overflow-x: hidden;
   padding: 0
 }
 
@@ -10,12 +10,34 @@ h1 { font-size: 1.5rem }
 h2 { font-size: 1.3rem }
 h3 { font-size: 1.1rem }
 
-header { padding: 10px 0px 0px 5px }
+header { 
+  align-items: flex-start;
+  background-color: #fff; 
+  display: flex;
+  flex-flow: row wrap;
+  height: 5.8vh;
+  justify-content: space-between;
+  overflow: hidden; 
+  padding: 5px 10px 5px 5px; 
+  width: 100% 
+}
 header > a { border: none }
 
-main { display: flex; height: 100vh; width: 100vw }
+header.sticky {
+  border-bottom: 1px solid #0263b2; 
+  position: fixed; 
+  top: 0; 
+}
 
+main { display: flex; margin-top: 8vh; width: 100vw }
+
+.note { display: none }
+
+.ask { cursor: pointer }
+.ask > path { fill: #0263b2 }
 .home > path { fill: #0263b2 }
+.pin { cursor: pointer }
+.pin > path { fill: #0263b2 }
 .prev { transform: rotate(180deg) }
 .prev > path { fill: #0263b2 }
 .prev.inactive { pointer-events: none }
@@ -25,17 +47,9 @@ main { display: flex; height: 100vh; width: 100vw }
 .next.inactive > path { fill: #ccc }
 
 .brand { padding-left: 1vw }
-.nel.brand > text { 
-  font-family: Arial; 
-  font-size: 2.5rem; 
-  font-weight: 700
-}
+.nel.brand > text { font-family: Arial; font-size: 2.5rem; font-weight: 700 }
 .nel.brand > path { fill: #04a49c }
 .nhs.brand > path { fill: #0263b2 }
 .nhs.brand > rect { fill: #fff }
-.top-right { 
-  display: inline-block;
-  position: absolute; 
-  right: 10px;
-  top: 10px 
-}
+
+.right-pad { padding-right: 20px }

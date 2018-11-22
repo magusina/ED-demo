@@ -4,6 +4,7 @@ import { Plot } from "../lib/plot.es";
 import { Sankey } from "../lib/sankey.es";
 import { Cell } from "./cell";
 import { StreamGraph } from "../lib/stream.es";
+import { Line } from "../lib/line.es";
 
 declare var d3: any;
 
@@ -12,20 +13,30 @@ export class Start {
     { /* Slide 1 */
       init: () => {
         console.log("Running slide 1");
-        const sankey = new Sankey("viz", "sankey1");
+        const sankey1 = new Sankey("sankey1", "san001");
+        const sankey2 = new Sankey("sankey2", "san002");
 
-        this.getJSON("data/slide1.json", data => {
-          sankey.data(data).draw();
+        this.getJSON("data/slide12.json", d1 => {
+          sankey1.data(d1).draw();
+        });
+
+        this.getJSON("data/slide13.json", d2 => {
+          sankey2.data(d2).draw();
         });
       }
     },
     { /* Slide 2 */
       init: () => {
         console.log("Running slide 2");
-        const stream = new StreamGraph("viz", "stream1");
+        const stream1 = new StreamGraph("stream1", "s001");
+        const stream2 = new StreamGraph("stream2", "s002");
 
-        this.getJSON("data/slide2.json", data => {
-          stream.data(data).draw();
+        this.getJSON("data/slide20.json", d1 => {
+          stream1.data(d1).draw();
+        });
+
+        this.getJSON("data/slide21.json", d2 => {
+          stream2.data(d2).draw();
         });
       }
     },
@@ -42,7 +53,8 @@ export class Start {
     { /* Slide 4 */
       init: () => {
         console.log("Running slide 4");
-        const plot = new Plot("viz", "plot");
+        const plot = new Plot("mainPlot", "scatterPlot");
+        //const line = new Line("topPlot", "linePlot");
 
         const legend = new Legend(plot);
         legend
@@ -55,7 +67,7 @@ export class Start {
           })
           .label(n => {
             const d = legend.datum(n);
-            return d.fill + " " + d.shape;
+            return d.label + " " + d.shape;
           });
 
         const contour = new Contour(plot);
@@ -76,13 +88,12 @@ export class Start {
         function transform(data: any) {
           const result = {
             series: [
-              { fill: "ED-based", shape: "GP", values: [] },
-              { fill: "ED-based", shape: "Nurse", values: [] },
-              { fill: "UCC-based", shape: "GP", values: [] },
-              { fill: "UCC-based", shape: "Nurse", values: [] }
+              { label: "ED-based", shape: "GP", values: [] },
+              { label: "ED-based", shape: "Nurse", values: [] },
+              { label: "UCC-based", shape: "GP", values: [] },
+              { label: "UCC-based", shape: "Nurse", values: [] }
             ],
-           labels: {
-              title: "Statistical Inference Model",
+           label: {
               x: "ED/UCC",
               y: "% Return"
             }

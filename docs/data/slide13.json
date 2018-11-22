@@ -1,0 +1,149 @@
+{
+  "nodes": [
+    {
+      "id": "n01",
+      "label": "Vomiting"
+    },
+    {
+      "id": "n02",
+      "label": "Urgent Care Centre"
+    },
+    {
+      "id": "n03",
+      "label": "Accident & Emergency"
+    },
+    {
+      "id": "n04",
+      "label": "Whipps Cross Hospital"
+    },
+    {
+      "id": "n05",
+      "label": "Royal London Hospital"
+    },
+    {
+      "id": "n06",
+      "label": "King George Hospital"
+    },
+    {
+      "id": "n07",
+      "label": "Newham Hospital"
+    },
+    {
+      "id": "n08",
+      "label": "Homerton Hospital"
+    },
+    {
+      "id": "n09",
+      "label": "Queens Hospital"
+    },
+    {
+      "id": "n010",
+      "label": "Admitted"
+    }
+  ],
+  "links": [
+    {
+      "source": 0,
+      "target": 1,
+      "value": 61
+    },
+    {
+      "source": 0,
+      "target": 2,
+      "value": 26
+    },
+    {
+      "source": 1,
+      "target": 3,
+      "value": 9
+    },
+    {
+      "source": 1,
+      "target": 4,
+      "value": 14
+    },
+    {
+      "source": 1,
+      "target": 5,
+      "value": 3
+    },
+    {
+      "source": 1,
+      "target": 6,
+      "value": 12
+    },
+    {
+      "source": 1,
+      "target": 7,
+      "value": 9
+    },
+    {
+      "source": 1,
+      "target": 8,
+      "value": 14
+    },
+    {
+      "source": 2,
+      "target": 3,
+      "value": 3
+    },
+    {
+      "source": 2,
+      "target": 4,
+      "value": 6
+    },
+    {
+      "source": 2,
+      "target": 5,
+      "value": 1
+    },
+    {
+      "source": 2,
+      "target": 6,
+      "value": 6
+    },
+    {
+      "source": 2,
+      "target": 7,
+      "value": 4
+    },
+    {
+      "source": 2,
+      "target": 8,
+      "value": 6
+    },
+    {
+      "source": 3,
+      "target": 9,
+      "value": 6
+    },
+    {
+      "source": 4,
+      "target": 9,
+      "value": 5
+    },
+    {
+      "source": 5,
+      "target": 9,
+      "value": 1
+    },
+    {
+      "source": 6,
+      "target": 9,
+      "value": 4
+    },
+    {
+      "source": 7,
+      "target": 9,
+      "value": 3
+    },
+    {
+      "source": 8,
+      "target": 9,
+      "value": 5
+    }
+  ],
+  "labels": {
+    "title": "Departments"
+  }
+}

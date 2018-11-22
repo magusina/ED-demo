@@ -11,6 +11,7 @@ export class Cell {
   private _svg: any;
 
   public radius: any = { bubble: 0, inner: 0, link: 0, outer: 0 };
+  public title: any = { heading: undefined };
 
   constructor(containerId: string, chartId: string) {
     const parent = d3.select(`#${containerId}`);
