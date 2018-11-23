@@ -32976,11 +32976,7 @@ var Demo = (function (exports) {
               {
                   init: function () {
                       console.log("Running slide 1");
-                      var sankey1 = new Sankey("sankey1", "san001");
                       var sankey2 = new Sankey("sankey2", "san002");
-                      _this.getJSON("data/slide12.json", function (d1) {
-                          sankey1.data(d1).draw();
-                      });
                       _this.getJSON("data/slide13.json", function (d2) {
                           sankey2.data(d2).draw();
                       });

@@ -23,6 +23,11 @@
         position: absolute; 
         text-align: left
       }
+      .legend {
+        position: absolute;
+        right: 2vw;
+        top: 20vh
+      }
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3.min.js"></script>
   </head>
@@ -51,6 +56,20 @@
           <div style="height:1px; margin:1px auto 3px; margin-top:7px; margin-bottom:7px; background:#ddd; width:125px"></div>
           <div id="header2" style="color:#333; text-align: left; font-size: 15px; font-style: italic; text-align:center"></div>
         </div>
+        <svg class="legend" xmlns="http://www.w3.org/2000/svg" height="100" width="100" viewBox="0 0 100 100">
+          <rect x="0" y="0" rx="5" ry="5" height="100%" width="100%" fill="#fff" stroke="#ccc"></rect>
+          
+          <circle cx="10" cy="17" r="5" fill="#E41A1C" fill-opacity="0.5"></circle>
+          <text x="19" y="20">Ealing Hospital</text>
+          <circle cx="10" cy="32" r="5" fill="#377EB8" fill-opacity="0.5"></circle>
+          <text x="19" y="35">King George</text>
+          <circle cx="10" cy="47" r="5" fill="#4DAF4A" fill-opacity="0.5"></circle>
+          <text x="19" y="50">Northwick Park</text>
+          <circle cx="10" cy="62" r="5" fill="#984EA3" fill-opacity="0.5"></circle>
+          <text x="19" y="65">Queen's Hospital</text>
+          <circle cx="10" cy="77" r="5" fill="#FF7F00" fill-opacity="0.5"></circle>
+          <text x="19" y="80">St Thomas' Hospital</text>
+        </svg>
       </main>
     </article>
     <script type="text/javascript" src="scripts/demo.js"></script>

@@ -7,7 +7,6 @@ import { StreamGraph } from "../lib/stream.es";
 import { Line } from "../lib/line.es";
 import { extent } from "d3-array";
 import { scaleLinear } from "d3-scale";
-import { drag } from "d3-drag";
 
 declare var d3: any;
 
@@ -16,12 +15,12 @@ export class Start {
     { /* Slide 1 */
       init: () => {
         console.log("Running slide 1");
-        const sankey1 = new Sankey("sankey1", "san001");
+        //const sankey1 = new Sankey("sankey1", "san001");
         const sankey2 = new Sankey("sankey2", "san002");
 
-        this.getJSON("data/slide12.json", d1 => {
+        /*this.getJSON("data/slide12.json", d1 => {
           sankey1.data(d1).draw();
-        });
+        });*/
 
         this.getJSON("data/slide13.json", d2 => {
           sankey2.data(d2).draw();
