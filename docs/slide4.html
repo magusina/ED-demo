@@ -15,7 +15,7 @@
       ol > li:last-child { padding-bottom: 0px }
 
       main { align-items: center; flex-direction: column; justify-content: center }
-      #topPlot { background-color: #eee; height: 100%; width: 79vw }
+      #topPlot { height: 100%; margin-left: 2vw; width: 75vw }
       #groupTopPlot { height: 20vh; justify-content: flex-start; width: 100vw }
       #groupPlot { align-items: flex-start; display: flex; height: 70vh; justify-content: flex-start; width: 97vw }
       #mainPlot { flex-grow: 1; height: 100%; width: 60vw }
@@ -47,10 +47,13 @@
           <div id="sidePlot"></div>
         </div>
       </main>
-      <div class="note">
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M11 17h2v5l-2 2v-7zm3.571-12c0-2.903 2.36-3.089 2.429-5h-10c.068 1.911 2.429 2.097 2.429 5 0 3.771-3.429 3.291-3.429 10h12c0-6.709-3.429-6.229-3.429-10z"/></svg>
+      <div class="note box-shadow">
+        <div class="note-control">
+          <svg class="pin" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M11 17h2v5l-2 2v-7zm3.571-12c0-2.903 2.36-3.089 2.429-5h-10c.068 1.911 2.429 2.097 2.429 5 0 3.771-3.429 3.291-3.429 10h12c0-6.709-3.429-6.229-3.429-10z"/></svg>
+          <svg class="close" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><title lang="en">Close</title><path d="M12 0c-6.627 0-12 5.373-12 12s5.373 12 12 12 12-5.373 12-12-5.373-12-12-12zm4.151 17.943l-4.143-4.102-4.117 4.159-1.833-1.833 4.104-4.157-4.162-4.119 1.833-1.833 4.155 4.102 4.106-4.16 1.849 1.849-4.1 4.141 4.157 4.104-1.849 1.849z"/></svg>
+        </div>
         <h1>Statistical Inference Model</h1>
-        <p>Dummy data was generate to represent four scenarios where the location is either UCC or ED and the streamer role is nurse or GP.</p>
+        <p>Dummy data was generated to represent four scenarios where the location is either UCC or ED and the streamer role is nurse or GP.</p>
         <p>Data was simulated for each site, spanning 400 days. For each day, two metrics were derived:<ol><li>Proportion of patients streamed either to ED or UCC (<b>ED/UCC</b>)</li><li>Proportion of patients returning to the UEC system <u>after</u> completed episode (<b>% Return</b>)</li></ol></p>
         <p>Visualising these two metrics in two dimensions allow us to locate clusters. These clusters illustrate the streamer type by location interactions.</p>
         <p>If we can determine that the variation with clusters is less than the variation between clusters, we're well-placed to infer significance.</p>

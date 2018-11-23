@@ -5,6 +5,9 @@ import { Sankey } from "../lib/sankey.es";
 import { Cell } from "./cell";
 import { StreamGraph } from "../lib/stream.es";
 import { Line } from "../lib/line.es";
+import { extent } from "d3-array";
+import { scaleLinear } from "d3-scale";
+import { drag } from "d3-drag";
 
 declare var d3: any;
 
@@ -45,7 +48,7 @@ export class Start {
         console.log("Running slide 3");
         const cell = new Cell("viz", "cell");
 
-        this.getJSON("data/slide3.json", data => {
+        this.getJSON("data/slide31.json", data => {
           cell.data(data).draw();
         });
       }
@@ -54,7 +57,7 @@ export class Start {
       init: () => {
         console.log("Running slide 4");
         const plot = new Plot("mainPlot", "scatterPlot");
-        //const line = new Line("topPlot", "linePlot");
+        const line = new Line("topPlot", "linePlot");
 
         const legend = new Legend(plot);
         legend
@@ -73,44 +76,68 @@ export class Start {
         const contour = new Contour(plot);
 
         this.getJSON("data/slide4.json", data => {
-          const plotData = transform(data);
           const contourData = flatten(data);
           contour.data(contourData);
-          plot.data(plotData).draw();
+          plot.data(data).draw();
+          const areaData = transformLineX(data);
+          line.data(areaData).draw();
         });
 
         function flatten(data: any) {
           const f = [];
-          data.forEach(d => f.push([d["ED.over.UCC"], d["Return"]]));
+          data.series.forEach(s => s.values.forEach(v => f.push(v)));
           return f;
         }
 
-        function transform(data: any) {
-          const result = {
+        function transformLineX(data: any) {
+          const r = {
             series: [
-              { label: "ED-based", shape: "GP", values: [] },
-              { label: "ED-based", shape: "Nurse", values: [] },
-              { label: "UCC-based", shape: "GP", values: [] },
-              { label: "UCC-based", shape: "Nurse", values: [] }
-            ],
-           label: {
-              x: "ED/UCC",
-              y: "% Return"
-            }
+              { label: "ED-based", values: [] },
+              { label: "UCC-based", values: [] }
+            ]
           };
-          data.forEach(d => {
-            let index = 0;
-            if (d["Location"] === "ED-based") {
-              if (d["Staff.type"] === "Nurse") {
-                index = 1;
-              }
-            } else {
-              index = d["Staff.type"] === "GP" ? 2 : 3;
-            }
-            result.series[index].values.push([d["ED.over.UCC"], d["Return"]]);
+          data.series.forEach(s => {
+            const i = s.label === "UCC-based" ? 1 : 0;
+            s.values.forEach(v => r.series[i].values.push(v[0]));
           });
-          return result;
+
+          r.series.forEach(s => {
+            const ext = extent(s.values);
+            const x = scaleLinear().domain(ext).range([0, 553]);
+            const res = kernelDensityEstimator(kernelEpanechnikov(7), x.ticks(40))(s.values);
+            s.values = res;
+          });
+          return r;
         }
+
+        // https://bl.ocks.org/mbostock/4341954
+        function kernelDensityEstimator(kernel: any, X: any): any {
+          return function(V: any) {
+            return X.map(function(x: any) {
+              return [x, d3.mean(V, function(v: any) { return kernel(x - v); })];
+            });
+          };
+        }
+
+        function kernelEpanechnikov(k: any): any {
+          return function(v: any): any {
+            return Math.abs(v /= k) <= 1 ? 0.75 * (1 - v * v) / k : 0;
+          };
+        }
+
+        document.querySelector(".ask")
+          .addEventListener("click", e => {
+            const note = document.querySelector(".note") as HTMLElement;
+            note.style.display = "block";
+            setTimeout(() => note.style.opacity = "1", 10);
+          });
+
+        document.querySelector(".close")
+          .addEventListener("click", e => {
+            const note = document.querySelector(".note") as HTMLElement;
+            note.style.opacity = null;
+            setTimeout(() => note.style.display = "none", 600);
+          });
       }
     }
   ];

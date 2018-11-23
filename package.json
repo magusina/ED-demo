@@ -16,12 +16,11 @@
   "devDependencies": {
     "@types/d3": "^5.0.1",
     "d3": "^5.7.0",
+    "d3-array": "^2.0.2",
+    "d3-scale": "^2.1.2",
     "rollup": "^0.67.3",
     "rollup-plugin-node-resolve": "^3.4.0",
     "rollup-plugin-typescript2": "^0.18.0",
     "typescript": "^3.1.6"
-  },
-  "dependencies": {
-    "choices.js": "^4.1.0"
   }
 }
