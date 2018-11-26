@@ -1,4 +1,5 @@
 import { Legend } from "../lib/legend.es";
+import { Axis } from "../lib/axis.es";
 import { Contour } from "../lib/contour.es";
 import { Plot } from "../lib/plot.es";
 import { Sankey } from "../lib/sankey.es";
@@ -7,6 +8,7 @@ import { StreamGraph } from "../lib/stream.es";
 import { Line } from "../lib/line.es";
 import { extent } from "d3-array";
 import { scaleLinear } from "d3-scale";
+import { kde, kernelEpanechnikov } from "../lib/kde.es";
 
 declare var d3: any;
 
@@ -78,7 +80,8 @@ export class Start {
           const contourData = flatten(data);
           contour.data(contourData);
           plot.data(data).draw();
-          const areaData = transformLineX(data);
+          const areaData = transformLineX(data, plot.innerWidth());
+          line.margin = plot.margin;
           line.data(areaData).draw();
         });
 
@@ -88,40 +91,31 @@ export class Start {
           return f;
         }
 
-        function transformLineX(data: any) {
+        function transformLineX(data: any, width: number) {
           const r = {
             series: [
               { label: "ED-based", values: [] },
               { label: "UCC-based", values: [] }
             ]
           };
+
           data.series.forEach(s => {
             const i = s.label === "UCC-based" ? 1 : 0;
-            s.values.forEach(v => r.series[i].values.push(v[0]));
+            s.values.forEach(v => {
+              // x100 required to make density function input values
+              r.series[i].values.push(v[0] * 100.0);
+            });
           });
 
           r.series.forEach(s => {
-            const ext = extent(s.values);
-            const x = scaleLinear().domain(ext).range([0, 553]);
-            const res = kernelDensityEstimator(kernelEpanechnikov(7), x.ticks(40))(s.values);
+            const scale = scaleLinear()
+              .domain(extent(s.values))
+              .range([0, width]);
+            const ticks = scale.ticks(s.values.length * 0.2);
+            const res = kde(kernelEpanechnikov(7), ticks)(s.values);
             s.values = res;
           });
           return r;
-        }
-
-        // https://bl.ocks.org/mbostock/4341954
-        function kernelDensityEstimator(kernel: any, X: any): any {
-          return function(V: any) {
-            return X.map(function(x: any) {
-              return [x, d3.mean(V, function(v: any) { return kernel(x - v); })];
-            });
-          };
-        }
-
-        function kernelEpanechnikov(k: any): any {
-          return function(v: any): any {
-            return Math.abs(v /= k) <= 1 ? 0.75 * (1 - v * v) / k : 0;
-          };
         }
 
         document.querySelector(".ask")

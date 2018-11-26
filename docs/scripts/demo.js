@@ -3094,176 +3094,6 @@ var Demo = (function (exports) {
     return [min, max];
   }
 
-  var slice$1$1 = Array.prototype.slice;
-
-  function identity$1$1(x) {
-    return x;
-  }
-
-  var top = 1,
-      right = 2,
-      bottom = 3,
-      left = 4,
-      epsilon = 1e-6;
-
-  function translateX(x) {
-    return "translate(" + (x + 0.5) + ",0)";
-  }
-
-  function translateY(y) {
-    return "translate(0," + (y + 0.5) + ")";
-  }
-
-  function number$1(scale) {
-    return function(d) {
-      return +scale(d);
-    };
-  }
-
-  function center(scale) {
-    var offset = Math.max(0, scale.bandwidth() - 1) / 2; // Adjust for 0.5px offset.
-    if (scale.round()) offset = Math.round(offset);
-    return function(d) {
-      return +scale(d) + offset;
-    };
-  }
-
-  function entering() {
-    return !this.__axis;
-  }
-
-  function axis(orient, scale) {
-    var tickArguments = [],
-        tickValues = null,
-        tickFormat = null,
-        tickSizeInner = 6,
-        tickSizeOuter = 6,
-        tickPadding = 3,
-        k = orient === top || orient === left ? -1 : 1,
-        x = orient === left || orient === right ? "x" : "y",
-        transform = orient === top || orient === bottom ? translateX : translateY;
-
-    function axis(context) {
-      var values = tickValues == null ? (scale.ticks ? scale.ticks.apply(scale, tickArguments) : scale.domain()) : tickValues,
-          format = tickFormat == null ? (scale.tickFormat ? scale.tickFormat.apply(scale, tickArguments) : identity$1$1) : tickFormat,
-          spacing = Math.max(tickSizeInner, 0) + tickPadding,
-          range = scale.range(),
-          range0 = +range[0] + 0.5,
-          range1 = +range[range.length - 1] + 0.5,
-          position = (scale.bandwidth ? center : number$1)(scale.copy()),
-          selection = context.selection ? context.selection() : context,
-          path = selection.selectAll(".domain").data([null]),
-          tick = selection.selectAll(".tick").data(values, scale).order(),
-          tickExit = tick.exit(),
-          tickEnter = tick.enter().append("g").attr("class", "tick"),
-          line = tick.select("line"),
-          text = tick.select("text");
-
-      path = path.merge(path.enter().insert("path", ".tick")
-          .attr("class", "domain")
-          .attr("stroke", "currentColor"));
-
-      tick = tick.merge(tickEnter);
-
-      line = line.merge(tickEnter.append("line")
-          .attr("stroke", "currentColor")
-          .attr(x + "2", k * tickSizeInner));
-
-      text = text.merge(tickEnter.append("text")
-          .attr("fill", "currentColor")
-          .attr(x, k * spacing)
-          .attr("dy", orient === top ? "0em" : orient === bottom ? "0.71em" : "0.32em"));
-
-      if (context !== selection) {
-        path = path.transition(context);
-        tick = tick.transition(context);
-        line = line.transition(context);
-        text = text.transition(context);
-
-        tickExit = tickExit.transition(context)
-            .attr("opacity", epsilon)
-            .attr("transform", function(d) { return isFinite(d = position(d)) ? transform(d) : this.getAttribute("transform"); });
-
-        tickEnter
-            .attr("opacity", epsilon)
-            .attr("transform", function(d) { var p = this.parentNode.__axis; return transform(p && isFinite(p = p(d)) ? p : position(d)); });
-      }
-
-      tickExit.remove();
-
-      path
-          .attr("d", orient === left || orient == right
-              ? (tickSizeOuter ? "M" + k * tickSizeOuter + "," + range0 + "H0.5V" + range1 + "H" + k * tickSizeOuter : "M0.5," + range0 + "V" + range1)
-              : (tickSizeOuter ? "M" + range0 + "," + k * tickSizeOuter + "V0.5H" + range1 + "V" + k * tickSizeOuter : "M" + range0 + ",0.5H" + range1));
-
-      tick
-          .attr("opacity", 1)
-          .attr("transform", function(d) { return transform(position(d)); });
-
-      line
-          .attr(x + "2", k * tickSizeInner);
-
-      text
-          .attr(x, k * spacing)
-          .text(format);
-
-      selection.filter(entering)
-          .attr("fill", "none")
-          .attr("font-size", 10)
-          .attr("font-family", "sans-serif")
-          .attr("text-anchor", orient === right ? "start" : orient === left ? "end" : "middle");
-
-      selection
-          .each(function() { this.__axis = position; });
-    }
-
-    axis.scale = function(_) {
-      return arguments.length ? (scale = _, axis) : scale;
-    };
-
-    axis.ticks = function() {
-      return tickArguments = slice$1$1.call(arguments), axis;
-    };
-
-    axis.tickArguments = function(_) {
-      return arguments.length ? (tickArguments = _ == null ? [] : slice$1$1.call(_), axis) : tickArguments.slice();
-    };
-
-    axis.tickValues = function(_) {
-      return arguments.length ? (tickValues = _ == null ? null : slice$1$1.call(_), axis) : tickValues && tickValues.slice();
-    };
-
-    axis.tickFormat = function(_) {
-      return arguments.length ? (tickFormat = _, axis) : tickFormat;
-    };
-
-    axis.tickSize = function(_) {
-      return arguments.length ? (tickSizeInner = tickSizeOuter = +_, axis) : tickSizeInner;
-    };
-
-    axis.tickSizeInner = function(_) {
-      return arguments.length ? (tickSizeInner = +_, axis) : tickSizeInner;
-    };
-
-    axis.tickSizeOuter = function(_) {
-      return arguments.length ? (tickSizeOuter = +_, axis) : tickSizeOuter;
-    };
-
-    axis.tickPadding = function(_) {
-      return arguments.length ? (tickPadding = +_, axis) : tickPadding;
-    };
-
-    return axis;
-  }
-
-  function axisBottom(scale) {
-    return axis(bottom, scale);
-  }
-
-  function axisLeft(scale) {
-    return axis(left, scale);
-  }
-
   function quadOut(t) {
     return t * (2 - t);
   }
@@ -3275,311 +3105,6 @@ var Demo = (function (exports) {
   var pi$1 = Math.PI;
 
   var tau$1 = 2 * Math.PI;
-
-  // Computes the decimal coefficient and exponent of the specified number x with
-  // significant digits p, where x is positive and p is in [1, 21] or undefined.
-  // For example, formatDecimal(1.23) returns ["123", 0].
-  function formatDecimal(x, p) {
-    if ((i = (x = p ? x.toExponential(p - 1) : x.toExponential()).indexOf("e")) < 0) return null; // NaN, ±Infinity
-    var i, coefficient = x.slice(0, i);
-
-    // The string returned by toExponential either has the form \d\.\d+e[-+]\d+
-    // (e.g., 1.2e+3) or the form \de[-+]\d+ (e.g., 1e+3).
-    return [
-      coefficient.length > 1 ? coefficient[0] + coefficient.slice(2) : coefficient,
-      +x.slice(i + 1)
-    ];
-  }
-
-  function exponent$1(x) {
-    return x = formatDecimal(Math.abs(x)), x ? x[1] : NaN;
-  }
-
-  function formatGroup(grouping, thousands) {
-    return function(value, width) {
-      var i = value.length,
-          t = [],
-          j = 0,
-          g = grouping[0],
-          length = 0;
-
-      while (i > 0 && g > 0) {
-        if (length + g + 1 > width) g = Math.max(1, width - length);
-        t.push(value.substring(i -= g, i + g));
-        if ((length += g + 1) > width) break;
-        g = grouping[j = (j + 1) % grouping.length];
-      }
-
-      return t.reverse().join(thousands);
-    };
-  }
-
-  function formatNumerals(numerals) {
-    return function(value) {
-      return value.replace(/[0-9]/g, function(i) {
-        return numerals[+i];
-      });
-    };
-  }
-
-  // [[fill]align][sign][symbol][0][width][,][.precision][~][type]
-  var re = /^(?:(.)?([<>=^]))?([+\-( ])?([$#])?(0)?(\d+)?(,)?(\.\d+)?(~)?([a-z%])?$/i;
-
-  function formatSpecifier(specifier) {
-    return new FormatSpecifier(specifier);
-  }
-
-  formatSpecifier.prototype = FormatSpecifier.prototype; // instanceof
-
-  function FormatSpecifier(specifier) {
-    if (!(match = re.exec(specifier))) throw new Error("invalid format: " + specifier);
-    var match;
-    this.fill = match[1] || " ";
-    this.align = match[2] || ">";
-    this.sign = match[3] || "-";
-    this.symbol = match[4] || "";
-    this.zero = !!match[5];
-    this.width = match[6] && +match[6];
-    this.comma = !!match[7];
-    this.precision = match[8] && +match[8].slice(1);
-    this.trim = !!match[9];
-    this.type = match[10] || "";
-  }
-
-  FormatSpecifier.prototype.toString = function() {
-    return this.fill
-        + this.align
-        + this.sign
-        + this.symbol
-        + (this.zero ? "0" : "")
-        + (this.width == null ? "" : Math.max(1, this.width | 0))
-        + (this.comma ? "," : "")
-        + (this.precision == null ? "" : "." + Math.max(0, this.precision | 0))
-        + (this.trim ? "~" : "")
-        + this.type;
-  };
-
-  // Trims insignificant zeros, e.g., replaces 1.2000k with 1.2k.
-  function formatTrim(s) {
-    out: for (var n = s.length, i = 1, i0 = -1, i1; i < n; ++i) {
-      switch (s[i]) {
-        case ".": i0 = i1 = i; break;
-        case "0": if (i0 === 0) i0 = i; i1 = i; break;
-        default: if (i0 > 0) { if (!+s[i]) break out; i0 = 0; } break;
-      }
-    }
-    return i0 > 0 ? s.slice(0, i0) + s.slice(i1 + 1) : s;
-  }
-
-  var prefixExponent;
-
-  function formatPrefixAuto(x, p) {
-    var d = formatDecimal(x, p);
-    if (!d) return x + "";
-    var coefficient = d[0],
-        exponent = d[1],
-        i = exponent - (prefixExponent = Math.max(-8, Math.min(8, Math.floor(exponent / 3))) * 3) + 1,
-        n = coefficient.length;
-    return i === n ? coefficient
-        : i > n ? coefficient + new Array(i - n + 1).join("0")
-        : i > 0 ? coefficient.slice(0, i) + "." + coefficient.slice(i)
-        : "0." + new Array(1 - i).join("0") + formatDecimal(x, Math.max(0, p + i - 1))[0]; // less than 1y!
-  }
-
-  function formatRounded(x, p) {
-    var d = formatDecimal(x, p);
-    if (!d) return x + "";
-    var coefficient = d[0],
-        exponent = d[1];
-    return exponent < 0 ? "0." + new Array(-exponent).join("0") + coefficient
-        : coefficient.length > exponent + 1 ? coefficient.slice(0, exponent + 1) + "." + coefficient.slice(exponent + 1)
-        : coefficient + new Array(exponent - coefficient.length + 2).join("0");
-  }
-
-  var formatTypes = {
-    "%": function(x, p) { return (x * 100).toFixed(p); },
-    "b": function(x) { return Math.round(x).toString(2); },
-    "c": function(x) { return x + ""; },
-    "d": function(x) { return Math.round(x).toString(10); },
-    "e": function(x, p) { return x.toExponential(p); },
-    "f": function(x, p) { return x.toFixed(p); },
-    "g": function(x, p) { return x.toPrecision(p); },
-    "o": function(x) { return Math.round(x).toString(8); },
-    "p": function(x, p) { return formatRounded(x * 100, p); },
-    "r": formatRounded,
-    "s": formatPrefixAuto,
-    "X": function(x) { return Math.round(x).toString(16).toUpperCase(); },
-    "x": function(x) { return Math.round(x).toString(16); }
-  };
-
-  function identity$2(x) {
-    return x;
-  }
-
-  var prefixes = ["y","z","a","f","p","n","µ","m","","k","M","G","T","P","E","Z","Y"];
-
-  function formatLocale(locale) {
-    var group = locale.grouping && locale.thousands ? formatGroup(locale.grouping, locale.thousands) : identity$2,
-        currency = locale.currency,
-        decimal = locale.decimal,
-        numerals = locale.numerals ? formatNumerals(locale.numerals) : identity$2,
-        percent = locale.percent || "%";
-
-    function newFormat(specifier) {
-      specifier = formatSpecifier(specifier);
-
-      var fill = specifier.fill,
-          align = specifier.align,
-          sign = specifier.sign,
-          symbol = specifier.symbol,
-          zero = specifier.zero,
-          width = specifier.width,
-          comma = specifier.comma,
-          precision = specifier.precision,
-          trim = specifier.trim,
-          type = specifier.type;
-
-      // The "n" type is an alias for ",g".
-      if (type === "n") comma = true, type = "g";
-
-      // The "" type, and any invalid type, is an alias for ".12~g".
-      else if (!formatTypes[type]) precision == null && (precision = 12), trim = true, type = "g";
-
-      // If zero fill is specified, padding goes after sign and before digits.
-      if (zero || (fill === "0" && align === "=")) zero = true, fill = "0", align = "=";
-
-      // Compute the prefix and suffix.
-      // For SI-prefix, the suffix is lazily computed.
-      var prefix = symbol === "$" ? currency[0] : symbol === "#" && /[boxX]/.test(type) ? "0" + type.toLowerCase() : "",
-          suffix = symbol === "$" ? currency[1] : /[%p]/.test(type) ? percent : "";
-
-      // What format function should we use?
-      // Is this an integer type?
-      // Can this type generate exponential notation?
-      var formatType = formatTypes[type],
-          maybeSuffix = /[defgprs%]/.test(type);
-
-      // Set the default precision if not specified,
-      // or clamp the specified precision to the supported range.
-      // For significant precision, it must be in [1, 21].
-      // For fixed precision, it must be in [0, 20].
-      precision = precision == null ? 6
-          : /[gprs]/.test(type) ? Math.max(1, Math.min(21, precision))
-          : Math.max(0, Math.min(20, precision));
-
-      function format(value) {
-        var valuePrefix = prefix,
-            valueSuffix = suffix,
-            i, n, c;
-
-        if (type === "c") {
-          valueSuffix = formatType(value) + valueSuffix;
-          value = "";
-        } else {
-          value = +value;
-
-          // Perform the initial formatting.
-          var valueNegative = value < 0;
-          value = formatType(Math.abs(value), precision);
-
-          // Trim insignificant zeros.
-          if (trim) value = formatTrim(value);
-
-          // If a negative value rounds to zero during formatting, treat as positive.
-          if (valueNegative && +value === 0) valueNegative = false;
-
-          // Compute the prefix and suffix.
-          valuePrefix = (valueNegative ? (sign === "(" ? sign : "-") : sign === "-" || sign === "(" ? "" : sign) + valuePrefix;
-          valueSuffix = (type === "s" ? prefixes[8 + prefixExponent / 3] : "") + valueSuffix + (valueNegative && sign === "(" ? ")" : "");
-
-          // Break the formatted value into the integer “value” part that can be
-          // grouped, and fractional or exponential “suffix” part that is not.
-          if (maybeSuffix) {
-            i = -1, n = value.length;
-            while (++i < n) {
-              if (c = value.charCodeAt(i), 48 > c || c > 57) {
-                valueSuffix = (c === 46 ? decimal + value.slice(i + 1) : value.slice(i)) + valueSuffix;
-                value = value.slice(0, i);
-                break;
-              }
-            }
-          }
-        }
-
-        // If the fill character is not "0", grouping is applied before padding.
-        if (comma && !zero) value = group(value, Infinity);
-
-        // Compute the padding.
-        var length = valuePrefix.length + value.length + valueSuffix.length,
-            padding = length < width ? new Array(width - length + 1).join(fill) : "";
-
-        // If the fill character is "0", grouping is applied after padding.
-        if (comma && zero) value = group(padding + value, padding.length ? width - valueSuffix.length : Infinity), padding = "";
-
-        // Reconstruct the final output based on the desired alignment.
-        switch (align) {
-          case "<": value = valuePrefix + value + valueSuffix + padding; break;
-          case "=": value = valuePrefix + padding + value + valueSuffix; break;
-          case "^": value = padding.slice(0, length = padding.length >> 1) + valuePrefix + value + valueSuffix + padding.slice(length); break;
-          default: value = padding + valuePrefix + value + valueSuffix; break;
-        }
-
-        return numerals(value);
-      }
-
-      format.toString = function() {
-        return specifier + "";
-      };
-
-      return format;
-    }
-
-    function formatPrefix(specifier, value) {
-      var f = newFormat((specifier = formatSpecifier(specifier), specifier.type = "f", specifier)),
-          e = Math.max(-8, Math.min(8, Math.floor(exponent$1(value) / 3))) * 3,
-          k = Math.pow(10, -e),
-          prefix = prefixes[8 + e / 3];
-      return function(value) {
-        return f(k * value) + prefix;
-      };
-    }
-
-    return {
-      format: newFormat,
-      formatPrefix: formatPrefix
-    };
-  }
-
-  var locale;
-  var format;
-  var formatPrefix;
-
-  defaultLocale({
-    decimal: ".",
-    thousands: ",",
-    grouping: [3],
-    currency: ["$", ""]
-  });
-
-  function defaultLocale(definition) {
-    locale = formatLocale(definition);
-    format = locale.format;
-    formatPrefix = locale.formatPrefix;
-    return locale;
-  }
-
-  function precisionFixed(step) {
-    return Math.max(0, -exponent$1(Math.abs(step)));
-  }
-
-  function precisionPrefix(step, value) {
-    return Math.max(0, Math.max(-8, Math.min(8, Math.floor(exponent$1(value) / 3))) * 3 - exponent$1(Math.abs(step)));
-  }
-
-  function precisionRound(step, max) {
-    step = Math.abs(step), max = Math.abs(max) - step;
-    return Math.max(0, exponent$1(max) - exponent$1(step)) + 1;
-  }
 
   function ascending$1$2(a, b) {
     return a < b ? -1 : a > b ? 1 : a >= b ? 0 : NaN;
@@ -3785,7 +3310,7 @@ var Demo = (function (exports) {
   var array$2 = Array.prototype;
 
   var map$3 = array$2.map;
-  var slice$3 = array$2.slice;
+  var slice$2 = array$2.slice;
 
   var implicit = {name: "implicit"};
 
@@ -3794,7 +3319,7 @@ var Demo = (function (exports) {
         domain = [],
         unknown = implicit;
 
-    range = range == null ? [] : slice$3.call(range);
+    range = range == null ? [] : slice$2.call(range);
 
     function scale(d) {
       var key = d + "", i = index.get(key);
@@ -3814,7 +3339,7 @@ var Demo = (function (exports) {
     };
 
     scale.range = function(_) {
-      return arguments.length ? (range = slice$3.call(_), scale) : range.slice();
+      return arguments.length ? (range = slice$2.call(_), scale) : range.slice();
     };
 
     scale.unknown = function(_) {
@@ -4591,7 +4116,7 @@ var Demo = (function (exports) {
 
   var degrees = 180 / Math.PI;
 
-  var identity$4 = {
+  var identity$2 = {
     translateX: 0,
     translateY: 0,
     rotate: 0,
@@ -4622,7 +4147,7 @@ var Demo = (function (exports) {
       svgNode;
 
   function parseCss(value) {
-    if (value === "none") return identity$4;
+    if (value === "none") return identity$2;
     if (!cssNode) cssNode = document.createElement("DIV"), cssRoot = document.documentElement, cssView = document.defaultView;
     cssNode.style.transform = value;
     value = cssView.getComputedStyle(cssRoot.appendChild(cssNode), null).getPropertyValue("transform");
@@ -4632,10 +4157,10 @@ var Demo = (function (exports) {
   }
 
   function parseSvg(value) {
-    if (value == null) return identity$4;
+    if (value == null) return identity$2;
     if (!svgNode) svgNode = document.createElementNS("http://www.w3.org/2000/svg", "g");
     svgNode.setAttribute("transform", value);
-    if (!(value = svgNode.transform.baseVal.consolidate())) return identity$4;
+    if (!(value = svgNode.transform.baseVal.consolidate())) return identity$2;
     value = value.matrix;
     return decompose(value.a, value.b, value.c, value.d, value.e, value.f);
   }
@@ -4736,7 +4261,7 @@ var Demo = (function (exports) {
     };
   }
 
-  function number$3(x) {
+  function number$2(x) {
     return +x;
   }
 
@@ -4826,15 +4351,15 @@ var Demo = (function (exports) {
     };
 
     scale.domain = function(_) {
-      return arguments.length ? (domain = map$3.call(_, number$3), rescale()) : domain.slice();
+      return arguments.length ? (domain = map$3.call(_, number$2), rescale()) : domain.slice();
     };
 
     scale.range = function(_) {
-      return arguments.length ? (range = slice$3.call(_), rescale()) : range.slice();
+      return arguments.length ? (range = slice$2.call(_), rescale()) : range.slice();
     };
 
     scale.rangeRound = function(_) {
-      return range = slice$3.call(_), interpolate$$1 = interpolateRound, rescale();
+      return range = slice$2.call(_), interpolate$$1 = interpolateRound, rescale();
     };
 
     scale.clamp = function(_) {
@@ -4846,6 +4371,311 @@ var Demo = (function (exports) {
     };
 
     return rescale();
+  }
+
+  // Computes the decimal coefficient and exponent of the specified number x with
+  // significant digits p, where x is positive and p is in [1, 21] or undefined.
+  // For example, formatDecimal(1.23) returns ["123", 0].
+  function formatDecimal(x, p) {
+    if ((i = (x = p ? x.toExponential(p - 1) : x.toExponential()).indexOf("e")) < 0) return null; // NaN, ±Infinity
+    var i, coefficient = x.slice(0, i);
+
+    // The string returned by toExponential either has the form \d\.\d+e[-+]\d+
+    // (e.g., 1.2e+3) or the form \de[-+]\d+ (e.g., 1e+3).
+    return [
+      coefficient.length > 1 ? coefficient[0] + coefficient.slice(2) : coefficient,
+      +x.slice(i + 1)
+    ];
+  }
+
+  function exponent$1(x) {
+    return x = formatDecimal(Math.abs(x)), x ? x[1] : NaN;
+  }
+
+  function formatGroup(grouping, thousands) {
+    return function(value, width) {
+      var i = value.length,
+          t = [],
+          j = 0,
+          g = grouping[0],
+          length = 0;
+
+      while (i > 0 && g > 0) {
+        if (length + g + 1 > width) g = Math.max(1, width - length);
+        t.push(value.substring(i -= g, i + g));
+        if ((length += g + 1) > width) break;
+        g = grouping[j = (j + 1) % grouping.length];
+      }
+
+      return t.reverse().join(thousands);
+    };
+  }
+
+  function formatNumerals(numerals) {
+    return function(value) {
+      return value.replace(/[0-9]/g, function(i) {
+        return numerals[+i];
+      });
+    };
+  }
+
+  // [[fill]align][sign][symbol][0][width][,][.precision][~][type]
+  var re = /^(?:(.)?([<>=^]))?([+\-( ])?([$#])?(0)?(\d+)?(,)?(\.\d+)?(~)?([a-z%])?$/i;
+
+  function formatSpecifier(specifier) {
+    return new FormatSpecifier(specifier);
+  }
+
+  formatSpecifier.prototype = FormatSpecifier.prototype; // instanceof
+
+  function FormatSpecifier(specifier) {
+    if (!(match = re.exec(specifier))) throw new Error("invalid format: " + specifier);
+    var match;
+    this.fill = match[1] || " ";
+    this.align = match[2] || ">";
+    this.sign = match[3] || "-";
+    this.symbol = match[4] || "";
+    this.zero = !!match[5];
+    this.width = match[6] && +match[6];
+    this.comma = !!match[7];
+    this.precision = match[8] && +match[8].slice(1);
+    this.trim = !!match[9];
+    this.type = match[10] || "";
+  }
+
+  FormatSpecifier.prototype.toString = function() {
+    return this.fill
+        + this.align
+        + this.sign
+        + this.symbol
+        + (this.zero ? "0" : "")
+        + (this.width == null ? "" : Math.max(1, this.width | 0))
+        + (this.comma ? "," : "")
+        + (this.precision == null ? "" : "." + Math.max(0, this.precision | 0))
+        + (this.trim ? "~" : "")
+        + this.type;
+  };
+
+  // Trims insignificant zeros, e.g., replaces 1.2000k with 1.2k.
+  function formatTrim(s) {
+    out: for (var n = s.length, i = 1, i0 = -1, i1; i < n; ++i) {
+      switch (s[i]) {
+        case ".": i0 = i1 = i; break;
+        case "0": if (i0 === 0) i0 = i; i1 = i; break;
+        default: if (i0 > 0) { if (!+s[i]) break out; i0 = 0; } break;
+      }
+    }
+    return i0 > 0 ? s.slice(0, i0) + s.slice(i1 + 1) : s;
+  }
+
+  var prefixExponent;
+
+  function formatPrefixAuto(x, p) {
+    var d = formatDecimal(x, p);
+    if (!d) return x + "";
+    var coefficient = d[0],
+        exponent = d[1],
+        i = exponent - (prefixExponent = Math.max(-8, Math.min(8, Math.floor(exponent / 3))) * 3) + 1,
+        n = coefficient.length;
+    return i === n ? coefficient
+        : i > n ? coefficient + new Array(i - n + 1).join("0")
+        : i > 0 ? coefficient.slice(0, i) + "." + coefficient.slice(i)
+        : "0." + new Array(1 - i).join("0") + formatDecimal(x, Math.max(0, p + i - 1))[0]; // less than 1y!
+  }
+
+  function formatRounded(x, p) {
+    var d = formatDecimal(x, p);
+    if (!d) return x + "";
+    var coefficient = d[0],
+        exponent = d[1];
+    return exponent < 0 ? "0." + new Array(-exponent).join("0") + coefficient
+        : coefficient.length > exponent + 1 ? coefficient.slice(0, exponent + 1) + "." + coefficient.slice(exponent + 1)
+        : coefficient + new Array(exponent - coefficient.length + 2).join("0");
+  }
+
+  var formatTypes = {
+    "%": function(x, p) { return (x * 100).toFixed(p); },
+    "b": function(x) { return Math.round(x).toString(2); },
+    "c": function(x) { return x + ""; },
+    "d": function(x) { return Math.round(x).toString(10); },
+    "e": function(x, p) { return x.toExponential(p); },
+    "f": function(x, p) { return x.toFixed(p); },
+    "g": function(x, p) { return x.toPrecision(p); },
+    "o": function(x) { return Math.round(x).toString(8); },
+    "p": function(x, p) { return formatRounded(x * 100, p); },
+    "r": formatRounded,
+    "s": formatPrefixAuto,
+    "X": function(x) { return Math.round(x).toString(16).toUpperCase(); },
+    "x": function(x) { return Math.round(x).toString(16); }
+  };
+
+  function identity$3(x) {
+    return x;
+  }
+
+  var prefixes = ["y","z","a","f","p","n","µ","m","","k","M","G","T","P","E","Z","Y"];
+
+  function formatLocale(locale) {
+    var group = locale.grouping && locale.thousands ? formatGroup(locale.grouping, locale.thousands) : identity$3,
+        currency = locale.currency,
+        decimal = locale.decimal,
+        numerals = locale.numerals ? formatNumerals(locale.numerals) : identity$3,
+        percent = locale.percent || "%";
+
+    function newFormat(specifier) {
+      specifier = formatSpecifier(specifier);
+
+      var fill = specifier.fill,
+          align = specifier.align,
+          sign = specifier.sign,
+          symbol = specifier.symbol,
+          zero = specifier.zero,
+          width = specifier.width,
+          comma = specifier.comma,
+          precision = specifier.precision,
+          trim = specifier.trim,
+          type = specifier.type;
+
+      // The "n" type is an alias for ",g".
+      if (type === "n") comma = true, type = "g";
+
+      // The "" type, and any invalid type, is an alias for ".12~g".
+      else if (!formatTypes[type]) precision == null && (precision = 12), trim = true, type = "g";
+
+      // If zero fill is specified, padding goes after sign and before digits.
+      if (zero || (fill === "0" && align === "=")) zero = true, fill = "0", align = "=";
+
+      // Compute the prefix and suffix.
+      // For SI-prefix, the suffix is lazily computed.
+      var prefix = symbol === "$" ? currency[0] : symbol === "#" && /[boxX]/.test(type) ? "0" + type.toLowerCase() : "",
+          suffix = symbol === "$" ? currency[1] : /[%p]/.test(type) ? percent : "";
+
+      // What format function should we use?
+      // Is this an integer type?
+      // Can this type generate exponential notation?
+      var formatType = formatTypes[type],
+          maybeSuffix = /[defgprs%]/.test(type);
+
+      // Set the default precision if not specified,
+      // or clamp the specified precision to the supported range.
+      // For significant precision, it must be in [1, 21].
+      // For fixed precision, it must be in [0, 20].
+      precision = precision == null ? 6
+          : /[gprs]/.test(type) ? Math.max(1, Math.min(21, precision))
+          : Math.max(0, Math.min(20, precision));
+
+      function format(value) {
+        var valuePrefix = prefix,
+            valueSuffix = suffix,
+            i, n, c;
+
+        if (type === "c") {
+          valueSuffix = formatType(value) + valueSuffix;
+          value = "";
+        } else {
+          value = +value;
+
+          // Perform the initial formatting.
+          var valueNegative = value < 0;
+          value = formatType(Math.abs(value), precision);
+
+          // Trim insignificant zeros.
+          if (trim) value = formatTrim(value);
+
+          // If a negative value rounds to zero during formatting, treat as positive.
+          if (valueNegative && +value === 0) valueNegative = false;
+
+          // Compute the prefix and suffix.
+          valuePrefix = (valueNegative ? (sign === "(" ? sign : "-") : sign === "-" || sign === "(" ? "" : sign) + valuePrefix;
+          valueSuffix = (type === "s" ? prefixes[8 + prefixExponent / 3] : "") + valueSuffix + (valueNegative && sign === "(" ? ")" : "");
+
+          // Break the formatted value into the integer “value” part that can be
+          // grouped, and fractional or exponential “suffix” part that is not.
+          if (maybeSuffix) {
+            i = -1, n = value.length;
+            while (++i < n) {
+              if (c = value.charCodeAt(i), 48 > c || c > 57) {
+                valueSuffix = (c === 46 ? decimal + value.slice(i + 1) : value.slice(i)) + valueSuffix;
+                value = value.slice(0, i);
+                break;
+              }
+            }
+          }
+        }
+
+        // If the fill character is not "0", grouping is applied before padding.
+        if (comma && !zero) value = group(value, Infinity);
+
+        // Compute the padding.
+        var length = valuePrefix.length + value.length + valueSuffix.length,
+            padding = length < width ? new Array(width - length + 1).join(fill) : "";
+
+        // If the fill character is "0", grouping is applied after padding.
+        if (comma && zero) value = group(padding + value, padding.length ? width - valueSuffix.length : Infinity), padding = "";
+
+        // Reconstruct the final output based on the desired alignment.
+        switch (align) {
+          case "<": value = valuePrefix + value + valueSuffix + padding; break;
+          case "=": value = valuePrefix + padding + value + valueSuffix; break;
+          case "^": value = padding.slice(0, length = padding.length >> 1) + valuePrefix + value + valueSuffix + padding.slice(length); break;
+          default: value = padding + valuePrefix + value + valueSuffix; break;
+        }
+
+        return numerals(value);
+      }
+
+      format.toString = function() {
+        return specifier + "";
+      };
+
+      return format;
+    }
+
+    function formatPrefix(specifier, value) {
+      var f = newFormat((specifier = formatSpecifier(specifier), specifier.type = "f", specifier)),
+          e = Math.max(-8, Math.min(8, Math.floor(exponent$1(value) / 3))) * 3,
+          k = Math.pow(10, -e),
+          prefix = prefixes[8 + e / 3];
+      return function(value) {
+        return f(k * value) + prefix;
+      };
+    }
+
+    return {
+      format: newFormat,
+      formatPrefix: formatPrefix
+    };
+  }
+
+  var locale;
+  var format;
+  var formatPrefix;
+
+  defaultLocale({
+    decimal: ".",
+    thousands: ",",
+    grouping: [3],
+    currency: ["$", ""]
+  });
+
+  function defaultLocale(definition) {
+    locale = formatLocale(definition);
+    format = locale.format;
+    formatPrefix = locale.formatPrefix;
+    return locale;
+  }
+
+  function precisionFixed(step) {
+    return Math.max(0, -exponent$1(Math.abs(step)));
+  }
+
+  function precisionPrefix(step, value) {
+    return Math.max(0, Math.max(-8, Math.min(8, Math.floor(exponent$1(value) / 3))) * 3 - exponent$1(Math.abs(step)));
+  }
+
+  function precisionRound(step, max) {
+    step = Math.abs(step), max = Math.abs(max) - step;
+    return Math.max(0, exponent$1(max) - exponent$1(step)) + 1;
   }
 
   function tickFormat(domain, count, specifier) {
@@ -8112,6 +7942,1243 @@ var Demo = (function (exports) {
   selection$2.prototype.interrupt = selection_interrupt;
   selection$2.prototype.transition = selection_transition;
 
+  // Computes the decimal coefficient and exponent of the specified number x with
+  // significant digits p, where x is positive and p is in [1, 21] or undefined.
+  // For example, formatDecimal(1.23) returns ["123", 0].
+  function formatDecimal$1(x, p) {
+    if ((i = (x = p ? x.toExponential(p - 1) : x.toExponential()).indexOf("e")) < 0) return null; // NaN, ±Infinity
+    var i, coefficient = x.slice(0, i);
+
+    // The string returned by toExponential either has the form \d\.\d+e[-+]\d+
+    // (e.g., 1.2e+3) or the form \de[-+]\d+ (e.g., 1e+3).
+    return [
+      coefficient.length > 1 ? coefficient[0] + coefficient.slice(2) : coefficient,
+      +x.slice(i + 1)
+    ];
+  }
+
+  function exponent$2(x) {
+    return x = formatDecimal$1(Math.abs(x)), x ? x[1] : NaN;
+  }
+
+  function formatGroup$1(grouping, thousands) {
+    return function(value, width) {
+      var i = value.length,
+          t = [],
+          j = 0,
+          g = grouping[0],
+          length = 0;
+
+      while (i > 0 && g > 0) {
+        if (length + g + 1 > width) g = Math.max(1, width - length);
+        t.push(value.substring(i -= g, i + g));
+        if ((length += g + 1) > width) break;
+        g = grouping[j = (j + 1) % grouping.length];
+      }
+
+      return t.reverse().join(thousands);
+    };
+  }
+
+  function formatNumerals$1(numerals) {
+    return function(value) {
+      return value.replace(/[0-9]/g, function(i) {
+        return numerals[+i];
+      });
+    };
+  }
+
+  // [[fill]align][sign][symbol][0][width][,][.precision][~][type]
+  var re$1 = /^(?:(.)?([<>=^]))?([+\-( ])?([$#])?(0)?(\d+)?(,)?(\.\d+)?(~)?([a-z%])?$/i;
+
+  function formatSpecifier$1(specifier) {
+    return new FormatSpecifier$1(specifier);
+  }
+
+  formatSpecifier$1.prototype = FormatSpecifier$1.prototype; // instanceof
+
+  function FormatSpecifier$1(specifier) {
+    if (!(match = re$1.exec(specifier))) throw new Error("invalid format: " + specifier);
+    var match;
+    this.fill = match[1] || " ";
+    this.align = match[2] || ">";
+    this.sign = match[3] || "-";
+    this.symbol = match[4] || "";
+    this.zero = !!match[5];
+    this.width = match[6] && +match[6];
+    this.comma = !!match[7];
+    this.precision = match[8] && +match[8].slice(1);
+    this.trim = !!match[9];
+    this.type = match[10] || "";
+  }
+
+  FormatSpecifier$1.prototype.toString = function() {
+    return this.fill
+        + this.align
+        + this.sign
+        + this.symbol
+        + (this.zero ? "0" : "")
+        + (this.width == null ? "" : Math.max(1, this.width | 0))
+        + (this.comma ? "," : "")
+        + (this.precision == null ? "" : "." + Math.max(0, this.precision | 0))
+        + (this.trim ? "~" : "")
+        + this.type;
+  };
+
+  // Trims insignificant zeros, e.g., replaces 1.2000k with 1.2k.
+  function formatTrim$1(s) {
+    out: for (var n = s.length, i = 1, i0 = -1, i1; i < n; ++i) {
+      switch (s[i]) {
+        case ".": i0 = i1 = i; break;
+        case "0": if (i0 === 0) i0 = i; i1 = i; break;
+        default: if (i0 > 0) { if (!+s[i]) break out; i0 = 0; } break;
+      }
+    }
+    return i0 > 0 ? s.slice(0, i0) + s.slice(i1 + 1) : s;
+  }
+
+  var prefixExponent$1;
+
+  function formatPrefixAuto$1(x, p) {
+    var d = formatDecimal$1(x, p);
+    if (!d) return x + "";
+    var coefficient = d[0],
+        exponent = d[1],
+        i = exponent - (prefixExponent$1 = Math.max(-8, Math.min(8, Math.floor(exponent / 3))) * 3) + 1,
+        n = coefficient.length;
+    return i === n ? coefficient
+        : i > n ? coefficient + new Array(i - n + 1).join("0")
+        : i > 0 ? coefficient.slice(0, i) + "." + coefficient.slice(i)
+        : "0." + new Array(1 - i).join("0") + formatDecimal$1(x, Math.max(0, p + i - 1))[0]; // less than 1y!
+  }
+
+  function formatRounded$1(x, p) {
+    var d = formatDecimal$1(x, p);
+    if (!d) return x + "";
+    var coefficient = d[0],
+        exponent = d[1];
+    return exponent < 0 ? "0." + new Array(-exponent).join("0") + coefficient
+        : coefficient.length > exponent + 1 ? coefficient.slice(0, exponent + 1) + "." + coefficient.slice(exponent + 1)
+        : coefficient + new Array(exponent - coefficient.length + 2).join("0");
+  }
+
+  var formatTypes$1 = {
+    "%": function(x, p) { return (x * 100).toFixed(p); },
+    "b": function(x) { return Math.round(x).toString(2); },
+    "c": function(x) { return x + ""; },
+    "d": function(x) { return Math.round(x).toString(10); },
+    "e": function(x, p) { return x.toExponential(p); },
+    "f": function(x, p) { return x.toFixed(p); },
+    "g": function(x, p) { return x.toPrecision(p); },
+    "o": function(x) { return Math.round(x).toString(8); },
+    "p": function(x, p) { return formatRounded$1(x * 100, p); },
+    "r": formatRounded$1,
+    "s": formatPrefixAuto$1,
+    "X": function(x) { return Math.round(x).toString(16).toUpperCase(); },
+    "x": function(x) { return Math.round(x).toString(16); }
+  };
+
+  function identity$5(x) {
+    return x;
+  }
+
+  var prefixes$1 = ["y","z","a","f","p","n","µ","m","","k","M","G","T","P","E","Z","Y"];
+
+  function formatLocale$2(locale) {
+    var group = locale.grouping && locale.thousands ? formatGroup$1(locale.grouping, locale.thousands) : identity$5,
+        currency = locale.currency,
+        decimal = locale.decimal,
+        numerals = locale.numerals ? formatNumerals$1(locale.numerals) : identity$5,
+        percent = locale.percent || "%";
+
+    function newFormat(specifier) {
+      specifier = formatSpecifier$1(specifier);
+
+      var fill = specifier.fill,
+          align = specifier.align,
+          sign = specifier.sign,
+          symbol = specifier.symbol,
+          zero = specifier.zero,
+          width = specifier.width,
+          comma = specifier.comma,
+          precision = specifier.precision,
+          trim = specifier.trim,
+          type = specifier.type;
+
+      // The "n" type is an alias for ",g".
+      if (type === "n") comma = true, type = "g";
+
+      // The "" type, and any invalid type, is an alias for ".12~g".
+      else if (!formatTypes$1[type]) precision == null && (precision = 12), trim = true, type = "g";
+
+      // If zero fill is specified, padding goes after sign and before digits.
+      if (zero || (fill === "0" && align === "=")) zero = true, fill = "0", align = "=";
+
+      // Compute the prefix and suffix.
+      // For SI-prefix, the suffix is lazily computed.
+      var prefix = symbol === "$" ? currency[0] : symbol === "#" && /[boxX]/.test(type) ? "0" + type.toLowerCase() : "",
+          suffix = symbol === "$" ? currency[1] : /[%p]/.test(type) ? percent : "";
+
+      // What format function should we use?
+      // Is this an integer type?
+      // Can this type generate exponential notation?
+      var formatType = formatTypes$1[type],
+          maybeSuffix = /[defgprs%]/.test(type);
+
+      // Set the default precision if not specified,
+      // or clamp the specified precision to the supported range.
+      // For significant precision, it must be in [1, 21].
+      // For fixed precision, it must be in [0, 20].
+      precision = precision == null ? 6
+          : /[gprs]/.test(type) ? Math.max(1, Math.min(21, precision))
+          : Math.max(0, Math.min(20, precision));
+
+      function format(value) {
+        var valuePrefix = prefix,
+            valueSuffix = suffix,
+            i, n, c;
+
+        if (type === "c") {
+          valueSuffix = formatType(value) + valueSuffix;
+          value = "";
+        } else {
+          value = +value;
+
+          // Perform the initial formatting.
+          var valueNegative = value < 0;
+          value = formatType(Math.abs(value), precision);
+
+          // Trim insignificant zeros.
+          if (trim) value = formatTrim$1(value);
+
+          // If a negative value rounds to zero during formatting, treat as positive.
+          if (valueNegative && +value === 0) valueNegative = false;
+
+          // Compute the prefix and suffix.
+          valuePrefix = (valueNegative ? (sign === "(" ? sign : "-") : sign === "-" || sign === "(" ? "" : sign) + valuePrefix;
+          valueSuffix = (type === "s" ? prefixes$1[8 + prefixExponent$1 / 3] : "") + valueSuffix + (valueNegative && sign === "(" ? ")" : "");
+
+          // Break the formatted value into the integer “value” part that can be
+          // grouped, and fractional or exponential “suffix” part that is not.
+          if (maybeSuffix) {
+            i = -1, n = value.length;
+            while (++i < n) {
+              if (c = value.charCodeAt(i), 48 > c || c > 57) {
+                valueSuffix = (c === 46 ? decimal + value.slice(i + 1) : value.slice(i)) + valueSuffix;
+                value = value.slice(0, i);
+                break;
+              }
+            }
+          }
+        }
+
+        // If the fill character is not "0", grouping is applied before padding.
+        if (comma && !zero) value = group(value, Infinity);
+
+        // Compute the padding.
+        var length = valuePrefix.length + value.length + valueSuffix.length,
+            padding = length < width ? new Array(width - length + 1).join(fill) : "";
+
+        // If the fill character is "0", grouping is applied after padding.
+        if (comma && zero) value = group(padding + value, padding.length ? width - valueSuffix.length : Infinity), padding = "";
+
+        // Reconstruct the final output based on the desired alignment.
+        switch (align) {
+          case "<": value = valuePrefix + value + valueSuffix + padding; break;
+          case "=": value = valuePrefix + padding + value + valueSuffix; break;
+          case "^": value = padding.slice(0, length = padding.length >> 1) + valuePrefix + value + valueSuffix + padding.slice(length); break;
+          default: value = padding + valuePrefix + value + valueSuffix; break;
+        }
+
+        return numerals(value);
+      }
+
+      format.toString = function() {
+        return specifier + "";
+      };
+
+      return format;
+    }
+
+    function formatPrefix(specifier, value) {
+      var f = newFormat((specifier = formatSpecifier$1(specifier), specifier.type = "f", specifier)),
+          e = Math.max(-8, Math.min(8, Math.floor(exponent$2(value) / 3))) * 3,
+          k = Math.pow(10, -e),
+          prefix = prefixes$1[8 + e / 3];
+      return function(value) {
+        return f(k * value) + prefix;
+      };
+    }
+
+    return {
+      format: newFormat,
+      formatPrefix: formatPrefix
+    };
+  }
+
+  var locale$2;
+  var format$1;
+  var formatPrefix$1;
+
+  defaultLocale$2({
+    decimal: ".",
+    thousands: ",",
+    grouping: [3],
+    currency: ["$", ""]
+  });
+
+  function defaultLocale$2(definition) {
+    locale$2 = formatLocale$2(definition);
+    format$1 = locale$2.format;
+    formatPrefix$1 = locale$2.formatPrefix;
+    return locale$2;
+  }
+
+  var t0$2 = new Date,
+      t1$2 = new Date;
+
+  function newInterval$1(floori, offseti, count, field) {
+
+    function interval(date) {
+      return floori(date = new Date(+date)), date;
+    }
+
+    interval.floor = interval;
+
+    interval.ceil = function(date) {
+      return floori(date = new Date(date - 1)), offseti(date, 1), floori(date), date;
+    };
+
+    interval.round = function(date) {
+      var d0 = interval(date),
+          d1 = interval.ceil(date);
+      return date - d0 < d1 - date ? d0 : d1;
+    };
+
+    interval.offset = function(date, step) {
+      return offseti(date = new Date(+date), step == null ? 1 : Math.floor(step)), date;
+    };
+
+    interval.range = function(start, stop, step) {
+      var range = [], previous;
+      start = interval.ceil(start);
+      step = step == null ? 1 : Math.floor(step);
+      if (!(start < stop) || !(step > 0)) return range; // also handles Invalid Date
+      do range.push(previous = new Date(+start)), offseti(start, step), floori(start);
+      while (previous < start && start < stop);
+      return range;
+    };
+
+    interval.filter = function(test) {
+      return newInterval$1(function(date) {
+        if (date >= date) while (floori(date), !test(date)) date.setTime(date - 1);
+      }, function(date, step) {
+        if (date >= date) {
+          if (step < 0) while (++step <= 0) {
+            while (offseti(date, -1), !test(date)) {} // eslint-disable-line no-empty
+          } else while (--step >= 0) {
+            while (offseti(date, +1), !test(date)) {} // eslint-disable-line no-empty
+          }
+        }
+      });
+    };
+
+    if (count) {
+      interval.count = function(start, end) {
+        t0$2.setTime(+start), t1$2.setTime(+end);
+        floori(t0$2), floori(t1$2);
+        return Math.floor(count(t0$2, t1$2));
+      };
+
+      interval.every = function(step) {
+        step = Math.floor(step);
+        return !isFinite(step) || !(step > 0) ? null
+            : !(step > 1) ? interval
+            : interval.filter(field
+                ? function(d) { return field(d) % step === 0; }
+                : function(d) { return interval.count(0, d) % step === 0; });
+      };
+    }
+
+    return interval;
+  }
+
+  var millisecond$1 = newInterval$1(function() {
+    // noop
+  }, function(date, step) {
+    date.setTime(+date + step);
+  }, function(start, end) {
+    return end - start;
+  });
+
+  // An optimized implementation for this simple case.
+  millisecond$1.every = function(k) {
+    k = Math.floor(k);
+    if (!isFinite(k) || !(k > 0)) return null;
+    if (!(k > 1)) return millisecond$1;
+    return newInterval$1(function(date) {
+      date.setTime(Math.floor(date / k) * k);
+    }, function(date, step) {
+      date.setTime(+date + step * k);
+    }, function(start, end) {
+      return (end - start) / k;
+    });
+  };
+
+  var durationSecond$2 = 1e3;
+  var durationMinute$2 = 6e4;
+  var durationHour$2 = 36e5;
+  var durationDay$2 = 864e5;
+  var durationWeek$2 = 6048e5;
+
+  var second$1 = newInterval$1(function(date) {
+    date.setTime(Math.floor(date / durationSecond$2) * durationSecond$2);
+  }, function(date, step) {
+    date.setTime(+date + step * durationSecond$2);
+  }, function(start, end) {
+    return (end - start) / durationSecond$2;
+  }, function(date) {
+    return date.getUTCSeconds();
+  });
+
+  var minute$1 = newInterval$1(function(date) {
+    date.setTime(Math.floor(date / durationMinute$2) * durationMinute$2);
+  }, function(date, step) {
+    date.setTime(+date + step * durationMinute$2);
+  }, function(start, end) {
+    return (end - start) / durationMinute$2;
+  }, function(date) {
+    return date.getMinutes();
+  });
+
+  var hour$1 = newInterval$1(function(date) {
+    var offset = date.getTimezoneOffset() * durationMinute$2 % durationHour$2;
+    if (offset < 0) offset += durationHour$2;
+    date.setTime(Math.floor((+date - offset) / durationHour$2) * durationHour$2 + offset);
+  }, function(date, step) {
+    date.setTime(+date + step * durationHour$2);
+  }, function(start, end) {
+    return (end - start) / durationHour$2;
+  }, function(date) {
+    return date.getHours();
+  });
+
+  var day$1 = newInterval$1(function(date) {
+    date.setHours(0, 0, 0, 0);
+  }, function(date, step) {
+    date.setDate(date.getDate() + step);
+  }, function(start, end) {
+    return (end - start - (end.getTimezoneOffset() - start.getTimezoneOffset()) * durationMinute$2) / durationDay$2;
+  }, function(date) {
+    return date.getDate() - 1;
+  });
+
+  function weekday$1(i) {
+    return newInterval$1(function(date) {
+      date.setDate(date.getDate() - (date.getDay() + 7 - i) % 7);
+      date.setHours(0, 0, 0, 0);
+    }, function(date, step) {
+      date.setDate(date.getDate() + step * 7);
+    }, function(start, end) {
+      return (end - start - (end.getTimezoneOffset() - start.getTimezoneOffset()) * durationMinute$2) / durationWeek$2;
+    });
+  }
+
+  var sunday$1 = weekday$1(0);
+  var monday$1 = weekday$1(1);
+  var tuesday$1 = weekday$1(2);
+  var wednesday$1 = weekday$1(3);
+  var thursday$1 = weekday$1(4);
+  var friday$1 = weekday$1(5);
+  var saturday$1 = weekday$1(6);
+
+  var month$1 = newInterval$1(function(date) {
+    date.setDate(1);
+    date.setHours(0, 0, 0, 0);
+  }, function(date, step) {
+    date.setMonth(date.getMonth() + step);
+  }, function(start, end) {
+    return end.getMonth() - start.getMonth() + (end.getFullYear() - start.getFullYear()) * 12;
+  }, function(date) {
+    return date.getMonth();
+  });
+
+  var year$1 = newInterval$1(function(date) {
+    date.setMonth(0, 1);
+    date.setHours(0, 0, 0, 0);
+  }, function(date, step) {
+    date.setFullYear(date.getFullYear() + step);
+  }, function(start, end) {
+    return end.getFullYear() - start.getFullYear();
+  }, function(date) {
+    return date.getFullYear();
+  });
+
+  // An optimized implementation for this simple case.
+  year$1.every = function(k) {
+    return !isFinite(k = Math.floor(k)) || !(k > 0) ? null : newInterval$1(function(date) {
+      date.setFullYear(Math.floor(date.getFullYear() / k) * k);
+      date.setMonth(0, 1);
+      date.setHours(0, 0, 0, 0);
+    }, function(date, step) {
+      date.setFullYear(date.getFullYear() + step * k);
+    });
+  };
+
+  var utcMinute$1 = newInterval$1(function(date) {
+    date.setUTCSeconds(0, 0);
+  }, function(date, step) {
+    date.setTime(+date + step * durationMinute$2);
+  }, function(start, end) {
+    return (end - start) / durationMinute$2;
+  }, function(date) {
+    return date.getUTCMinutes();
+  });
+
+  var utcHour$1 = newInterval$1(function(date) {
+    date.setUTCMinutes(0, 0, 0);
+  }, function(date, step) {
+    date.setTime(+date + step * durationHour$2);
+  }, function(start, end) {
+    return (end - start) / durationHour$2;
+  }, function(date) {
+    return date.getUTCHours();
+  });
+
+  var utcDay$1 = newInterval$1(function(date) {
+    date.setUTCHours(0, 0, 0, 0);
+  }, function(date, step) {
+    date.setUTCDate(date.getUTCDate() + step);
+  }, function(start, end) {
+    return (end - start) / durationDay$2;
+  }, function(date) {
+    return date.getUTCDate() - 1;
+  });
+
+  function utcWeekday$1(i) {
+    return newInterval$1(function(date) {
+      date.setUTCDate(date.getUTCDate() - (date.getUTCDay() + 7 - i) % 7);
+      date.setUTCHours(0, 0, 0, 0);
+    }, function(date, step) {
+      date.setUTCDate(date.getUTCDate() + step * 7);
+    }, function(start, end) {
+      return (end - start) / durationWeek$2;
+    });
+  }
+
+  var utcSunday$1 = utcWeekday$1(0);
+  var utcMonday$1 = utcWeekday$1(1);
+  var utcTuesday$1 = utcWeekday$1(2);
+  var utcWednesday$1 = utcWeekday$1(3);
+  var utcThursday$1 = utcWeekday$1(4);
+  var utcFriday$1 = utcWeekday$1(5);
+  var utcSaturday$1 = utcWeekday$1(6);
+
+  var utcMonth$1 = newInterval$1(function(date) {
+    date.setUTCDate(1);
+    date.setUTCHours(0, 0, 0, 0);
+  }, function(date, step) {
+    date.setUTCMonth(date.getUTCMonth() + step);
+  }, function(start, end) {
+    return end.getUTCMonth() - start.getUTCMonth() + (end.getUTCFullYear() - start.getUTCFullYear()) * 12;
+  }, function(date) {
+    return date.getUTCMonth();
+  });
+
+  var utcYear$1 = newInterval$1(function(date) {
+    date.setUTCMonth(0, 1);
+    date.setUTCHours(0, 0, 0, 0);
+  }, function(date, step) {
+    date.setUTCFullYear(date.getUTCFullYear() + step);
+  }, function(start, end) {
+    return end.getUTCFullYear() - start.getUTCFullYear();
+  }, function(date) {
+    return date.getUTCFullYear();
+  });
+
+  // An optimized implementation for this simple case.
+  utcYear$1.every = function(k) {
+    return !isFinite(k = Math.floor(k)) || !(k > 0) ? null : newInterval$1(function(date) {
+      date.setUTCFullYear(Math.floor(date.getUTCFullYear() / k) * k);
+      date.setUTCMonth(0, 1);
+      date.setUTCHours(0, 0, 0, 0);
+    }, function(date, step) {
+      date.setUTCFullYear(date.getUTCFullYear() + step * k);
+    });
+  };
+
+  function localDate$1(d) {
+    if (0 <= d.y && d.y < 100) {
+      var date = new Date(-1, d.m, d.d, d.H, d.M, d.S, d.L);
+      date.setFullYear(d.y);
+      return date;
+    }
+    return new Date(d.y, d.m, d.d, d.H, d.M, d.S, d.L);
+  }
+
+  function utcDate$1(d) {
+    if (0 <= d.y && d.y < 100) {
+      var date = new Date(Date.UTC(-1, d.m, d.d, d.H, d.M, d.S, d.L));
+      date.setUTCFullYear(d.y);
+      return date;
+    }
+    return new Date(Date.UTC(d.y, d.m, d.d, d.H, d.M, d.S, d.L));
+  }
+
+  function newYear$1(y) {
+    return {y: y, m: 0, d: 1, H: 0, M: 0, S: 0, L: 0};
+  }
+
+  function formatLocale$1$1(locale) {
+    var locale_dateTime = locale.dateTime,
+        locale_date = locale.date,
+        locale_time = locale.time,
+        locale_periods = locale.periods,
+        locale_weekdays = locale.days,
+        locale_shortWeekdays = locale.shortDays,
+        locale_months = locale.months,
+        locale_shortMonths = locale.shortMonths;
+
+    var periodRe = formatRe$1(locale_periods),
+        periodLookup = formatLookup$1(locale_periods),
+        weekdayRe = formatRe$1(locale_weekdays),
+        weekdayLookup = formatLookup$1(locale_weekdays),
+        shortWeekdayRe = formatRe$1(locale_shortWeekdays),
+        shortWeekdayLookup = formatLookup$1(locale_shortWeekdays),
+        monthRe = formatRe$1(locale_months),
+        monthLookup = formatLookup$1(locale_months),
+        shortMonthRe = formatRe$1(locale_shortMonths),
+        shortMonthLookup = formatLookup$1(locale_shortMonths);
+
+    var formats = {
+      "a": formatShortWeekday,
+      "A": formatWeekday,
+      "b": formatShortMonth,
+      "B": formatMonth,
+      "c": null,
+      "d": formatDayOfMonth$1,
+      "e": formatDayOfMonth$1,
+      "f": formatMicroseconds$1,
+      "H": formatHour24$1,
+      "I": formatHour12$1,
+      "j": formatDayOfYear$1,
+      "L": formatMilliseconds$1,
+      "m": formatMonthNumber$1,
+      "M": formatMinutes$1,
+      "p": formatPeriod,
+      "Q": formatUnixTimestamp$1,
+      "s": formatUnixTimestampSeconds$1,
+      "S": formatSeconds$1,
+      "u": formatWeekdayNumberMonday$1,
+      "U": formatWeekNumberSunday$1,
+      "V": formatWeekNumberISO$1,
+      "w": formatWeekdayNumberSunday$1,
+      "W": formatWeekNumberMonday$1,
+      "x": null,
+      "X": null,
+      "y": formatYear$1,
+      "Y": formatFullYear$1,
+      "Z": formatZone$1,
+      "%": formatLiteralPercent$1
+    };
+
+    var utcFormats = {
+      "a": formatUTCShortWeekday,
+      "A": formatUTCWeekday,
+      "b": formatUTCShortMonth,
+      "B": formatUTCMonth,
+      "c": null,
+      "d": formatUTCDayOfMonth$1,
+      "e": formatUTCDayOfMonth$1,
+      "f": formatUTCMicroseconds$1,
+      "H": formatUTCHour24$1,
+      "I": formatUTCHour12$1,
+      "j": formatUTCDayOfYear$1,
+      "L": formatUTCMilliseconds$1,
+      "m": formatUTCMonthNumber$1,
+      "M": formatUTCMinutes$1,
+      "p": formatUTCPeriod,
+      "Q": formatUnixTimestamp$1,
+      "s": formatUnixTimestampSeconds$1,
+      "S": formatUTCSeconds$1,
+      "u": formatUTCWeekdayNumberMonday$1,
+      "U": formatUTCWeekNumberSunday$1,
+      "V": formatUTCWeekNumberISO$1,
+      "w": formatUTCWeekdayNumberSunday$1,
+      "W": formatUTCWeekNumberMonday$1,
+      "x": null,
+      "X": null,
+      "y": formatUTCYear$1,
+      "Y": formatUTCFullYear$1,
+      "Z": formatUTCZone$1,
+      "%": formatLiteralPercent$1
+    };
+
+    var parses = {
+      "a": parseShortWeekday,
+      "A": parseWeekday,
+      "b": parseShortMonth,
+      "B": parseMonth,
+      "c": parseLocaleDateTime,
+      "d": parseDayOfMonth$1,
+      "e": parseDayOfMonth$1,
+      "f": parseMicroseconds$1,
+      "H": parseHour24$1,
+      "I": parseHour24$1,
+      "j": parseDayOfYear$1,
+      "L": parseMilliseconds$1,
+      "m": parseMonthNumber$1,
+      "M": parseMinutes$1,
+      "p": parsePeriod,
+      "Q": parseUnixTimestamp$1,
+      "s": parseUnixTimestampSeconds$1,
+      "S": parseSeconds$1,
+      "u": parseWeekdayNumberMonday$1,
+      "U": parseWeekNumberSunday$1,
+      "V": parseWeekNumberISO$1,
+      "w": parseWeekdayNumberSunday$1,
+      "W": parseWeekNumberMonday$1,
+      "x": parseLocaleDate,
+      "X": parseLocaleTime,
+      "y": parseYear$1,
+      "Y": parseFullYear$1,
+      "Z": parseZone$1,
+      "%": parseLiteralPercent$1
+    };
+
+    // These recursive directive definitions must be deferred.
+    formats.x = newFormat(locale_date, formats);
+    formats.X = newFormat(locale_time, formats);
+    formats.c = newFormat(locale_dateTime, formats);
+    utcFormats.x = newFormat(locale_date, utcFormats);
+    utcFormats.X = newFormat(locale_time, utcFormats);
+    utcFormats.c = newFormat(locale_dateTime, utcFormats);
+
+    function newFormat(specifier, formats) {
+      return function(date) {
+        var string = [],
+            i = -1,
+            j = 0,
+            n = specifier.length,
+            c,
+            pad,
+            format;
+
+        if (!(date instanceof Date)) date = new Date(+date);
+
+        while (++i < n) {
+          if (specifier.charCodeAt(i) === 37) {
+            string.push(specifier.slice(j, i));
+            if ((pad = pads$1[c = specifier.charAt(++i)]) != null) c = specifier.charAt(++i);
+            else pad = c === "e" ? " " : "0";
+            if (format = formats[c]) c = format(date, pad);
+            string.push(c);
+            j = i + 1;
+          }
+        }
+
+        string.push(specifier.slice(j, i));
+        return string.join("");
+      };
+    }
+
+    function newParse(specifier, newDate) {
+      return function(string) {
+        var d = newYear$1(1900),
+            i = parseSpecifier(d, specifier, string += "", 0),
+            week, day$$1;
+        if (i != string.length) return null;
+
+        // If a UNIX timestamp is specified, return it.
+        if ("Q" in d) return new Date(d.Q);
+
+        // The am-pm flag is 0 for AM, and 1 for PM.
+        if ("p" in d) d.H = d.H % 12 + d.p * 12;
+
+        // Convert day-of-week and week-of-year to day-of-year.
+        if ("V" in d) {
+          if (d.V < 1 || d.V > 53) return null;
+          if (!("w" in d)) d.w = 1;
+          if ("Z" in d) {
+            week = utcDate$1(newYear$1(d.y)), day$$1 = week.getUTCDay();
+            week = day$$1 > 4 || day$$1 === 0 ? utcMonday$1.ceil(week) : utcMonday$1(week);
+            week = utcDay$1.offset(week, (d.V - 1) * 7);
+            d.y = week.getUTCFullYear();
+            d.m = week.getUTCMonth();
+            d.d = week.getUTCDate() + (d.w + 6) % 7;
+          } else {
+            week = newDate(newYear$1(d.y)), day$$1 = week.getDay();
+            week = day$$1 > 4 || day$$1 === 0 ? monday$1.ceil(week) : monday$1(week);
+            week = day$1.offset(week, (d.V - 1) * 7);
+            d.y = week.getFullYear();
+            d.m = week.getMonth();
+            d.d = week.getDate() + (d.w + 6) % 7;
+          }
+        } else if ("W" in d || "U" in d) {
+          if (!("w" in d)) d.w = "u" in d ? d.u % 7 : "W" in d ? 1 : 0;
+          day$$1 = "Z" in d ? utcDate$1(newYear$1(d.y)).getUTCDay() : newDate(newYear$1(d.y)).getDay();
+          d.m = 0;
+          d.d = "W" in d ? (d.w + 6) % 7 + d.W * 7 - (day$$1 + 5) % 7 : d.w + d.U * 7 - (day$$1 + 6) % 7;
+        }
+
+        // If a time zone is specified, all fields are interpreted as UTC and then
+        // offset according to the specified time zone.
+        if ("Z" in d) {
+          d.H += d.Z / 100 | 0;
+          d.M += d.Z % 100;
+          return utcDate$1(d);
+        }
+
+        // Otherwise, all fields are in local time.
+        return newDate(d);
+      };
+    }
+
+    function parseSpecifier(d, specifier, string, j) {
+      var i = 0,
+          n = specifier.length,
+          m = string.length,
+          c,
+          parse;
+
+      while (i < n) {
+        if (j >= m) return -1;
+        c = specifier.charCodeAt(i++);
+        if (c === 37) {
+          c = specifier.charAt(i++);
+          parse = parses[c in pads$1 ? specifier.charAt(i++) : c];
+          if (!parse || ((j = parse(d, string, j)) < 0)) return -1;
+        } else if (c != string.charCodeAt(j++)) {
+          return -1;
+        }
+      }
+
+      return j;
+    }
+
+    function parsePeriod(d, string, i) {
+      var n = periodRe.exec(string.slice(i));
+      return n ? (d.p = periodLookup[n[0].toLowerCase()], i + n[0].length) : -1;
+    }
+
+    function parseShortWeekday(d, string, i) {
+      var n = shortWeekdayRe.exec(string.slice(i));
+      return n ? (d.w = shortWeekdayLookup[n[0].toLowerCase()], i + n[0].length) : -1;
+    }
+
+    function parseWeekday(d, string, i) {
+      var n = weekdayRe.exec(string.slice(i));
+      return n ? (d.w = weekdayLookup[n[0].toLowerCase()], i + n[0].length) : -1;
+    }
+
+    function parseShortMonth(d, string, i) {
+      var n = shortMonthRe.exec(string.slice(i));
+      return n ? (d.m = shortMonthLookup[n[0].toLowerCase()], i + n[0].length) : -1;
+    }
+
+    function parseMonth(d, string, i) {
+      var n = monthRe.exec(string.slice(i));
+      return n ? (d.m = monthLookup[n[0].toLowerCase()], i + n[0].length) : -1;
+    }
+
+    function parseLocaleDateTime(d, string, i) {
+      return parseSpecifier(d, locale_dateTime, string, i);
+    }
+
+    function parseLocaleDate(d, string, i) {
+      return parseSpecifier(d, locale_date, string, i);
+    }
+
+    function parseLocaleTime(d, string, i) {
+      return parseSpecifier(d, locale_time, string, i);
+    }
+
+    function formatShortWeekday(d) {
+      return locale_shortWeekdays[d.getDay()];
+    }
+
+    function formatWeekday(d) {
+      return locale_weekdays[d.getDay()];
+    }
+
+    function formatShortMonth(d) {
+      return locale_shortMonths[d.getMonth()];
+    }
+
+    function formatMonth(d) {
+      return locale_months[d.getMonth()];
+    }
+
+    function formatPeriod(d) {
+      return locale_periods[+(d.getHours() >= 12)];
+    }
+
+    function formatUTCShortWeekday(d) {
+      return locale_shortWeekdays[d.getUTCDay()];
+    }
+
+    function formatUTCWeekday(d) {
+      return locale_weekdays[d.getUTCDay()];
+    }
+
+    function formatUTCShortMonth(d) {
+      return locale_shortMonths[d.getUTCMonth()];
+    }
+
+    function formatUTCMonth(d) {
+      return locale_months[d.getUTCMonth()];
+    }
+
+    function formatUTCPeriod(d) {
+      return locale_periods[+(d.getUTCHours() >= 12)];
+    }
+
+    return {
+      format: function(specifier) {
+        var f = newFormat(specifier += "", formats);
+        f.toString = function() { return specifier; };
+        return f;
+      },
+      parse: function(specifier) {
+        var p = newParse(specifier += "", localDate$1);
+        p.toString = function() { return specifier; };
+        return p;
+      },
+      utcFormat: function(specifier) {
+        var f = newFormat(specifier += "", utcFormats);
+        f.toString = function() { return specifier; };
+        return f;
+      },
+      utcParse: function(specifier) {
+        var p = newParse(specifier, utcDate$1);
+        p.toString = function() { return specifier; };
+        return p;
+      }
+    };
+  }
+
+  var pads$1 = {"-": "", "_": " ", "0": "0"},
+      numberRe$1 = /^\s*\d+/, // note: ignores next directive
+      percentRe$1 = /^%/,
+      requoteRe$1 = /[\\^$*+?|[\]().{}]/g;
+
+  function pad$1(value, fill, width) {
+    var sign = value < 0 ? "-" : "",
+        string = (sign ? -value : value) + "",
+        length = string.length;
+    return sign + (length < width ? new Array(width - length + 1).join(fill) + string : string);
+  }
+
+  function requote$1(s) {
+    return s.replace(requoteRe$1, "\\$&");
+  }
+
+  function formatRe$1(names) {
+    return new RegExp("^(?:" + names.map(requote$1).join("|") + ")", "i");
+  }
+
+  function formatLookup$1(names) {
+    var map = {}, i = -1, n = names.length;
+    while (++i < n) map[names[i].toLowerCase()] = i;
+    return map;
+  }
+
+  function parseWeekdayNumberSunday$1(d, string, i) {
+    var n = numberRe$1.exec(string.slice(i, i + 1));
+    return n ? (d.w = +n[0], i + n[0].length) : -1;
+  }
+
+  function parseWeekdayNumberMonday$1(d, string, i) {
+    var n = numberRe$1.exec(string.slice(i, i + 1));
+    return n ? (d.u = +n[0], i + n[0].length) : -1;
+  }
+
+  function parseWeekNumberSunday$1(d, string, i) {
+    var n = numberRe$1.exec(string.slice(i, i + 2));
+    return n ? (d.U = +n[0], i + n[0].length) : -1;
+  }
+
+  function parseWeekNumberISO$1(d, string, i) {
+    var n = numberRe$1.exec(string.slice(i, i + 2));
+    return n ? (d.V = +n[0], i + n[0].length) : -1;
+  }
+
+  function parseWeekNumberMonday$1(d, string, i) {
+    var n = numberRe$1.exec(string.slice(i, i + 2));
+    return n ? (d.W = +n[0], i + n[0].length) : -1;
+  }
+
+  function parseFullYear$1(d, string, i) {
+    var n = numberRe$1.exec(string.slice(i, i + 4));
+    return n ? (d.y = +n[0], i + n[0].length) : -1;
+  }
+
+  function parseYear$1(d, string, i) {
+    var n = numberRe$1.exec(string.slice(i, i + 2));
+    return n ? (d.y = +n[0] + (+n[0] > 68 ? 1900 : 2000), i + n[0].length) : -1;
+  }
+
+  function parseZone$1(d, string, i) {
+    var n = /^(Z)|([+-]\d\d)(?::?(\d\d))?/.exec(string.slice(i, i + 6));
+    return n ? (d.Z = n[1] ? 0 : -(n[2] + (n[3] || "00")), i + n[0].length) : -1;
+  }
+
+  function parseMonthNumber$1(d, string, i) {
+    var n = numberRe$1.exec(string.slice(i, i + 2));
+    return n ? (d.m = n[0] - 1, i + n[0].length) : -1;
+  }
+
+  function parseDayOfMonth$1(d, string, i) {
+    var n = numberRe$1.exec(string.slice(i, i + 2));
+    return n ? (d.d = +n[0], i + n[0].length) : -1;
+  }
+
+  function parseDayOfYear$1(d, string, i) {
+    var n = numberRe$1.exec(string.slice(i, i + 3));
+    return n ? (d.m = 0, d.d = +n[0], i + n[0].length) : -1;
+  }
+
+  function parseHour24$1(d, string, i) {
+    var n = numberRe$1.exec(string.slice(i, i + 2));
+    return n ? (d.H = +n[0], i + n[0].length) : -1;
+  }
+
+  function parseMinutes$1(d, string, i) {
+    var n = numberRe$1.exec(string.slice(i, i + 2));
+    return n ? (d.M = +n[0], i + n[0].length) : -1;
+  }
+
+  function parseSeconds$1(d, string, i) {
+    var n = numberRe$1.exec(string.slice(i, i + 2));
+    return n ? (d.S = +n[0], i + n[0].length) : -1;
+  }
+
+  function parseMilliseconds$1(d, string, i) {
+    var n = numberRe$1.exec(string.slice(i, i + 3));
+    return n ? (d.L = +n[0], i + n[0].length) : -1;
+  }
+
+  function parseMicroseconds$1(d, string, i) {
+    var n = numberRe$1.exec(string.slice(i, i + 6));
+    return n ? (d.L = Math.floor(n[0] / 1000), i + n[0].length) : -1;
+  }
+
+  function parseLiteralPercent$1(d, string, i) {
+    var n = percentRe$1.exec(string.slice(i, i + 1));
+    return n ? i + n[0].length : -1;
+  }
+
+  function parseUnixTimestamp$1(d, string, i) {
+    var n = numberRe$1.exec(string.slice(i));
+    return n ? (d.Q = +n[0], i + n[0].length) : -1;
+  }
+
+  function parseUnixTimestampSeconds$1(d, string, i) {
+    var n = numberRe$1.exec(string.slice(i));
+    return n ? (d.Q = (+n[0]) * 1000, i + n[0].length) : -1;
+  }
+
+  function formatDayOfMonth$1(d, p) {
+    return pad$1(d.getDate(), p, 2);
+  }
+
+  function formatHour24$1(d, p) {
+    return pad$1(d.getHours(), p, 2);
+  }
+
+  function formatHour12$1(d, p) {
+    return pad$1(d.getHours() % 12 || 12, p, 2);
+  }
+
+  function formatDayOfYear$1(d, p) {
+    return pad$1(1 + day$1.count(year$1(d), d), p, 3);
+  }
+
+  function formatMilliseconds$1(d, p) {
+    return pad$1(d.getMilliseconds(), p, 3);
+  }
+
+  function formatMicroseconds$1(d, p) {
+    return formatMilliseconds$1(d, p) + "000";
+  }
+
+  function formatMonthNumber$1(d, p) {
+    return pad$1(d.getMonth() + 1, p, 2);
+  }
+
+  function formatMinutes$1(d, p) {
+    return pad$1(d.getMinutes(), p, 2);
+  }
+
+  function formatSeconds$1(d, p) {
+    return pad$1(d.getSeconds(), p, 2);
+  }
+
+  function formatWeekdayNumberMonday$1(d) {
+    var day$$1 = d.getDay();
+    return day$$1 === 0 ? 7 : day$$1;
+  }
+
+  function formatWeekNumberSunday$1(d, p) {
+    return pad$1(sunday$1.count(year$1(d), d), p, 2);
+  }
+
+  function formatWeekNumberISO$1(d, p) {
+    var day$$1 = d.getDay();
+    d = (day$$1 >= 4 || day$$1 === 0) ? thursday$1(d) : thursday$1.ceil(d);
+    return pad$1(thursday$1.count(year$1(d), d) + (year$1(d).getDay() === 4), p, 2);
+  }
+
+  function formatWeekdayNumberSunday$1(d) {
+    return d.getDay();
+  }
+
+  function formatWeekNumberMonday$1(d, p) {
+    return pad$1(monday$1.count(year$1(d), d), p, 2);
+  }
+
+  function formatYear$1(d, p) {
+    return pad$1(d.getFullYear() % 100, p, 2);
+  }
+
+  function formatFullYear$1(d, p) {
+    return pad$1(d.getFullYear() % 10000, p, 4);
+  }
+
+  function formatZone$1(d) {
+    var z = d.getTimezoneOffset();
+    return (z > 0 ? "-" : (z *= -1, "+"))
+        + pad$1(z / 60 | 0, "0", 2)
+        + pad$1(z % 60, "0", 2);
+  }
+
+  function formatUTCDayOfMonth$1(d, p) {
+    return pad$1(d.getUTCDate(), p, 2);
+  }
+
+  function formatUTCHour24$1(d, p) {
+    return pad$1(d.getUTCHours(), p, 2);
+  }
+
+  function formatUTCHour12$1(d, p) {
+    return pad$1(d.getUTCHours() % 12 || 12, p, 2);
+  }
+
+  function formatUTCDayOfYear$1(d, p) {
+    return pad$1(1 + utcDay$1.count(utcYear$1(d), d), p, 3);
+  }
+
+  function formatUTCMilliseconds$1(d, p) {
+    return pad$1(d.getUTCMilliseconds(), p, 3);
+  }
+
+  function formatUTCMicroseconds$1(d, p) {
+    return formatUTCMilliseconds$1(d, p) + "000";
+  }
+
+  function formatUTCMonthNumber$1(d, p) {
+    return pad$1(d.getUTCMonth() + 1, p, 2);
+  }
+
+  function formatUTCMinutes$1(d, p) {
+    return pad$1(d.getUTCMinutes(), p, 2);
+  }
+
+  function formatUTCSeconds$1(d, p) {
+    return pad$1(d.getUTCSeconds(), p, 2);
+  }
+
+  function formatUTCWeekdayNumberMonday$1(d) {
+    var dow = d.getUTCDay();
+    return dow === 0 ? 7 : dow;
+  }
+
+  function formatUTCWeekNumberSunday$1(d, p) {
+    return pad$1(utcSunday$1.count(utcYear$1(d), d), p, 2);
+  }
+
+  function formatUTCWeekNumberISO$1(d, p) {
+    var day$$1 = d.getUTCDay();
+    d = (day$$1 >= 4 || day$$1 === 0) ? utcThursday$1(d) : utcThursday$1.ceil(d);
+    return pad$1(utcThursday$1.count(utcYear$1(d), d) + (utcYear$1(d).getUTCDay() === 4), p, 2);
+  }
+
+  function formatUTCWeekdayNumberSunday$1(d) {
+    return d.getUTCDay();
+  }
+
+  function formatUTCWeekNumberMonday$1(d, p) {
+    return pad$1(utcMonday$1.count(utcYear$1(d), d), p, 2);
+  }
+
+  function formatUTCYear$1(d, p) {
+    return pad$1(d.getUTCFullYear() % 100, p, 2);
+  }
+
+  function formatUTCFullYear$1(d, p) {
+    return pad$1(d.getUTCFullYear() % 10000, p, 4);
+  }
+
+  function formatUTCZone$1() {
+    return "+0000";
+  }
+
+  function formatLiteralPercent$1() {
+    return "%";
+  }
+
+  function formatUnixTimestamp$1(d) {
+    return +d;
+  }
+
+  function formatUnixTimestampSeconds$1(d) {
+    return Math.floor(+d / 1000);
+  }
+
+  var locale$1$1;
+  var timeFormat$1;
+  var timeParse$1;
+  var utcFormat$1;
+  var utcParse$1;
+
+  defaultLocale$1$1({
+    dateTime: "%x, %X",
+    date: "%-m/%-d/%Y",
+    time: "%-I:%M:%S %p",
+    periods: ["AM", "PM"],
+    days: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
+    shortDays: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
+    months: ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
+    shortMonths: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+  });
+
+  function defaultLocale$1$1(definition) {
+    locale$1$1 = formatLocale$1$1(definition);
+    timeFormat$1 = locale$1$1.format;
+    timeParse$1 = locale$1$1.parse;
+    utcFormat$1 = locale$1$1.utcFormat;
+    utcParse$1 = locale$1$1.utcParse;
+    return locale$1$1;
+  }
+
+  var isoSpecifier$1 = "%Y-%m-%dT%H:%M:%S.%LZ";
+
+  function formatIsoNative$1(date) {
+    return date.toISOString();
+  }
+
+  var formatIso$1 = Date.prototype.toISOString
+      ? formatIsoNative$1
+      : utcFormat$1(isoSpecifier$1);
+
+  function parseIsoNative$1(string) {
+    var date = new Date(string);
+    return isNaN(date) ? null : date;
+  }
+
+  var parseIso$1 = +new Date("2000-01-01T00:00:00.000Z")
+      ? parseIsoNative$1
+      : utcParse$1(isoSpecifier$1);
   var Queue$1 = (function () {
       function Queue(list) {
           var _this = this;
@@ -9377,27 +10444,28 @@ var Demo = (function (exports) {
     return drag;
   }
 
-  function reset() {
-      var canvas = this.select("g.canvas");
+  function reset(id) {
+      var s = select$1$1("#" + id);
+      var canvas = s.select("g.canvas");
       if (canvas && !canvas.empty()) {
-          canvas.selectAll("*")
-              .remove();
+          canvas.selectAll("*").remove();
           canvas.attr("transform", null);
-          this.select("g.pending")
+          s.select("g.pending")
               .style("display", null);
       }
   }
-  function style(css) {
-      var defs = this.select("defs");
-      defs.append("style")
+  function style(id, css) {
+      select$1$1("#" + id)
+          .select("defs")
+          .append("style")
           .attr("type", "text/css")
           .text(css);
   }
   function svg(id, width, height) {
-      return toNodes("<svg id =\"" + id + "\"\n    aria-labelledBy=\"title\" role=\"presentation\"\n    preserveAspectRatio=\"xMinYMin meet\"\n    height=\"100%\" width=\"100%\" viewBox=\"0 0 " + width + " " + height + "\"\n    xmlns=\"http://www.w3.org/2000/svg\"\n    xmlns:xlink=\"http://www.w3.org/1999/xlink\">\n    <title class=\"accessibleTitle\" lang=\"en\">Chart</title>\n    <defs>\n      <style type=\"text/css\">\n        svg {\n          font-family: Arial, Helvetica, sans-serif;\n          font-size: 0.9em;\n          user-select: none\n        }\n        .axis-label-x { fill: #000; font-size: 0.8em; text-anchor: end }\n        .axis-label-y { fill: #000; font-size: 0.8em; text-anchor: end }\n        .heading { cursor: move; font-size: 1.5em }\n        .tick > text { font-size: 0.8em }\n      </style>\n    </defs>\n    <g class=\"canvas\"></g>\n    <g class=\"pending\">\n      <rect height=\"100%\" width=\"100%\" fill=\"#eee\" stroke=\"#ccc\"></rect>\n      <text y=\"50%\" x=\"50%\" alignment-baseline=\"central\" fill=\"#666\" style=\"font-size:1.1em\" text-anchor=\"middle\">Data pending</text>\n    </g>\n  </svg>");
+      return toNodes("<svg id =\"" + id + "\"\n    aria-labelledBy=\"title\" role=\"presentation\"\n    preserveAspectRatio=\"xMinYMin meet\"\n    height=\"100%\" width=\"100%\" viewBox=\"0 0 " + width + " " + height + "\"\n    xmlns=\"http://www.w3.org/2000/svg\"\n    xmlns:xlink=\"http://www.w3.org/1999/xlink\">\n    <title class=\"accessibleTitle\" lang=\"en\">Chart</title>\n    <defs>\n      <style type=\"text/css\">\n        svg {\n          font-family: Arial, Helvetica, sans-serif;\n          font-size: 0.9em;\n          user-select: none\n        }\n        .heading { cursor: move; font-size: 1.5em }\n      </style>\n    </defs>\n    <g class=\"canvas\"></g>\n    <g class=\"pending\">\n      <rect height=\"100%\" width=\"100%\" fill=\"#eee\" stroke=\"#ccc\"></rect>\n      <text y=\"50%\" x=\"50%\" alignment-baseline=\"central\" fill=\"#666\" style=\"font-size:1.1em\" text-anchor=\"middle\">Data pending</text>\n    </g>\n  </svg>");
   }
-  function title(msg) {
-      var s = select$1$1("#" + this.id);
+  function title(id, msg) {
+      var s = select$1$1("#" + id);
       s.select(".accessibleTitle")
           .text(msg);
       var canvas = s.select(".canvas");
@@ -9494,11 +10562,10 @@ var Demo = (function (exports) {
   var Plot = (function () {
       function Plot(parentId, id) {
           this._boundCharts = [];
-          this.axis = { x: undefined, y: undefined };
           this.domain = { c: undefined, r: [0, 0], s: undefined, x: [0, 0], y: [0, 0] };
           this.event = { drawn: undefined };
           this.format = { r: "", x: "", y: "" };
-          this.margin = { top: 10, right: 10, bottom: 25, left: 30 };
+          this.margin = { top: 0, right: 0, bottom: 0, left: 0 };
           this.radius = 3;
           this.scale = { c: undefined, r: undefined, s: undefined, x: undefined, y: undefined };
           this.shapes = [
@@ -9514,8 +10581,8 @@ var Demo = (function (exports) {
           var p = document.getElementById(parentId);
           var b = p.getBoundingClientRect();
           p.appendChild(svg(id, b.width, b.height));
-          this._svg = select$2("#" + this.id).classed("plot", true);
-          style.call(this._svg, ".data-item { cursor: pointer; transition: 500ms ease-in-out }\n    .fade { fill-opacity: 0.05 }");
+          this.svg = select$2("#" + this.id).classed("plot", true);
+          style(this.id, ".data-item { cursor: pointer; transition: 500ms ease-in-out }\n    .fade { fill-opacity: 0.05 }");
       }
       Plot.prototype.bind = function (charts) {
           var _this = this;
@@ -9591,17 +10658,12 @@ var Demo = (function (exports) {
               return this;
           }
           var self = this;
-          var canvas = this._svg.select(".canvas");
-          var box = this._svg.node().getBoundingClientRect();
-          var height = box.height;
-          var width = box.width;
-          var adjHeight = height - this.margin.top - this.margin.bottom;
-          var adjWidth = width - this.margin.left - this.margin.right;
+          var canvas = this.svg.select(".canvas");
           canvas.attr("transform", "translate(" + this.margin.left + " " + this.margin.top + ")");
-          this._svg
+          this.svg
               .select("g.pending")
               .style("display", "none");
-          title.call(this, this.title.heading);
+          title(this.id, this.title.heading);
           if (this.domain.r[0] >= 0 && this.domain.r[1] > 0) {
               this.scale.r = linear$2()
                   .domain(this.domain.r)
@@ -9612,35 +10674,11 @@ var Demo = (function (exports) {
               .range(this.shapes.map(function (sh) { return sh.path; }));
           this.scale.x = linear$2()
               .domain(this.domain.x)
-              .range([0, adjWidth])
+              .range([0, this.innerWidth()])
               .nice();
           this.scale.y = linear$2()
               .domain(this.domain.y)
-              .range([adjHeight, 0])
-              .nice();
-          this.axis.x = function (n) { return n
-              .attr("transform", "translate(0, " + adjHeight + ")")
-              .call(axisBottom(_this.scale.x)
-              .tickFormat(format(_this.format.x))
-              .tickSizeInner(4)
-              .tickPadding(3))
-              .append("text")
-              .attr("class", "axis-label-x")
-              .attr("x", adjWidth)
-              .attr("y", -4)
-              .text(_this.title.x); };
-          this.axis.y = function (n) { return n
-              .attr("transform", "translate(0, 0)")
-              .call(axisLeft(_this.scale.y)
-              .tickFormat(format(_this.format.y))
-              .tickSizeInner(4)
-              .tickPadding(3))
-              .append("text")
-              .attr("class", "axis-label-y")
-              .attr("transform", "rotate(-90)")
-              .attr("y", 4)
-              .attr("dy", ".71em")
-              .text(_this.title.y); };
+              .range([this.innerHeight(), 0]);
           var points = canvas.selectAll("g")
               .data(this._data.series);
           var gEnter = points.enter()
@@ -9673,15 +10711,22 @@ var Demo = (function (exports) {
           })
               .append("title")
               .text(function (d) { return "x: " + d[0] + " y: " + d[1]; });
-          canvas.append("g").call(this.axis.x);
-          canvas.append("g").call(this.axis.y);
           window.dispatchEvent(this.event.drawn);
           return this;
       };
-      Plot.prototype.reset = function () { reset.call(this); return this; };
+      Plot.prototype.height = function () {
+          return this.svg.node().getBoundingClientRect().height;
+      };
+      Plot.prototype.innerHeight = function () {
+          return this.height() - this.margin.top - this.margin.bottom;
+      };
+      Plot.prototype.innerWidth = function () {
+          return this.width() - this.margin.left - this.margin.right;
+      };
+      Plot.prototype.reset = function () { reset(this.id); return this; };
       Plot.prototype.select = function (node, selectOne) {
           if (selectOne === void 0) { selectOne = false; }
-          this._svg.selectAll(".data-item")
+          this.svg.selectAll(".data-item")
               .classed("fade", false);
           if (node === undefined) {
               this.selected = undefined;
@@ -9696,7 +10741,7 @@ var Demo = (function (exports) {
           }
           if (this.selected) {
               if (selectOne) {
-                  this._svg.selectAll(".data-item")
+                  this.svg.selectAll(".data-item")
                       .each(function () {
                       var sn = select$2(this);
                       var n = sn.node();
@@ -9707,7 +10752,7 @@ var Demo = (function (exports) {
               }
               else {
                   var parent_1 = this.selected.parentNode;
-                  this._svg.selectAll(".data-item")
+                  this.svg.selectAll(".data-item")
                       .each(function () {
                       var result = this.id !== self.selected.id &&
                           this.parentNode.id !== parent_1.id
@@ -9719,14 +10764,17 @@ var Demo = (function (exports) {
           }
           return this;
       };
+      Plot.prototype.width = function () {
+          return this.svg.node().getBoundingClientRect().width;
+      };
       Plot.prototype.selectSeries = function (label) {
           var self = this;
           var found = false;
           self.select();
           if (label !== "") {
-              this._svg.selectAll(".series")
+              this.svg.selectAll(".series")
                   .each(function () {
-                  var n = self._svg.select("#" + this.id);
+                  var n = self.svg.select("#" + this.id);
                   if (!found && n.datum().label === label) {
                       self.select(n.select(".data-item").node());
                       found = true;
@@ -9740,7 +10788,7 @@ var Demo = (function (exports) {
               var n = node.nodeName === "g"
                   ? node
                   : node.parentNode;
-              return this._svg.select("#" + n.id).datum().label;
+              return this.svg.select("#" + n.id).datum().label;
           }
           return "";
       };
@@ -10106,10 +11154,10 @@ var Demo = (function (exports) {
       Xn$1 = 0.96422,
       Yn$1 = 1,
       Zn$1 = 0.82521,
-      t0$2 = 4 / 29,
-      t1$2 = 6 / 29,
-      t2$1 = 3 * t1$2 * t1$2,
-      t3$1 = t1$2 * t1$2 * t1$2;
+      t0$3 = 4 / 29,
+      t1$3 = 6 / 29,
+      t2$1 = 3 * t1$3 * t1$3,
+      t3$1 = t1$3 * t1$3 * t1$3;
 
   function labConvert$1(o) {
     if (o instanceof Lab$1) return new Lab$1(o.l, o.a, o.b, o.opacity);
@@ -10165,11 +11213,11 @@ var Demo = (function (exports) {
   }));
 
   function xyz2lab$1(t) {
-    return t > t3$1 ? Math.pow(t, 1 / 3) : t / t2$1 + t0$2;
+    return t > t3$1 ? Math.pow(t, 1 / 3) : t / t2$1 + t0$3;
   }
 
   function lab2xyz$1(t) {
-    return t > t1$2 ? t * t * t : t2$1 * (t - t0$2);
+    return t > t1$3 ? t * t * t : t2$1 * (t - t0$3);
   }
 
   function lrgb2rgb$1(x) {
@@ -11786,7 +12834,7 @@ var Demo = (function (exports) {
     return node.sourceLinks.length ? node.depth : n - 1;
   }
 
-  function center$1(node) {
+  function center(node) {
     return node.targetLinks.length ? node.depth
         : node.sourceLinks.length ? min(node.sourceLinks, targetDepth) - 1
         : 0;
@@ -12079,8 +13127,8 @@ var Demo = (function (exports) {
 
   var pi$1$1 = Math.PI,
       tau$1$1 = 2 * pi$1$1,
-      epsilon$1 = 1e-6,
-      tauEpsilon = tau$1$1 - epsilon$1;
+      epsilon = 1e-6,
+      tauEpsilon = tau$1$1 - epsilon;
 
   function Path() {
     this._x0 = this._y0 = // start of current subpath
@@ -12131,12 +13179,12 @@ var Demo = (function (exports) {
       }
 
       // Or, is (x1,y1) coincident with (x0,y0)? Do nothing.
-      else if (!(l01_2 > epsilon$1));
+      else if (!(l01_2 > epsilon));
 
       // Or, are (x0,y0), (x1,y1) and (x2,y2) collinear?
       // Equivalently, is (x1,y1) coincident with (x2,y2)?
       // Or, is the radius zero? Line to (x1,y1).
-      else if (!(Math.abs(y01 * x21 - y21 * x01) > epsilon$1) || !r) {
+      else if (!(Math.abs(y01 * x21 - y21 * x01) > epsilon) || !r) {
         this._ += "L" + (this._x1 = x1) + "," + (this._y1 = y1);
       }
 
@@ -12153,7 +13201,7 @@ var Demo = (function (exports) {
             t21 = l / l21;
 
         // If the start tangent is not coincident with (x0,y0), line to.
-        if (Math.abs(t01 - 1) > epsilon$1) {
+        if (Math.abs(t01 - 1) > epsilon) {
           this._ += "L" + (x1 + t01 * x01) + "," + (y1 + t01 * y01);
         }
 
@@ -12178,7 +13226,7 @@ var Demo = (function (exports) {
       }
 
       // Or, is (x0,y0) not coincident with the previous point? Line to (x0,y0).
-      else if (Math.abs(this._x1 - x0) > epsilon$1 || Math.abs(this._y1 - y0) > epsilon$1) {
+      else if (Math.abs(this._x1 - x0) > epsilon || Math.abs(this._y1 - y0) > epsilon) {
         this._ += "L" + x0 + "," + y0;
       }
 
@@ -12194,7 +13242,7 @@ var Demo = (function (exports) {
       }
 
       // Is this arc non-empty? Draw an arc!
-      else if (da > epsilon$1) {
+      else if (da > epsilon) {
         this._ += "A" + r + "," + r + ",0," + (+(da >= pi$1$1)) + "," + cw + "," + (this._x1 = x + r * Math.cos(a1)) + "," + (this._y1 = y + r * Math.sin(a1));
       }
     },
@@ -12222,7 +13270,7 @@ var Demo = (function (exports) {
     return p[1];
   }
 
-  var slice$1$2 = Array.prototype.slice;
+  var slice$1$1 = Array.prototype.slice;
 
   function linkSource(d) {
     return d.source;
@@ -12240,7 +13288,7 @@ var Demo = (function (exports) {
         context = null;
 
     function link() {
-      var buffer, argv = slice$1$2.call(arguments), s = source.apply(this, argv), t = target.apply(this, argv);
+      var buffer, argv = slice$1$1.call(arguments), s = source.apply(this, argv), t = target.apply(this, argv);
       if (!context) context = buffer = path();
       curve(context, +x$$1.apply(this, (argv[0] = s, argv)), +y$$1.apply(this, argv), +x$$1.apply(this, (argv[0] = t, argv)), +y$$1.apply(this, argv));
       if (buffer) return context = null, buffer + "" || null;
@@ -12390,7 +13438,7 @@ var Demo = (function (exports) {
   }
 
   var array$1$1 = Array.prototype;
-  var slice$2 = array$1$1.slice;
+  var slice$2$1 = array$1$1.slice;
 
   var implicit$1 = {name: "implicit"};
 
@@ -12399,7 +13447,7 @@ var Demo = (function (exports) {
         domain = [],
         unknown = implicit$1;
 
-    range = range == null ? [] : slice$2.call(range);
+    range = range == null ? [] : slice$2$1.call(range);
 
     function scale(d) {
       var key = d + "", i = index.get(key);
@@ -12419,7 +13467,7 @@ var Demo = (function (exports) {
     };
 
     scale.range = function(_) {
-      return arguments.length ? (range = slice$2.call(_), scale) : range.slice();
+      return arguments.length ? (range = slice$2$1.call(_), scale) : range.slice();
     };
 
     scale.unknown = function(_) {
@@ -12540,7 +13588,7 @@ var Demo = (function (exports) {
 
   var rgbBasis$1 = rgbSpline$1(basis$2);
 
-  function number$1$1(a, b) {
+  function number$1(a, b) {
     return a = +a, b -= a, function(t) {
       return a + b * t;
     };
@@ -12586,7 +13634,7 @@ var Demo = (function (exports) {
         else s[++i] = bm;
       } else { // interpolate non-matching numbers
         s[++i] = null;
-        q.push({i: i, x: number$1$1(am, bm)});
+        q.push({i: i, x: number$1(am, bm)});
       }
       bi = reB$1.lastIndex;
     }
@@ -12669,7 +13717,7 @@ var Demo = (function (exports) {
     function translate(xa, ya, xb, yb, s, q) {
       if (xa !== xb || ya !== yb) {
         var i = s.push("translate(", null, pxComma, null, pxParen);
-        q.push({i: i - 4, x: number$1$1(xa, xb)}, {i: i - 2, x: number$1$1(ya, yb)});
+        q.push({i: i - 4, x: number$1(xa, xb)}, {i: i - 2, x: number$1(ya, yb)});
       } else if (xb || yb) {
         s.push("translate(" + xb + pxComma + yb + pxParen);
       }
@@ -12678,7 +13726,7 @@ var Demo = (function (exports) {
     function rotate(a, b, s, q) {
       if (a !== b) {
         if (a - b > 180) b += 360; else if (b - a > 180) a += 360; // shortest path
-        q.push({i: s.push(pop(s) + "rotate(", null, degParen) - 2, x: number$1$1(a, b)});
+        q.push({i: s.push(pop(s) + "rotate(", null, degParen) - 2, x: number$1(a, b)});
       } else if (b) {
         s.push(pop(s) + "rotate(" + b + degParen);
       }
@@ -12686,7 +13734,7 @@ var Demo = (function (exports) {
 
     function skewX(a, b, s, q) {
       if (a !== b) {
-        q.push({i: s.push(pop(s) + "skewX(", null, degParen) - 2, x: number$1$1(a, b)});
+        q.push({i: s.push(pop(s) + "skewX(", null, degParen) - 2, x: number$1(a, b)});
       } else if (b) {
         s.push(pop(s) + "skewX(" + b + degParen);
       }
@@ -12695,7 +13743,7 @@ var Demo = (function (exports) {
     function scale(xa, ya, xb, yb, s, q) {
       if (xa !== xb || ya !== yb) {
         var i = s.push(pop(s) + "scale(", null, ",", null, ")");
-        q.push({i: i - 4, x: number$1$1(xa, xb)}, {i: i - 2, x: number$1$1(ya, yb)});
+        q.push({i: i - 4, x: number$1(xa, xb)}, {i: i - 2, x: number$1(ya, yb)});
       } else if (xb !== 1 || yb !== 1) {
         s.push(pop(s) + "scale(" + xb + "," + yb + ")");
       }
@@ -12753,7 +13801,7 @@ var Demo = (function (exports) {
   // Computes the decimal coefficient and exponent of the specified number x with
   // significant digits p, where x is positive and p is in [1, 21] or undefined.
   // For example, formatDecimal(1.23) returns ["123", 0].
-  function formatDecimal$1(x, p) {
+  function formatDecimal$2(x, p) {
     if ((i = (x = p ? x.toExponential(p - 1) : x.toExponential()).indexOf("e")) < 0) return null; // NaN, ±Infinity
     var i, coefficient = x.slice(0, i);
 
@@ -12766,10 +13814,10 @@ var Demo = (function (exports) {
   }
 
   function exponent$1$1(x) {
-    return x = formatDecimal$1(Math.abs(x)), x ? x[1] : NaN;
+    return x = formatDecimal$2(Math.abs(x)), x ? x[1] : NaN;
   }
 
-  function formatGroup$1(grouping, thousands) {
+  function formatGroup$2(grouping, thousands) {
     return function(value, width) {
       var i = value.length,
           t = [],
@@ -12788,7 +13836,7 @@ var Demo = (function (exports) {
     };
   }
 
-  function formatNumerals$1(numerals) {
+  function formatNumerals$2(numerals) {
     return function(value) {
       return value.replace(/[0-9]/g, function(i) {
         return numerals[+i];
@@ -12797,16 +13845,16 @@ var Demo = (function (exports) {
   }
 
   // [[fill]align][sign][symbol][0][width][,][.precision][~][type]
-  var re$1 = /^(?:(.)?([<>=^]))?([+\-( ])?([$#])?(0)?(\d+)?(,)?(\.\d+)?(~)?([a-z%])?$/i;
+  var re$2 = /^(?:(.)?([<>=^]))?([+\-( ])?([$#])?(0)?(\d+)?(,)?(\.\d+)?(~)?([a-z%])?$/i;
 
-  function formatSpecifier$1(specifier) {
-    return new FormatSpecifier$1(specifier);
+  function formatSpecifier$2(specifier) {
+    return new FormatSpecifier$2(specifier);
   }
 
-  formatSpecifier$1.prototype = FormatSpecifier$1.prototype; // instanceof
+  formatSpecifier$2.prototype = FormatSpecifier$2.prototype; // instanceof
 
-  function FormatSpecifier$1(specifier) {
-    if (!(match = re$1.exec(specifier))) throw new Error("invalid format: " + specifier);
+  function FormatSpecifier$2(specifier) {
+    if (!(match = re$2.exec(specifier))) throw new Error("invalid format: " + specifier);
     var match;
     this.fill = match[1] || " ";
     this.align = match[2] || ">";
@@ -12820,7 +13868,7 @@ var Demo = (function (exports) {
     this.type = match[10] || "";
   }
 
-  FormatSpecifier$1.prototype.toString = function() {
+  FormatSpecifier$2.prototype.toString = function() {
     return this.fill
         + this.align
         + this.sign
@@ -12834,7 +13882,7 @@ var Demo = (function (exports) {
   };
 
   // Trims insignificant zeros, e.g., replaces 1.2000k with 1.2k.
-  function formatTrim$1(s) {
+  function formatTrim$2(s) {
     out: for (var n = s.length, i = 1, i0 = -1, i1; i < n; ++i) {
       switch (s[i]) {
         case ".": i0 = i1 = i; break;
@@ -12845,23 +13893,23 @@ var Demo = (function (exports) {
     return i0 > 0 ? s.slice(0, i0) + s.slice(i1 + 1) : s;
   }
 
-  var prefixExponent$1;
+  var prefixExponent$2;
 
-  function formatPrefixAuto$1(x, p) {
-    var d = formatDecimal$1(x, p);
+  function formatPrefixAuto$2(x, p) {
+    var d = formatDecimal$2(x, p);
     if (!d) return x + "";
     var coefficient = d[0],
         exponent = d[1],
-        i = exponent - (prefixExponent$1 = Math.max(-8, Math.min(8, Math.floor(exponent / 3))) * 3) + 1,
+        i = exponent - (prefixExponent$2 = Math.max(-8, Math.min(8, Math.floor(exponent / 3))) * 3) + 1,
         n = coefficient.length;
     return i === n ? coefficient
         : i > n ? coefficient + new Array(i - n + 1).join("0")
         : i > 0 ? coefficient.slice(0, i) + "." + coefficient.slice(i)
-        : "0." + new Array(1 - i).join("0") + formatDecimal$1(x, Math.max(0, p + i - 1))[0]; // less than 1y!
+        : "0." + new Array(1 - i).join("0") + formatDecimal$2(x, Math.max(0, p + i - 1))[0]; // less than 1y!
   }
 
-  function formatRounded$1(x, p) {
-    var d = formatDecimal$1(x, p);
+  function formatRounded$2(x, p) {
+    var d = formatDecimal$2(x, p);
     if (!d) return x + "";
     var coefficient = d[0],
         exponent = d[1];
@@ -12870,7 +13918,7 @@ var Demo = (function (exports) {
         : coefficient + new Array(exponent - coefficient.length + 2).join("0");
   }
 
-  var formatTypes$1 = {
+  var formatTypes$2 = {
     "%": function(x, p) { return (x * 100).toFixed(p); },
     "b": function(x) { return Math.round(x).toString(2); },
     "c": function(x) { return x + ""; },
@@ -12879,28 +13927,28 @@ var Demo = (function (exports) {
     "f": function(x, p) { return x.toFixed(p); },
     "g": function(x, p) { return x.toPrecision(p); },
     "o": function(x) { return Math.round(x).toString(8); },
-    "p": function(x, p) { return formatRounded$1(x * 100, p); },
-    "r": formatRounded$1,
-    "s": formatPrefixAuto$1,
+    "p": function(x, p) { return formatRounded$2(x * 100, p); },
+    "r": formatRounded$2,
+    "s": formatPrefixAuto$2,
     "X": function(x) { return Math.round(x).toString(16).toUpperCase(); },
     "x": function(x) { return Math.round(x).toString(16); }
   };
 
-  function identity$3(x) {
+  function identity$3$1(x) {
     return x;
   }
 
-  var prefixes$1 = ["y","z","a","f","p","n","µ","m","","k","M","G","T","P","E","Z","Y"];
+  var prefixes$2 = ["y","z","a","f","p","n","µ","m","","k","M","G","T","P","E","Z","Y"];
 
-  function formatLocale$2(locale) {
-    var group = locale.grouping && locale.thousands ? formatGroup$1(locale.grouping, locale.thousands) : identity$3,
+  function formatLocale$3(locale) {
+    var group = locale.grouping && locale.thousands ? formatGroup$2(locale.grouping, locale.thousands) : identity$3$1,
         currency = locale.currency,
         decimal = locale.decimal,
-        numerals = locale.numerals ? formatNumerals$1(locale.numerals) : identity$3,
+        numerals = locale.numerals ? formatNumerals$2(locale.numerals) : identity$3$1,
         percent = locale.percent || "%";
 
     function newFormat(specifier) {
-      specifier = formatSpecifier$1(specifier);
+      specifier = formatSpecifier$2(specifier);
 
       var fill = specifier.fill,
           align = specifier.align,
@@ -12917,7 +13965,7 @@ var Demo = (function (exports) {
       if (type === "n") comma = true, type = "g";
 
       // The "" type, and any invalid type, is an alias for ".12~g".
-      else if (!formatTypes$1[type]) precision == null && (precision = 12), trim = true, type = "g";
+      else if (!formatTypes$2[type]) precision == null && (precision = 12), trim = true, type = "g";
 
       // If zero fill is specified, padding goes after sign and before digits.
       if (zero || (fill === "0" && align === "=")) zero = true, fill = "0", align = "=";
@@ -12930,7 +13978,7 @@ var Demo = (function (exports) {
       // What format function should we use?
       // Is this an integer type?
       // Can this type generate exponential notation?
-      var formatType = formatTypes$1[type],
+      var formatType = formatTypes$2[type],
           maybeSuffix = /[defgprs%]/.test(type);
 
       // Set the default precision if not specified,
@@ -12957,14 +14005,14 @@ var Demo = (function (exports) {
           value = formatType(Math.abs(value), precision);
 
           // Trim insignificant zeros.
-          if (trim) value = formatTrim$1(value);
+          if (trim) value = formatTrim$2(value);
 
           // If a negative value rounds to zero during formatting, treat as positive.
           if (valueNegative && +value === 0) valueNegative = false;
 
           // Compute the prefix and suffix.
           valuePrefix = (valueNegative ? (sign === "(" ? sign : "-") : sign === "-" || sign === "(" ? "" : sign) + valuePrefix;
-          valueSuffix = (type === "s" ? prefixes$1[8 + prefixExponent$1 / 3] : "") + valueSuffix + (valueNegative && sign === "(" ? ")" : "");
+          valueSuffix = (type === "s" ? prefixes$2[8 + prefixExponent$2 / 3] : "") + valueSuffix + (valueNegative && sign === "(" ? ")" : "");
 
           // Break the formatted value into the integer “value” part that can be
           // grouped, and fractional or exponential “suffix” part that is not.
@@ -13009,10 +14057,10 @@ var Demo = (function (exports) {
     }
 
     function formatPrefix(specifier, value) {
-      var f = newFormat((specifier = formatSpecifier$1(specifier), specifier.type = "f", specifier)),
+      var f = newFormat((specifier = formatSpecifier$2(specifier), specifier.type = "f", specifier)),
           e = Math.max(-8, Math.min(8, Math.floor(exponent$1$1(value) / 3))) * 3,
           k = Math.pow(10, -e),
-          prefix = prefixes$1[8 + e / 3];
+          prefix = prefixes$2[8 + e / 3];
       return function(value) {
         return f(k * value) + prefix;
       };
@@ -13024,28 +14072,28 @@ var Demo = (function (exports) {
     };
   }
 
-  var locale$2;
-  var format$1;
-  var formatPrefix$1;
+  var locale$3;
+  var format$2;
+  var formatPrefix$2;
 
-  defaultLocale$2({
+  defaultLocale$3({
     decimal: ".",
     thousands: ",",
     grouping: [3],
     currency: ["$", ""]
   });
 
-  function defaultLocale$2(definition) {
-    locale$2 = formatLocale$2(definition);
-    format$1 = locale$2.format;
-    formatPrefix$1 = locale$2.formatPrefix;
-    return locale$2;
+  function defaultLocale$3(definition) {
+    locale$3 = formatLocale$3(definition);
+    format$2 = locale$3.format;
+    formatPrefix$2 = locale$3.formatPrefix;
+    return locale$3;
   }
 
   var t0$1$1 = new Date,
       t1$1$1 = new Date;
 
-  function newInterval$1(floori, offseti, count, field) {
+  function newInterval$2(floori, offseti, count, field) {
 
     function interval(date) {
       return floori(date = new Date(+date)), date;
@@ -13078,7 +14126,7 @@ var Demo = (function (exports) {
     };
 
     interval.filter = function(test) {
-      return newInterval$1(function(date) {
+      return newInterval$2(function(date) {
         if (date >= date) while (floori(date), !test(date)) date.setTime(date - 1);
       }, function(date, step) {
         if (date >= date) {
@@ -13111,7 +14159,7 @@ var Demo = (function (exports) {
     return interval;
   }
 
-  var millisecond$1 = newInterval$1(function() {
+  var millisecond$2 = newInterval$2(function() {
     // noop
   }, function(date, step) {
     date.setTime(+date + step);
@@ -13120,11 +14168,11 @@ var Demo = (function (exports) {
   });
 
   // An optimized implementation for this simple case.
-  millisecond$1.every = function(k) {
+  millisecond$2.every = function(k) {
     k = Math.floor(k);
     if (!isFinite(k) || !(k > 0)) return null;
-    if (!(k > 1)) return millisecond$1;
-    return newInterval$1(function(date) {
+    if (!(k > 1)) return millisecond$2;
+    return newInterval$2(function(date) {
       date.setTime(Math.floor(date / k) * k);
     }, function(date, step) {
       date.setTime(+date + step * k);
@@ -13139,7 +14187,7 @@ var Demo = (function (exports) {
   var durationDay$1 = 864e5;
   var durationWeek$1 = 6048e5;
 
-  var second$1 = newInterval$1(function(date) {
+  var second$2 = newInterval$2(function(date) {
     date.setTime(Math.floor(date / durationSecond$1) * durationSecond$1);
   }, function(date, step) {
     date.setTime(+date + step * durationSecond$1);
@@ -13149,7 +14197,7 @@ var Demo = (function (exports) {
     return date.getUTCSeconds();
   });
 
-  var minute$1 = newInterval$1(function(date) {
+  var minute$2 = newInterval$2(function(date) {
     date.setTime(Math.floor(date / durationMinute$1) * durationMinute$1);
   }, function(date, step) {
     date.setTime(+date + step * durationMinute$1);
@@ -13159,7 +14207,7 @@ var Demo = (function (exports) {
     return date.getMinutes();
   });
 
-  var hour$1 = newInterval$1(function(date) {
+  var hour$2 = newInterval$2(function(date) {
     var offset = date.getTimezoneOffset() * durationMinute$1 % durationHour$1;
     if (offset < 0) offset += durationHour$1;
     date.setTime(Math.floor((+date - offset) / durationHour$1) * durationHour$1 + offset);
@@ -13171,7 +14219,7 @@ var Demo = (function (exports) {
     return date.getHours();
   });
 
-  var day$1 = newInterval$1(function(date) {
+  var day$2 = newInterval$2(function(date) {
     date.setHours(0, 0, 0, 0);
   }, function(date, step) {
     date.setDate(date.getDate() + step);
@@ -13181,8 +14229,8 @@ var Demo = (function (exports) {
     return date.getDate() - 1;
   });
 
-  function weekday$1(i) {
-    return newInterval$1(function(date) {
+  function weekday$2(i) {
+    return newInterval$2(function(date) {
       date.setDate(date.getDate() - (date.getDay() + 7 - i) % 7);
       date.setHours(0, 0, 0, 0);
     }, function(date, step) {
@@ -13192,15 +14240,15 @@ var Demo = (function (exports) {
     });
   }
 
-  var sunday$1 = weekday$1(0);
-  var monday$1 = weekday$1(1);
-  var tuesday$1 = weekday$1(2);
-  var wednesday$1 = weekday$1(3);
-  var thursday$1 = weekday$1(4);
-  var friday$1 = weekday$1(5);
-  var saturday$1 = weekday$1(6);
+  var sunday$2 = weekday$2(0);
+  var monday$2 = weekday$2(1);
+  var tuesday$2 = weekday$2(2);
+  var wednesday$2 = weekday$2(3);
+  var thursday$2 = weekday$2(4);
+  var friday$2 = weekday$2(5);
+  var saturday$2 = weekday$2(6);
 
-  var month$1 = newInterval$1(function(date) {
+  var month$2 = newInterval$2(function(date) {
     date.setDate(1);
     date.setHours(0, 0, 0, 0);
   }, function(date, step) {
@@ -13211,7 +14259,7 @@ var Demo = (function (exports) {
     return date.getMonth();
   });
 
-  var year$1 = newInterval$1(function(date) {
+  var year$2 = newInterval$2(function(date) {
     date.setMonth(0, 1);
     date.setHours(0, 0, 0, 0);
   }, function(date, step) {
@@ -13223,8 +14271,8 @@ var Demo = (function (exports) {
   });
 
   // An optimized implementation for this simple case.
-  year$1.every = function(k) {
-    return !isFinite(k = Math.floor(k)) || !(k > 0) ? null : newInterval$1(function(date) {
+  year$2.every = function(k) {
+    return !isFinite(k = Math.floor(k)) || !(k > 0) ? null : newInterval$2(function(date) {
       date.setFullYear(Math.floor(date.getFullYear() / k) * k);
       date.setMonth(0, 1);
       date.setHours(0, 0, 0, 0);
@@ -13233,7 +14281,7 @@ var Demo = (function (exports) {
     });
   };
 
-  var utcMinute$1 = newInterval$1(function(date) {
+  var utcMinute$2 = newInterval$2(function(date) {
     date.setUTCSeconds(0, 0);
   }, function(date, step) {
     date.setTime(+date + step * durationMinute$1);
@@ -13243,7 +14291,7 @@ var Demo = (function (exports) {
     return date.getUTCMinutes();
   });
 
-  var utcHour$1 = newInterval$1(function(date) {
+  var utcHour$2 = newInterval$2(function(date) {
     date.setUTCMinutes(0, 0, 0);
   }, function(date, step) {
     date.setTime(+date + step * durationHour$1);
@@ -13253,7 +14301,7 @@ var Demo = (function (exports) {
     return date.getUTCHours();
   });
 
-  var utcDay$1 = newInterval$1(function(date) {
+  var utcDay$2 = newInterval$2(function(date) {
     date.setUTCHours(0, 0, 0, 0);
   }, function(date, step) {
     date.setUTCDate(date.getUTCDate() + step);
@@ -13263,8 +14311,8 @@ var Demo = (function (exports) {
     return date.getUTCDate() - 1;
   });
 
-  function utcWeekday$1(i) {
-    return newInterval$1(function(date) {
+  function utcWeekday$2(i) {
+    return newInterval$2(function(date) {
       date.setUTCDate(date.getUTCDate() - (date.getUTCDay() + 7 - i) % 7);
       date.setUTCHours(0, 0, 0, 0);
     }, function(date, step) {
@@ -13274,15 +14322,15 @@ var Demo = (function (exports) {
     });
   }
 
-  var utcSunday$1 = utcWeekday$1(0);
-  var utcMonday$1 = utcWeekday$1(1);
-  var utcTuesday$1 = utcWeekday$1(2);
-  var utcWednesday$1 = utcWeekday$1(3);
-  var utcThursday$1 = utcWeekday$1(4);
-  var utcFriday$1 = utcWeekday$1(5);
-  var utcSaturday$1 = utcWeekday$1(6);
+  var utcSunday$2 = utcWeekday$2(0);
+  var utcMonday$2 = utcWeekday$2(1);
+  var utcTuesday$2 = utcWeekday$2(2);
+  var utcWednesday$2 = utcWeekday$2(3);
+  var utcThursday$2 = utcWeekday$2(4);
+  var utcFriday$2 = utcWeekday$2(5);
+  var utcSaturday$2 = utcWeekday$2(6);
 
-  var utcMonth$1 = newInterval$1(function(date) {
+  var utcMonth$2 = newInterval$2(function(date) {
     date.setUTCDate(1);
     date.setUTCHours(0, 0, 0, 0);
   }, function(date, step) {
@@ -13293,7 +14341,7 @@ var Demo = (function (exports) {
     return date.getUTCMonth();
   });
 
-  var utcYear$1 = newInterval$1(function(date) {
+  var utcYear$2 = newInterval$2(function(date) {
     date.setUTCMonth(0, 1);
     date.setUTCHours(0, 0, 0, 0);
   }, function(date, step) {
@@ -13305,8 +14353,8 @@ var Demo = (function (exports) {
   });
 
   // An optimized implementation for this simple case.
-  utcYear$1.every = function(k) {
-    return !isFinite(k = Math.floor(k)) || !(k > 0) ? null : newInterval$1(function(date) {
+  utcYear$2.every = function(k) {
+    return !isFinite(k = Math.floor(k)) || !(k > 0) ? null : newInterval$2(function(date) {
       date.setUTCFullYear(Math.floor(date.getUTCFullYear() / k) * k);
       date.setUTCMonth(0, 1);
       date.setUTCHours(0, 0, 0, 0);
@@ -13315,7 +14363,7 @@ var Demo = (function (exports) {
     });
   };
 
-  function localDate$1(d) {
+  function localDate$2(d) {
     if (0 <= d.y && d.y < 100) {
       var date = new Date(-1, d.m, d.d, d.H, d.M, d.S, d.L);
       date.setFullYear(d.y);
@@ -13324,7 +14372,7 @@ var Demo = (function (exports) {
     return new Date(d.y, d.m, d.d, d.H, d.M, d.S, d.L);
   }
 
-  function utcDate$1(d) {
+  function utcDate$2(d) {
     if (0 <= d.y && d.y < 100) {
       var date = new Date(Date.UTC(-1, d.m, d.d, d.H, d.M, d.S, d.L));
       date.setUTCFullYear(d.y);
@@ -13333,11 +14381,11 @@ var Demo = (function (exports) {
     return new Date(Date.UTC(d.y, d.m, d.d, d.H, d.M, d.S, d.L));
   }
 
-  function newYear$1(y) {
+  function newYear$2(y) {
     return {y: y, m: 0, d: 1, H: 0, M: 0, S: 0, L: 0};
   }
 
-  function formatLocale$1$1(locale) {
+  function formatLocale$1$2(locale) {
     var locale_dateTime = locale.dateTime,
         locale_date = locale.date,
         locale_time = locale.time,
@@ -13347,16 +14395,16 @@ var Demo = (function (exports) {
         locale_months = locale.months,
         locale_shortMonths = locale.shortMonths;
 
-    var periodRe = formatRe$1(locale_periods),
-        periodLookup = formatLookup$1(locale_periods),
-        weekdayRe = formatRe$1(locale_weekdays),
-        weekdayLookup = formatLookup$1(locale_weekdays),
-        shortWeekdayRe = formatRe$1(locale_shortWeekdays),
-        shortWeekdayLookup = formatLookup$1(locale_shortWeekdays),
-        monthRe = formatRe$1(locale_months),
-        monthLookup = formatLookup$1(locale_months),
-        shortMonthRe = formatRe$1(locale_shortMonths),
-        shortMonthLookup = formatLookup$1(locale_shortMonths);
+    var periodRe = formatRe$2(locale_periods),
+        periodLookup = formatLookup$2(locale_periods),
+        weekdayRe = formatRe$2(locale_weekdays),
+        weekdayLookup = formatLookup$2(locale_weekdays),
+        shortWeekdayRe = formatRe$2(locale_shortWeekdays),
+        shortWeekdayLookup = formatLookup$2(locale_shortWeekdays),
+        monthRe = formatRe$2(locale_months),
+        monthLookup = formatLookup$2(locale_months),
+        shortMonthRe = formatRe$2(locale_shortMonths),
+        shortMonthLookup = formatLookup$2(locale_shortMonths);
 
     var formats = {
       "a": formatShortWeekday,
@@ -13364,30 +14412,30 @@ var Demo = (function (exports) {
       "b": formatShortMonth,
       "B": formatMonth,
       "c": null,
-      "d": formatDayOfMonth$1,
-      "e": formatDayOfMonth$1,
-      "f": formatMicroseconds$1,
-      "H": formatHour24$1,
-      "I": formatHour12$1,
-      "j": formatDayOfYear$1,
-      "L": formatMilliseconds$1,
-      "m": formatMonthNumber$1,
-      "M": formatMinutes$1,
+      "d": formatDayOfMonth$2,
+      "e": formatDayOfMonth$2,
+      "f": formatMicroseconds$2,
+      "H": formatHour24$2,
+      "I": formatHour12$2,
+      "j": formatDayOfYear$2,
+      "L": formatMilliseconds$2,
+      "m": formatMonthNumber$2,
+      "M": formatMinutes$2,
       "p": formatPeriod,
-      "Q": formatUnixTimestamp$1,
-      "s": formatUnixTimestampSeconds$1,
-      "S": formatSeconds$1,
-      "u": formatWeekdayNumberMonday$1,
-      "U": formatWeekNumberSunday$1,
-      "V": formatWeekNumberISO$1,
-      "w": formatWeekdayNumberSunday$1,
-      "W": formatWeekNumberMonday$1,
+      "Q": formatUnixTimestamp$2,
+      "s": formatUnixTimestampSeconds$2,
+      "S": formatSeconds$2,
+      "u": formatWeekdayNumberMonday$2,
+      "U": formatWeekNumberSunday$2,
+      "V": formatWeekNumberISO$2,
+      "w": formatWeekdayNumberSunday$2,
+      "W": formatWeekNumberMonday$2,
       "x": null,
       "X": null,
-      "y": formatYear$1,
-      "Y": formatFullYear$1,
-      "Z": formatZone$1,
-      "%": formatLiteralPercent$1
+      "y": formatYear$2,
+      "Y": formatFullYear$2,
+      "Z": formatZone$2,
+      "%": formatLiteralPercent$2
     };
 
     var utcFormats = {
@@ -13396,30 +14444,30 @@ var Demo = (function (exports) {
       "b": formatUTCShortMonth,
       "B": formatUTCMonth,
       "c": null,
-      "d": formatUTCDayOfMonth$1,
-      "e": formatUTCDayOfMonth$1,
-      "f": formatUTCMicroseconds$1,
-      "H": formatUTCHour24$1,
-      "I": formatUTCHour12$1,
-      "j": formatUTCDayOfYear$1,
-      "L": formatUTCMilliseconds$1,
-      "m": formatUTCMonthNumber$1,
-      "M": formatUTCMinutes$1,
+      "d": formatUTCDayOfMonth$2,
+      "e": formatUTCDayOfMonth$2,
+      "f": formatUTCMicroseconds$2,
+      "H": formatUTCHour24$2,
+      "I": formatUTCHour12$2,
+      "j": formatUTCDayOfYear$2,
+      "L": formatUTCMilliseconds$2,
+      "m": formatUTCMonthNumber$2,
+      "M": formatUTCMinutes$2,
       "p": formatUTCPeriod,
-      "Q": formatUnixTimestamp$1,
-      "s": formatUnixTimestampSeconds$1,
-      "S": formatUTCSeconds$1,
-      "u": formatUTCWeekdayNumberMonday$1,
-      "U": formatUTCWeekNumberSunday$1,
-      "V": formatUTCWeekNumberISO$1,
-      "w": formatUTCWeekdayNumberSunday$1,
-      "W": formatUTCWeekNumberMonday$1,
+      "Q": formatUnixTimestamp$2,
+      "s": formatUnixTimestampSeconds$2,
+      "S": formatUTCSeconds$2,
+      "u": formatUTCWeekdayNumberMonday$2,
+      "U": formatUTCWeekNumberSunday$2,
+      "V": formatUTCWeekNumberISO$2,
+      "w": formatUTCWeekdayNumberSunday$2,
+      "W": formatUTCWeekNumberMonday$2,
       "x": null,
       "X": null,
-      "y": formatUTCYear$1,
-      "Y": formatUTCFullYear$1,
-      "Z": formatUTCZone$1,
-      "%": formatLiteralPercent$1
+      "y": formatUTCYear$2,
+      "Y": formatUTCFullYear$2,
+      "Z": formatUTCZone$2,
+      "%": formatLiteralPercent$2
     };
 
     var parses = {
@@ -13428,30 +14476,30 @@ var Demo = (function (exports) {
       "b": parseShortMonth,
       "B": parseMonth,
       "c": parseLocaleDateTime,
-      "d": parseDayOfMonth$1,
-      "e": parseDayOfMonth$1,
-      "f": parseMicroseconds$1,
-      "H": parseHour24$1,
-      "I": parseHour24$1,
-      "j": parseDayOfYear$1,
-      "L": parseMilliseconds$1,
-      "m": parseMonthNumber$1,
-      "M": parseMinutes$1,
+      "d": parseDayOfMonth$2,
+      "e": parseDayOfMonth$2,
+      "f": parseMicroseconds$2,
+      "H": parseHour24$2,
+      "I": parseHour24$2,
+      "j": parseDayOfYear$2,
+      "L": parseMilliseconds$2,
+      "m": parseMonthNumber$2,
+      "M": parseMinutes$2,
       "p": parsePeriod,
-      "Q": parseUnixTimestamp$1,
-      "s": parseUnixTimestampSeconds$1,
-      "S": parseSeconds$1,
-      "u": parseWeekdayNumberMonday$1,
-      "U": parseWeekNumberSunday$1,
-      "V": parseWeekNumberISO$1,
-      "w": parseWeekdayNumberSunday$1,
-      "W": parseWeekNumberMonday$1,
+      "Q": parseUnixTimestamp$2,
+      "s": parseUnixTimestampSeconds$2,
+      "S": parseSeconds$2,
+      "u": parseWeekdayNumberMonday$2,
+      "U": parseWeekNumberSunday$2,
+      "V": parseWeekNumberISO$2,
+      "w": parseWeekdayNumberSunday$2,
+      "W": parseWeekNumberMonday$2,
       "x": parseLocaleDate,
       "X": parseLocaleTime,
-      "y": parseYear$1,
-      "Y": parseFullYear$1,
-      "Z": parseZone$1,
-      "%": parseLiteralPercent$1
+      "y": parseYear$2,
+      "Y": parseFullYear$2,
+      "Z": parseZone$2,
+      "%": parseLiteralPercent$2
     };
 
     // These recursive directive definitions must be deferred.
@@ -13477,7 +14525,7 @@ var Demo = (function (exports) {
         while (++i < n) {
           if (specifier.charCodeAt(i) === 37) {
             string.push(specifier.slice(j, i));
-            if ((pad = pads$1[c = specifier.charAt(++i)]) != null) c = specifier.charAt(++i);
+            if ((pad = pads$2[c = specifier.charAt(++i)]) != null) c = specifier.charAt(++i);
             else pad = c === "e" ? " " : "0";
             if (format = formats[c]) c = format(date, pad);
             string.push(c);
@@ -13492,7 +14540,7 @@ var Demo = (function (exports) {
 
     function newParse(specifier, newDate) {
       return function(string) {
-        var d = newYear$1(1900),
+        var d = newYear$2(1900),
             i = parseSpecifier(d, specifier, string += "", 0),
             week, day$$1;
         if (i != string.length) return null;
@@ -13508,23 +14556,23 @@ var Demo = (function (exports) {
           if (d.V < 1 || d.V > 53) return null;
           if (!("w" in d)) d.w = 1;
           if ("Z" in d) {
-            week = utcDate$1(newYear$1(d.y)), day$$1 = week.getUTCDay();
-            week = day$$1 > 4 || day$$1 === 0 ? utcMonday$1.ceil(week) : utcMonday$1(week);
-            week = utcDay$1.offset(week, (d.V - 1) * 7);
+            week = utcDate$2(newYear$2(d.y)), day$$1 = week.getUTCDay();
+            week = day$$1 > 4 || day$$1 === 0 ? utcMonday$2.ceil(week) : utcMonday$2(week);
+            week = utcDay$2.offset(week, (d.V - 1) * 7);
             d.y = week.getUTCFullYear();
             d.m = week.getUTCMonth();
             d.d = week.getUTCDate() + (d.w + 6) % 7;
           } else {
-            week = newDate(newYear$1(d.y)), day$$1 = week.getDay();
-            week = day$$1 > 4 || day$$1 === 0 ? monday$1.ceil(week) : monday$1(week);
-            week = day$1.offset(week, (d.V - 1) * 7);
+            week = newDate(newYear$2(d.y)), day$$1 = week.getDay();
+            week = day$$1 > 4 || day$$1 === 0 ? monday$2.ceil(week) : monday$2(week);
+            week = day$2.offset(week, (d.V - 1) * 7);
             d.y = week.getFullYear();
             d.m = week.getMonth();
             d.d = week.getDate() + (d.w + 6) % 7;
           }
         } else if ("W" in d || "U" in d) {
           if (!("w" in d)) d.w = "u" in d ? d.u % 7 : "W" in d ? 1 : 0;
-          day$$1 = "Z" in d ? utcDate$1(newYear$1(d.y)).getUTCDay() : newDate(newYear$1(d.y)).getDay();
+          day$$1 = "Z" in d ? utcDate$2(newYear$2(d.y)).getUTCDay() : newDate(newYear$2(d.y)).getDay();
           d.m = 0;
           d.d = "W" in d ? (d.w + 6) % 7 + d.W * 7 - (day$$1 + 5) % 7 : d.w + d.U * 7 - (day$$1 + 6) % 7;
         }
@@ -13534,7 +14582,7 @@ var Demo = (function (exports) {
         if ("Z" in d) {
           d.H += d.Z / 100 | 0;
           d.M += d.Z % 100;
-          return utcDate$1(d);
+          return utcDate$2(d);
         }
 
         // Otherwise, all fields are in local time.
@@ -13554,7 +14602,7 @@ var Demo = (function (exports) {
         c = specifier.charCodeAt(i++);
         if (c === 37) {
           c = specifier.charAt(i++);
-          parse = parses[c in pads$1 ? specifier.charAt(i++) : c];
+          parse = parses[c in pads$2 ? specifier.charAt(i++) : c];
           if (!parse || ((j = parse(d, string, j)) < 0)) return -1;
         } else if (c != string.charCodeAt(j++)) {
           return -1;
@@ -13648,7 +14696,7 @@ var Demo = (function (exports) {
         return f;
       },
       parse: function(specifier) {
-        var p = newParse(specifier += "", localDate$1);
+        var p = newParse(specifier += "", localDate$2);
         p.toString = function() { return specifier; };
         return p;
       },
@@ -13658,298 +14706,298 @@ var Demo = (function (exports) {
         return f;
       },
       utcParse: function(specifier) {
-        var p = newParse(specifier, utcDate$1);
+        var p = newParse(specifier, utcDate$2);
         p.toString = function() { return specifier; };
         return p;
       }
     };
   }
 
-  var pads$1 = {"-": "", "_": " ", "0": "0"},
-      numberRe$1 = /^\s*\d+/, // note: ignores next directive
-      percentRe$1 = /^%/,
-      requoteRe$1 = /[\\^$*+?|[\]().{}]/g;
+  var pads$2 = {"-": "", "_": " ", "0": "0"},
+      numberRe$2 = /^\s*\d+/, // note: ignores next directive
+      percentRe$2 = /^%/,
+      requoteRe$2 = /[\\^$*+?|[\]().{}]/g;
 
-  function pad$1(value, fill, width) {
+  function pad$2(value, fill, width) {
     var sign = value < 0 ? "-" : "",
         string = (sign ? -value : value) + "",
         length = string.length;
     return sign + (length < width ? new Array(width - length + 1).join(fill) + string : string);
   }
 
-  function requote$1(s) {
-    return s.replace(requoteRe$1, "\\$&");
+  function requote$2(s) {
+    return s.replace(requoteRe$2, "\\$&");
   }
 
-  function formatRe$1(names) {
-    return new RegExp("^(?:" + names.map(requote$1).join("|") + ")", "i");
+  function formatRe$2(names) {
+    return new RegExp("^(?:" + names.map(requote$2).join("|") + ")", "i");
   }
 
-  function formatLookup$1(names) {
+  function formatLookup$2(names) {
     var map = {}, i = -1, n = names.length;
     while (++i < n) map[names[i].toLowerCase()] = i;
     return map;
   }
 
-  function parseWeekdayNumberSunday$1(d, string, i) {
-    var n = numberRe$1.exec(string.slice(i, i + 1));
+  function parseWeekdayNumberSunday$2(d, string, i) {
+    var n = numberRe$2.exec(string.slice(i, i + 1));
     return n ? (d.w = +n[0], i + n[0].length) : -1;
   }
 
-  function parseWeekdayNumberMonday$1(d, string, i) {
-    var n = numberRe$1.exec(string.slice(i, i + 1));
+  function parseWeekdayNumberMonday$2(d, string, i) {
+    var n = numberRe$2.exec(string.slice(i, i + 1));
     return n ? (d.u = +n[0], i + n[0].length) : -1;
   }
 
-  function parseWeekNumberSunday$1(d, string, i) {
-    var n = numberRe$1.exec(string.slice(i, i + 2));
+  function parseWeekNumberSunday$2(d, string, i) {
+    var n = numberRe$2.exec(string.slice(i, i + 2));
     return n ? (d.U = +n[0], i + n[0].length) : -1;
   }
 
-  function parseWeekNumberISO$1(d, string, i) {
-    var n = numberRe$1.exec(string.slice(i, i + 2));
+  function parseWeekNumberISO$2(d, string, i) {
+    var n = numberRe$2.exec(string.slice(i, i + 2));
     return n ? (d.V = +n[0], i + n[0].length) : -1;
   }
 
-  function parseWeekNumberMonday$1(d, string, i) {
-    var n = numberRe$1.exec(string.slice(i, i + 2));
+  function parseWeekNumberMonday$2(d, string, i) {
+    var n = numberRe$2.exec(string.slice(i, i + 2));
     return n ? (d.W = +n[0], i + n[0].length) : -1;
   }
 
-  function parseFullYear$1(d, string, i) {
-    var n = numberRe$1.exec(string.slice(i, i + 4));
+  function parseFullYear$2(d, string, i) {
+    var n = numberRe$2.exec(string.slice(i, i + 4));
     return n ? (d.y = +n[0], i + n[0].length) : -1;
   }
 
-  function parseYear$1(d, string, i) {
-    var n = numberRe$1.exec(string.slice(i, i + 2));
+  function parseYear$2(d, string, i) {
+    var n = numberRe$2.exec(string.slice(i, i + 2));
     return n ? (d.y = +n[0] + (+n[0] > 68 ? 1900 : 2000), i + n[0].length) : -1;
   }
 
-  function parseZone$1(d, string, i) {
+  function parseZone$2(d, string, i) {
     var n = /^(Z)|([+-]\d\d)(?::?(\d\d))?/.exec(string.slice(i, i + 6));
     return n ? (d.Z = n[1] ? 0 : -(n[2] + (n[3] || "00")), i + n[0].length) : -1;
   }
 
-  function parseMonthNumber$1(d, string, i) {
-    var n = numberRe$1.exec(string.slice(i, i + 2));
+  function parseMonthNumber$2(d, string, i) {
+    var n = numberRe$2.exec(string.slice(i, i + 2));
     return n ? (d.m = n[0] - 1, i + n[0].length) : -1;
   }
 
-  function parseDayOfMonth$1(d, string, i) {
-    var n = numberRe$1.exec(string.slice(i, i + 2));
+  function parseDayOfMonth$2(d, string, i) {
+    var n = numberRe$2.exec(string.slice(i, i + 2));
     return n ? (d.d = +n[0], i + n[0].length) : -1;
   }
 
-  function parseDayOfYear$1(d, string, i) {
-    var n = numberRe$1.exec(string.slice(i, i + 3));
+  function parseDayOfYear$2(d, string, i) {
+    var n = numberRe$2.exec(string.slice(i, i + 3));
     return n ? (d.m = 0, d.d = +n[0], i + n[0].length) : -1;
   }
 
-  function parseHour24$1(d, string, i) {
-    var n = numberRe$1.exec(string.slice(i, i + 2));
+  function parseHour24$2(d, string, i) {
+    var n = numberRe$2.exec(string.slice(i, i + 2));
     return n ? (d.H = +n[0], i + n[0].length) : -1;
   }
 
-  function parseMinutes$1(d, string, i) {
-    var n = numberRe$1.exec(string.slice(i, i + 2));
+  function parseMinutes$2(d, string, i) {
+    var n = numberRe$2.exec(string.slice(i, i + 2));
     return n ? (d.M = +n[0], i + n[0].length) : -1;
   }
 
-  function parseSeconds$1(d, string, i) {
-    var n = numberRe$1.exec(string.slice(i, i + 2));
+  function parseSeconds$2(d, string, i) {
+    var n = numberRe$2.exec(string.slice(i, i + 2));
     return n ? (d.S = +n[0], i + n[0].length) : -1;
   }
 
-  function parseMilliseconds$1(d, string, i) {
-    var n = numberRe$1.exec(string.slice(i, i + 3));
+  function parseMilliseconds$2(d, string, i) {
+    var n = numberRe$2.exec(string.slice(i, i + 3));
     return n ? (d.L = +n[0], i + n[0].length) : -1;
   }
 
-  function parseMicroseconds$1(d, string, i) {
-    var n = numberRe$1.exec(string.slice(i, i + 6));
+  function parseMicroseconds$2(d, string, i) {
+    var n = numberRe$2.exec(string.slice(i, i + 6));
     return n ? (d.L = Math.floor(n[0] / 1000), i + n[0].length) : -1;
   }
 
-  function parseLiteralPercent$1(d, string, i) {
-    var n = percentRe$1.exec(string.slice(i, i + 1));
+  function parseLiteralPercent$2(d, string, i) {
+    var n = percentRe$2.exec(string.slice(i, i + 1));
     return n ? i + n[0].length : -1;
   }
 
-  function parseUnixTimestamp$1(d, string, i) {
-    var n = numberRe$1.exec(string.slice(i));
+  function parseUnixTimestamp$2(d, string, i) {
+    var n = numberRe$2.exec(string.slice(i));
     return n ? (d.Q = +n[0], i + n[0].length) : -1;
   }
 
-  function parseUnixTimestampSeconds$1(d, string, i) {
-    var n = numberRe$1.exec(string.slice(i));
+  function parseUnixTimestampSeconds$2(d, string, i) {
+    var n = numberRe$2.exec(string.slice(i));
     return n ? (d.Q = (+n[0]) * 1000, i + n[0].length) : -1;
   }
 
-  function formatDayOfMonth$1(d, p) {
-    return pad$1(d.getDate(), p, 2);
+  function formatDayOfMonth$2(d, p) {
+    return pad$2(d.getDate(), p, 2);
   }
 
-  function formatHour24$1(d, p) {
-    return pad$1(d.getHours(), p, 2);
+  function formatHour24$2(d, p) {
+    return pad$2(d.getHours(), p, 2);
   }
 
-  function formatHour12$1(d, p) {
-    return pad$1(d.getHours() % 12 || 12, p, 2);
+  function formatHour12$2(d, p) {
+    return pad$2(d.getHours() % 12 || 12, p, 2);
   }
 
-  function formatDayOfYear$1(d, p) {
-    return pad$1(1 + day$1.count(year$1(d), d), p, 3);
+  function formatDayOfYear$2(d, p) {
+    return pad$2(1 + day$2.count(year$2(d), d), p, 3);
   }
 
-  function formatMilliseconds$1(d, p) {
-    return pad$1(d.getMilliseconds(), p, 3);
+  function formatMilliseconds$2(d, p) {
+    return pad$2(d.getMilliseconds(), p, 3);
   }
 
-  function formatMicroseconds$1(d, p) {
-    return formatMilliseconds$1(d, p) + "000";
+  function formatMicroseconds$2(d, p) {
+    return formatMilliseconds$2(d, p) + "000";
   }
 
-  function formatMonthNumber$1(d, p) {
-    return pad$1(d.getMonth() + 1, p, 2);
+  function formatMonthNumber$2(d, p) {
+    return pad$2(d.getMonth() + 1, p, 2);
   }
 
-  function formatMinutes$1(d, p) {
-    return pad$1(d.getMinutes(), p, 2);
+  function formatMinutes$2(d, p) {
+    return pad$2(d.getMinutes(), p, 2);
   }
 
-  function formatSeconds$1(d, p) {
-    return pad$1(d.getSeconds(), p, 2);
+  function formatSeconds$2(d, p) {
+    return pad$2(d.getSeconds(), p, 2);
   }
 
-  function formatWeekdayNumberMonday$1(d) {
+  function formatWeekdayNumberMonday$2(d) {
     var day$$1 = d.getDay();
     return day$$1 === 0 ? 7 : day$$1;
   }
 
-  function formatWeekNumberSunday$1(d, p) {
-    return pad$1(sunday$1.count(year$1(d), d), p, 2);
+  function formatWeekNumberSunday$2(d, p) {
+    return pad$2(sunday$2.count(year$2(d), d), p, 2);
   }
 
-  function formatWeekNumberISO$1(d, p) {
+  function formatWeekNumberISO$2(d, p) {
     var day$$1 = d.getDay();
-    d = (day$$1 >= 4 || day$$1 === 0) ? thursday$1(d) : thursday$1.ceil(d);
-    return pad$1(thursday$1.count(year$1(d), d) + (year$1(d).getDay() === 4), p, 2);
+    d = (day$$1 >= 4 || day$$1 === 0) ? thursday$2(d) : thursday$2.ceil(d);
+    return pad$2(thursday$2.count(year$2(d), d) + (year$2(d).getDay() === 4), p, 2);
   }
 
-  function formatWeekdayNumberSunday$1(d) {
+  function formatWeekdayNumberSunday$2(d) {
     return d.getDay();
   }
 
-  function formatWeekNumberMonday$1(d, p) {
-    return pad$1(monday$1.count(year$1(d), d), p, 2);
+  function formatWeekNumberMonday$2(d, p) {
+    return pad$2(monday$2.count(year$2(d), d), p, 2);
   }
 
-  function formatYear$1(d, p) {
-    return pad$1(d.getFullYear() % 100, p, 2);
+  function formatYear$2(d, p) {
+    return pad$2(d.getFullYear() % 100, p, 2);
   }
 
-  function formatFullYear$1(d, p) {
-    return pad$1(d.getFullYear() % 10000, p, 4);
+  function formatFullYear$2(d, p) {
+    return pad$2(d.getFullYear() % 10000, p, 4);
   }
 
-  function formatZone$1(d) {
+  function formatZone$2(d) {
     var z = d.getTimezoneOffset();
     return (z > 0 ? "-" : (z *= -1, "+"))
-        + pad$1(z / 60 | 0, "0", 2)
-        + pad$1(z % 60, "0", 2);
+        + pad$2(z / 60 | 0, "0", 2)
+        + pad$2(z % 60, "0", 2);
   }
 
-  function formatUTCDayOfMonth$1(d, p) {
-    return pad$1(d.getUTCDate(), p, 2);
+  function formatUTCDayOfMonth$2(d, p) {
+    return pad$2(d.getUTCDate(), p, 2);
   }
 
-  function formatUTCHour24$1(d, p) {
-    return pad$1(d.getUTCHours(), p, 2);
+  function formatUTCHour24$2(d, p) {
+    return pad$2(d.getUTCHours(), p, 2);
   }
 
-  function formatUTCHour12$1(d, p) {
-    return pad$1(d.getUTCHours() % 12 || 12, p, 2);
+  function formatUTCHour12$2(d, p) {
+    return pad$2(d.getUTCHours() % 12 || 12, p, 2);
   }
 
-  function formatUTCDayOfYear$1(d, p) {
-    return pad$1(1 + utcDay$1.count(utcYear$1(d), d), p, 3);
+  function formatUTCDayOfYear$2(d, p) {
+    return pad$2(1 + utcDay$2.count(utcYear$2(d), d), p, 3);
   }
 
-  function formatUTCMilliseconds$1(d, p) {
-    return pad$1(d.getUTCMilliseconds(), p, 3);
+  function formatUTCMilliseconds$2(d, p) {
+    return pad$2(d.getUTCMilliseconds(), p, 3);
   }
 
-  function formatUTCMicroseconds$1(d, p) {
-    return formatUTCMilliseconds$1(d, p) + "000";
+  function formatUTCMicroseconds$2(d, p) {
+    return formatUTCMilliseconds$2(d, p) + "000";
   }
 
-  function formatUTCMonthNumber$1(d, p) {
-    return pad$1(d.getUTCMonth() + 1, p, 2);
+  function formatUTCMonthNumber$2(d, p) {
+    return pad$2(d.getUTCMonth() + 1, p, 2);
   }
 
-  function formatUTCMinutes$1(d, p) {
-    return pad$1(d.getUTCMinutes(), p, 2);
+  function formatUTCMinutes$2(d, p) {
+    return pad$2(d.getUTCMinutes(), p, 2);
   }
 
-  function formatUTCSeconds$1(d, p) {
-    return pad$1(d.getUTCSeconds(), p, 2);
+  function formatUTCSeconds$2(d, p) {
+    return pad$2(d.getUTCSeconds(), p, 2);
   }
 
-  function formatUTCWeekdayNumberMonday$1(d) {
+  function formatUTCWeekdayNumberMonday$2(d) {
     var dow = d.getUTCDay();
     return dow === 0 ? 7 : dow;
   }
 
-  function formatUTCWeekNumberSunday$1(d, p) {
-    return pad$1(utcSunday$1.count(utcYear$1(d), d), p, 2);
+  function formatUTCWeekNumberSunday$2(d, p) {
+    return pad$2(utcSunday$2.count(utcYear$2(d), d), p, 2);
   }
 
-  function formatUTCWeekNumberISO$1(d, p) {
+  function formatUTCWeekNumberISO$2(d, p) {
     var day$$1 = d.getUTCDay();
-    d = (day$$1 >= 4 || day$$1 === 0) ? utcThursday$1(d) : utcThursday$1.ceil(d);
-    return pad$1(utcThursday$1.count(utcYear$1(d), d) + (utcYear$1(d).getUTCDay() === 4), p, 2);
+    d = (day$$1 >= 4 || day$$1 === 0) ? utcThursday$2(d) : utcThursday$2.ceil(d);
+    return pad$2(utcThursday$2.count(utcYear$2(d), d) + (utcYear$2(d).getUTCDay() === 4), p, 2);
   }
 
-  function formatUTCWeekdayNumberSunday$1(d) {
+  function formatUTCWeekdayNumberSunday$2(d) {
     return d.getUTCDay();
   }
 
-  function formatUTCWeekNumberMonday$1(d, p) {
-    return pad$1(utcMonday$1.count(utcYear$1(d), d), p, 2);
+  function formatUTCWeekNumberMonday$2(d, p) {
+    return pad$2(utcMonday$2.count(utcYear$2(d), d), p, 2);
   }
 
-  function formatUTCYear$1(d, p) {
-    return pad$1(d.getUTCFullYear() % 100, p, 2);
+  function formatUTCYear$2(d, p) {
+    return pad$2(d.getUTCFullYear() % 100, p, 2);
   }
 
-  function formatUTCFullYear$1(d, p) {
-    return pad$1(d.getUTCFullYear() % 10000, p, 4);
+  function formatUTCFullYear$2(d, p) {
+    return pad$2(d.getUTCFullYear() % 10000, p, 4);
   }
 
-  function formatUTCZone$1() {
+  function formatUTCZone$2() {
     return "+0000";
   }
 
-  function formatLiteralPercent$1() {
+  function formatLiteralPercent$2() {
     return "%";
   }
 
-  function formatUnixTimestamp$1(d) {
+  function formatUnixTimestamp$2(d) {
     return +d;
   }
 
-  function formatUnixTimestampSeconds$1(d) {
+  function formatUnixTimestampSeconds$2(d) {
     return Math.floor(+d / 1000);
   }
 
-  var locale$1$1;
-  var timeFormat$1;
-  var timeParse$1;
-  var utcFormat$1;
-  var utcParse$1;
+  var locale$1$2;
+  var timeFormat$2;
+  var timeParse$2;
+  var utcFormat$2;
+  var utcParse$2;
 
-  defaultLocale$1$1({
+  defaultLocale$1$2({
     dateTime: "%x, %X",
     date: "%-m/%-d/%Y",
     time: "%-I:%M:%S %p",
@@ -13960,33 +15008,33 @@ var Demo = (function (exports) {
     shortMonths: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
   });
 
-  function defaultLocale$1$1(definition) {
-    locale$1$1 = formatLocale$1$1(definition);
-    timeFormat$1 = locale$1$1.format;
-    timeParse$1 = locale$1$1.parse;
-    utcFormat$1 = locale$1$1.utcFormat;
-    utcParse$1 = locale$1$1.utcParse;
-    return locale$1$1;
+  function defaultLocale$1$2(definition) {
+    locale$1$2 = formatLocale$1$2(definition);
+    timeFormat$2 = locale$1$2.format;
+    timeParse$2 = locale$1$2.parse;
+    utcFormat$2 = locale$1$2.utcFormat;
+    utcParse$2 = locale$1$2.utcParse;
+    return locale$1$2;
   }
 
-  var isoSpecifier$1 = "%Y-%m-%dT%H:%M:%S.%LZ";
+  var isoSpecifier$2 = "%Y-%m-%dT%H:%M:%S.%LZ";
 
-  function formatIsoNative$1(date) {
+  function formatIsoNative$2(date) {
     return date.toISOString();
   }
 
-  var formatIso$1 = Date.prototype.toISOString
-      ? formatIsoNative$1
-      : utcFormat$1(isoSpecifier$1);
+  var formatIso$2 = Date.prototype.toISOString
+      ? formatIsoNative$2
+      : utcFormat$2(isoSpecifier$2);
 
-  function parseIsoNative$1(string) {
+  function parseIsoNative$2(string) {
     var date = new Date(string);
     return isNaN(date) ? null : date;
   }
 
-  var parseIso$1 = +new Date("2000-01-01T00:00:00.000Z")
-      ? parseIsoNative$1
-      : utcParse$1(isoSpecifier$1);
+  var parseIso$2 = +new Date("2000-01-01T00:00:00.000Z")
+      ? parseIsoNative$2
+      : utcParse$2(isoSpecifier$2);
 
   function colors$1(specifier) {
     var n = specifier.length / 6 | 0, colors = new Array(n), i = 0;
@@ -14770,7 +15818,7 @@ var Demo = (function (exports) {
 
   function interpolate$1(a, b) {
     var c;
-    return (typeof b === "number" ? number$1$1
+    return (typeof b === "number" ? number$1
         : b instanceof color$1 ? rgb$1$1
         : (c = color$1(b)) ? (b = c, rgb$1$1)
         : string)(a, b);
@@ -16652,7 +17700,7 @@ var Demo = (function (exports) {
               .style("display", "none");
           title$1.call(this, this.title.heading);
           this._sankey = sankey()
-              .nodeAlign(center$1)
+              .nodeAlign(center)
               .nodeWidth(this._nodeWidth)
               .nodePadding(this._nodePadding)
               .extent([[0, 0], [adjWidth, adjHeight]]);
@@ -17350,33 +18398,33 @@ var Demo = (function (exports) {
     return min;
   }
 
-  var slice$1$3 = Array.prototype.slice;
+  var slice$1$2 = Array.prototype.slice;
 
-  function identity$1$2(x) {
+  function identity$1$1(x) {
     return x;
   }
 
-  var top$1 = 1,
-      right$1 = 2,
-      bottom$1 = 3,
-      left$1 = 4,
-      epsilon$2 = 1e-6;
+  var top = 1,
+      right = 2,
+      bottom = 3,
+      left = 4,
+      epsilon$1 = 1e-6;
 
-  function translateX$1(x) {
+  function translateX(x) {
     return "translate(" + (x + 0.5) + ",0)";
   }
 
-  function translateY$1(y) {
+  function translateY(y) {
     return "translate(0," + (y + 0.5) + ")";
   }
 
-  function number$1$2(scale) {
+  function number$1$1(scale) {
     return function(d) {
       return +scale(d);
     };
   }
 
-  function center$2(scale) {
+  function center$1(scale) {
     var offset = Math.max(0, scale.bandwidth() - 1) / 2; // Adjust for 0.5px offset.
     if (scale.round()) offset = Math.round(offset);
     return function(d) {
@@ -17384,29 +18432,29 @@ var Demo = (function (exports) {
     };
   }
 
-  function entering$1() {
+  function entering() {
     return !this.__axis;
   }
 
-  function axis$1(orient, scale) {
+  function axis(orient, scale) {
     var tickArguments = [],
         tickValues = null,
         tickFormat = null,
         tickSizeInner = 6,
         tickSizeOuter = 6,
         tickPadding = 3,
-        k = orient === top$1 || orient === left$1 ? -1 : 1,
-        x = orient === left$1 || orient === right$1 ? "x" : "y",
-        transform = orient === top$1 || orient === bottom$1 ? translateX$1 : translateY$1;
+        k = orient === top || orient === left ? -1 : 1,
+        x = orient === left || orient === right ? "x" : "y",
+        transform = orient === top || orient === bottom ? translateX : translateY;
 
     function axis(context) {
       var values = tickValues == null ? (scale.ticks ? scale.ticks.apply(scale, tickArguments) : scale.domain()) : tickValues,
-          format = tickFormat == null ? (scale.tickFormat ? scale.tickFormat.apply(scale, tickArguments) : identity$1$2) : tickFormat,
+          format = tickFormat == null ? (scale.tickFormat ? scale.tickFormat.apply(scale, tickArguments) : identity$1$1) : tickFormat,
           spacing = Math.max(tickSizeInner, 0) + tickPadding,
           range = scale.range(),
           range0 = +range[0] + 0.5,
           range1 = +range[range.length - 1] + 0.5,
-          position = (scale.bandwidth ? center$2 : number$1$2)(scale.copy()),
+          position = (scale.bandwidth ? center$1 : number$1$1)(scale.copy()),
           selection = context.selection ? context.selection() : context,
           path = selection.selectAll(".domain").data([null]),
           tick = selection.selectAll(".tick").data(values, scale).order(),
@@ -17428,7 +18476,7 @@ var Demo = (function (exports) {
       text = text.merge(tickEnter.append("text")
           .attr("fill", "currentColor")
           .attr(x, k * spacing)
-          .attr("dy", orient === top$1 ? "0em" : orient === bottom$1 ? "0.71em" : "0.32em"));
+          .attr("dy", orient === top ? "0em" : orient === bottom ? "0.71em" : "0.32em"));
 
       if (context !== selection) {
         path = path.transition(context);
@@ -17437,18 +18485,18 @@ var Demo = (function (exports) {
         text = text.transition(context);
 
         tickExit = tickExit.transition(context)
-            .attr("opacity", epsilon$2)
+            .attr("opacity", epsilon$1)
             .attr("transform", function(d) { return isFinite(d = position(d)) ? transform(d) : this.getAttribute("transform"); });
 
         tickEnter
-            .attr("opacity", epsilon$2)
+            .attr("opacity", epsilon$1)
             .attr("transform", function(d) { var p = this.parentNode.__axis; return transform(p && isFinite(p = p(d)) ? p : position(d)); });
       }
 
       tickExit.remove();
 
       path
-          .attr("d", orient === left$1 || orient == right$1
+          .attr("d", orient === left || orient == right
               ? (tickSizeOuter ? "M" + k * tickSizeOuter + "," + range0 + "H0.5V" + range1 + "H" + k * tickSizeOuter : "M0.5," + range0 + "V" + range1)
               : (tickSizeOuter ? "M" + range0 + "," + k * tickSizeOuter + "V0.5H" + range1 + "V" + k * tickSizeOuter : "M" + range0 + ",0.5H" + range1));
 
@@ -17463,11 +18511,11 @@ var Demo = (function (exports) {
           .attr(x, k * spacing)
           .text(format);
 
-      selection.filter(entering$1)
+      selection.filter(entering)
           .attr("fill", "none")
           .attr("font-size", 10)
           .attr("font-family", "sans-serif")
-          .attr("text-anchor", orient === right$1 ? "start" : orient === left$1 ? "end" : "middle");
+          .attr("text-anchor", orient === right ? "start" : orient === left ? "end" : "middle");
 
       selection
           .each(function() { this.__axis = position; });
@@ -17478,15 +18526,15 @@ var Demo = (function (exports) {
     };
 
     axis.ticks = function() {
-      return tickArguments = slice$1$3.call(arguments), axis;
+      return tickArguments = slice$1$2.call(arguments), axis;
     };
 
     axis.tickArguments = function(_) {
-      return arguments.length ? (tickArguments = _ == null ? [] : slice$1$3.call(_), axis) : tickArguments.slice();
+      return arguments.length ? (tickArguments = _ == null ? [] : slice$1$2.call(_), axis) : tickArguments.slice();
     };
 
     axis.tickValues = function(_) {
-      return arguments.length ? (tickValues = _ == null ? null : slice$1$3.call(_), axis) : tickValues && tickValues.slice();
+      return arguments.length ? (tickValues = _ == null ? null : slice$1$2.call(_), axis) : tickValues && tickValues.slice();
     };
 
     axis.tickFormat = function(_) {
@@ -17512,8 +18560,8 @@ var Demo = (function (exports) {
     return axis;
   }
 
-  function axisBottom$1(scale) {
-    return axis$1(bottom$1, scale);
+  function axisBottom(scale) {
+    return axis(bottom, scale);
   }
 
   var prefix$2 = "$";
@@ -17629,7 +18677,7 @@ var Demo = (function (exports) {
   var array$1$2 = Array.prototype;
 
   var map$2$1 = array$1$2.map;
-  var slice$2$1 = array$1$2.slice;
+  var slice$2$2 = array$1$2.slice;
 
   var implicit$2 = {name: "implicit"};
 
@@ -17638,7 +18686,7 @@ var Demo = (function (exports) {
         domain = [],
         unknown = implicit$2;
 
-    range = range == null ? [] : slice$2$1.call(range);
+    range = range == null ? [] : slice$2$2.call(range);
 
     function scale(d) {
       var key = d + "", i = index.get(key);
@@ -17658,7 +18706,7 @@ var Demo = (function (exports) {
     };
 
     scale.range = function(_) {
-      return arguments.length ? (range = slice$2$1.call(_), scale) : range.slice();
+      return arguments.length ? (range = slice$2$2.call(_), scale) : range.slice();
     };
 
     scale.unknown = function(_) {
@@ -18034,10 +19082,10 @@ var Demo = (function (exports) {
       Xn$2 = 0.96422,
       Yn$2 = 1,
       Zn$2 = 0.82521,
-      t0$3 = 4 / 29,
-      t1$3 = 6 / 29,
-      t2$2 = 3 * t1$3 * t1$3,
-      t3$2 = t1$3 * t1$3 * t1$3;
+      t0$4 = 4 / 29,
+      t1$4 = 6 / 29,
+      t2$2 = 3 * t1$4 * t1$4,
+      t3$2 = t1$4 * t1$4 * t1$4;
 
   function labConvert$2(o) {
     if (o instanceof Lab$2) return new Lab$2(o.l, o.a, o.b, o.opacity);
@@ -18093,11 +19141,11 @@ var Demo = (function (exports) {
   }));
 
   function xyz2lab$2(t) {
-    return t > t3$2 ? Math.pow(t, 1 / 3) : t / t2$2 + t0$3;
+    return t > t3$2 ? Math.pow(t, 1 / 3) : t / t2$2 + t0$4;
   }
 
   function lab2xyz$2(t) {
-    return t > t1$3 ? t * t * t : t2$2 * (t - t0$3);
+    return t > t1$4 ? t * t * t : t2$2 * (t - t0$4);
   }
 
   function lrgb2rgb$2(x) {
@@ -18271,7 +19319,7 @@ var Demo = (function (exports) {
     };
   }
 
-  function number$2(a, b) {
+  function number$2$1(a, b) {
     return a = +a, b -= a, function(t) {
       return a + b * t;
     };
@@ -18339,7 +19387,7 @@ var Demo = (function (exports) {
         else s[++i] = bm;
       } else { // interpolate non-matching numbers
         s[++i] = null;
-        q.push({i: i, x: number$2(am, bm)});
+        q.push({i: i, x: number$2$1(am, bm)});
       }
       bi = reB$2.lastIndex;
     }
@@ -18365,13 +19413,13 @@ var Demo = (function (exports) {
   function value$2(a, b) {
     var t = typeof b, c;
     return b == null || t === "boolean" ? constant$1$3(b)
-        : (t === "number" ? number$2
+        : (t === "number" ? number$2$1
         : t === "string" ? ((c = color$2(b)) ? (b = c, rgb$1$2) : string$1)
         : b instanceof color$2 ? rgb$1$2
         : b instanceof Date ? date$1
         : Array.isArray(b) ? array$2$1
         : typeof b.valueOf !== "function" && typeof b.toString !== "function" || isNaN(b) ? object$1
-        : number$2)(a, b);
+        : number$2$1)(a, b);
   }
 
   function interpolateRound$1(a, b) {
@@ -18390,7 +19438,7 @@ var Demo = (function (exports) {
     };
   }
 
-  function number$3$1(x) {
+  function number$3(x) {
     return +x;
   }
 
@@ -18480,15 +19528,15 @@ var Demo = (function (exports) {
     };
 
     scale.domain = function(_) {
-      return arguments.length ? (domain = map$2$1.call(_, number$3$1), rescale()) : domain.slice();
+      return arguments.length ? (domain = map$2$1.call(_, number$3), rescale()) : domain.slice();
     };
 
     scale.range = function(_) {
-      return arguments.length ? (range = slice$2$1.call(_), rescale()) : range.slice();
+      return arguments.length ? (range = slice$2$2.call(_), rescale()) : range.slice();
     };
 
     scale.rangeRound = function(_) {
-      return range = slice$2$1.call(_), interpolate$$1 = interpolateRound$1, rescale();
+      return range = slice$2$2.call(_), interpolate$$1 = interpolateRound$1, rescale();
     };
 
     scale.clamp = function(_) {
@@ -18505,7 +19553,7 @@ var Demo = (function (exports) {
   // Computes the decimal coefficient and exponent of the specified number x with
   // significant digits p, where x is positive and p is in [1, 21] or undefined.
   // For example, formatDecimal(1.23) returns ["123", 0].
-  function formatDecimal$2(x, p) {
+  function formatDecimal$3(x, p) {
     if ((i = (x = p ? x.toExponential(p - 1) : x.toExponential()).indexOf("e")) < 0) return null; // NaN, ±Infinity
     var i, coefficient = x.slice(0, i);
 
@@ -18518,10 +19566,10 @@ var Demo = (function (exports) {
   }
 
   function exponent(x) {
-    return x = formatDecimal$2(Math.abs(x)), x ? x[1] : NaN;
+    return x = formatDecimal$3(Math.abs(x)), x ? x[1] : NaN;
   }
 
-  function formatGroup$2(grouping, thousands) {
+  function formatGroup$3(grouping, thousands) {
     return function(value, width) {
       var i = value.length,
           t = [],
@@ -18540,7 +19588,7 @@ var Demo = (function (exports) {
     };
   }
 
-  function formatNumerals$2(numerals) {
+  function formatNumerals$3(numerals) {
     return function(value) {
       return value.replace(/[0-9]/g, function(i) {
         return numerals[+i];
@@ -18549,16 +19597,16 @@ var Demo = (function (exports) {
   }
 
   // [[fill]align][sign][symbol][0][width][,][.precision][~][type]
-  var re$2 = /^(?:(.)?([<>=^]))?([+\-( ])?([$#])?(0)?(\d+)?(,)?(\.\d+)?(~)?([a-z%])?$/i;
+  var re$3 = /^(?:(.)?([<>=^]))?([+\-( ])?([$#])?(0)?(\d+)?(,)?(\.\d+)?(~)?([a-z%])?$/i;
 
-  function formatSpecifier$2(specifier) {
-    return new FormatSpecifier$2(specifier);
+  function formatSpecifier$3(specifier) {
+    return new FormatSpecifier$3(specifier);
   }
 
-  formatSpecifier$2.prototype = FormatSpecifier$2.prototype; // instanceof
+  formatSpecifier$3.prototype = FormatSpecifier$3.prototype; // instanceof
 
-  function FormatSpecifier$2(specifier) {
-    if (!(match = re$2.exec(specifier))) throw new Error("invalid format: " + specifier);
+  function FormatSpecifier$3(specifier) {
+    if (!(match = re$3.exec(specifier))) throw new Error("invalid format: " + specifier);
     var match;
     this.fill = match[1] || " ";
     this.align = match[2] || ">";
@@ -18572,7 +19620,7 @@ var Demo = (function (exports) {
     this.type = match[10] || "";
   }
 
-  FormatSpecifier$2.prototype.toString = function() {
+  FormatSpecifier$3.prototype.toString = function() {
     return this.fill
         + this.align
         + this.sign
@@ -18586,7 +19634,7 @@ var Demo = (function (exports) {
   };
 
   // Trims insignificant zeros, e.g., replaces 1.2000k with 1.2k.
-  function formatTrim$2(s) {
+  function formatTrim$3(s) {
     out: for (var n = s.length, i = 1, i0 = -1, i1; i < n; ++i) {
       switch (s[i]) {
         case ".": i0 = i1 = i; break;
@@ -18597,23 +19645,23 @@ var Demo = (function (exports) {
     return i0 > 0 ? s.slice(0, i0) + s.slice(i1 + 1) : s;
   }
 
-  var prefixExponent$2;
+  var prefixExponent$3;
 
-  function formatPrefixAuto$2(x, p) {
-    var d = formatDecimal$2(x, p);
+  function formatPrefixAuto$3(x, p) {
+    var d = formatDecimal$3(x, p);
     if (!d) return x + "";
     var coefficient = d[0],
         exponent = d[1],
-        i = exponent - (prefixExponent$2 = Math.max(-8, Math.min(8, Math.floor(exponent / 3))) * 3) + 1,
+        i = exponent - (prefixExponent$3 = Math.max(-8, Math.min(8, Math.floor(exponent / 3))) * 3) + 1,
         n = coefficient.length;
     return i === n ? coefficient
         : i > n ? coefficient + new Array(i - n + 1).join("0")
         : i > 0 ? coefficient.slice(0, i) + "." + coefficient.slice(i)
-        : "0." + new Array(1 - i).join("0") + formatDecimal$2(x, Math.max(0, p + i - 1))[0]; // less than 1y!
+        : "0." + new Array(1 - i).join("0") + formatDecimal$3(x, Math.max(0, p + i - 1))[0]; // less than 1y!
   }
 
-  function formatRounded$2(x, p) {
-    var d = formatDecimal$2(x, p);
+  function formatRounded$3(x, p) {
+    var d = formatDecimal$3(x, p);
     if (!d) return x + "";
     var coefficient = d[0],
         exponent = d[1];
@@ -18622,7 +19670,7 @@ var Demo = (function (exports) {
         : coefficient + new Array(exponent - coefficient.length + 2).join("0");
   }
 
-  var formatTypes$2 = {
+  var formatTypes$3 = {
     "%": function(x, p) { return (x * 100).toFixed(p); },
     "b": function(x) { return Math.round(x).toString(2); },
     "c": function(x) { return x + ""; },
@@ -18631,28 +19679,28 @@ var Demo = (function (exports) {
     "f": function(x, p) { return x.toFixed(p); },
     "g": function(x, p) { return x.toPrecision(p); },
     "o": function(x) { return Math.round(x).toString(8); },
-    "p": function(x, p) { return formatRounded$2(x * 100, p); },
-    "r": formatRounded$2,
-    "s": formatPrefixAuto$2,
+    "p": function(x, p) { return formatRounded$3(x * 100, p); },
+    "r": formatRounded$3,
+    "s": formatPrefixAuto$3,
     "X": function(x) { return Math.round(x).toString(16).toUpperCase(); },
     "x": function(x) { return Math.round(x).toString(16); }
   };
 
-  function identity$3$1(x) {
+  function identity$3$2(x) {
     return x;
   }
 
-  var prefixes$2 = ["y","z","a","f","p","n","µ","m","","k","M","G","T","P","E","Z","Y"];
+  var prefixes$3 = ["y","z","a","f","p","n","µ","m","","k","M","G","T","P","E","Z","Y"];
 
-  function formatLocale$3(locale) {
-    var group = locale.grouping && locale.thousands ? formatGroup$2(locale.grouping, locale.thousands) : identity$3$1,
+  function formatLocale$4(locale) {
+    var group = locale.grouping && locale.thousands ? formatGroup$3(locale.grouping, locale.thousands) : identity$3$2,
         currency = locale.currency,
         decimal = locale.decimal,
-        numerals = locale.numerals ? formatNumerals$2(locale.numerals) : identity$3$1,
+        numerals = locale.numerals ? formatNumerals$3(locale.numerals) : identity$3$2,
         percent = locale.percent || "%";
 
     function newFormat(specifier) {
-      specifier = formatSpecifier$2(specifier);
+      specifier = formatSpecifier$3(specifier);
 
       var fill = specifier.fill,
           align = specifier.align,
@@ -18669,7 +19717,7 @@ var Demo = (function (exports) {
       if (type === "n") comma = true, type = "g";
 
       // The "" type, and any invalid type, is an alias for ".12~g".
-      else if (!formatTypes$2[type]) precision == null && (precision = 12), trim = true, type = "g";
+      else if (!formatTypes$3[type]) precision == null && (precision = 12), trim = true, type = "g";
 
       // If zero fill is specified, padding goes after sign and before digits.
       if (zero || (fill === "0" && align === "=")) zero = true, fill = "0", align = "=";
@@ -18682,7 +19730,7 @@ var Demo = (function (exports) {
       // What format function should we use?
       // Is this an integer type?
       // Can this type generate exponential notation?
-      var formatType = formatTypes$2[type],
+      var formatType = formatTypes$3[type],
           maybeSuffix = /[defgprs%]/.test(type);
 
       // Set the default precision if not specified,
@@ -18709,14 +19757,14 @@ var Demo = (function (exports) {
           value = formatType(Math.abs(value), precision);
 
           // Trim insignificant zeros.
-          if (trim) value = formatTrim$2(value);
+          if (trim) value = formatTrim$3(value);
 
           // If a negative value rounds to zero during formatting, treat as positive.
           if (valueNegative && +value === 0) valueNegative = false;
 
           // Compute the prefix and suffix.
           valuePrefix = (valueNegative ? (sign === "(" ? sign : "-") : sign === "-" || sign === "(" ? "" : sign) + valuePrefix;
-          valueSuffix = (type === "s" ? prefixes$2[8 + prefixExponent$2 / 3] : "") + valueSuffix + (valueNegative && sign === "(" ? ")" : "");
+          valueSuffix = (type === "s" ? prefixes$3[8 + prefixExponent$3 / 3] : "") + valueSuffix + (valueNegative && sign === "(" ? ")" : "");
 
           // Break the formatted value into the integer “value” part that can be
           // grouped, and fractional or exponential “suffix” part that is not.
@@ -18761,10 +19809,10 @@ var Demo = (function (exports) {
     }
 
     function formatPrefix(specifier, value) {
-      var f = newFormat((specifier = formatSpecifier$2(specifier), specifier.type = "f", specifier)),
+      var f = newFormat((specifier = formatSpecifier$3(specifier), specifier.type = "f", specifier)),
           e = Math.max(-8, Math.min(8, Math.floor(exponent(value) / 3))) * 3,
           k = Math.pow(10, -e),
-          prefix = prefixes$2[8 + e / 3];
+          prefix = prefixes$3[8 + e / 3];
       return function(value) {
         return f(k * value) + prefix;
       };
@@ -18776,22 +19824,22 @@ var Demo = (function (exports) {
     };
   }
 
-  var locale$3;
-  var format$2;
-  var formatPrefix$2;
+  var locale$4;
+  var format$3;
+  var formatPrefix$3;
 
-  defaultLocale$3({
+  defaultLocale$4({
     decimal: ".",
     thousands: ",",
     grouping: [3],
     currency: ["$", ""]
   });
 
-  function defaultLocale$3(definition) {
-    locale$3 = formatLocale$3(definition);
-    format$2 = locale$3.format;
-    formatPrefix$2 = locale$3.formatPrefix;
-    return locale$3;
+  function defaultLocale$4(definition) {
+    locale$4 = formatLocale$4(definition);
+    format$3 = locale$4.format;
+    formatPrefix$3 = locale$4.formatPrefix;
+    return locale$4;
   }
 
   function precisionFixed$1(step) {
@@ -18812,12 +19860,12 @@ var Demo = (function (exports) {
         stop = domain[domain.length - 1],
         step = tickStep$2(start, stop, count == null ? 10 : count),
         precision;
-    specifier = formatSpecifier$2(specifier == null ? ",f" : specifier);
+    specifier = formatSpecifier$3(specifier == null ? ",f" : specifier);
     switch (specifier.type) {
       case "s": {
         var value = Math.max(Math.abs(start), Math.abs(stop));
         if (specifier.precision == null && !isNaN(precision = precisionPrefix$1(step, value))) specifier.precision = precision;
-        return formatPrefix$2(specifier, value);
+        return formatPrefix$3(specifier, value);
       }
       case "":
       case "e":
@@ -18833,7 +19881,7 @@ var Demo = (function (exports) {
         break;
       }
     }
-    return format$2(specifier);
+    return format$3(specifier);
   }
 
   function linearish$1(scale) {
@@ -18892,7 +19940,7 @@ var Demo = (function (exports) {
   }
 
   function linear$1$2() {
-    var scale = continuous$1(deinterpolateLinear$1, number$2);
+    var scale = continuous$1(deinterpolateLinear$1, number$2$1);
 
     scale.copy = function() {
       return copy$1(scale, linear$1$2());
@@ -18923,7 +19971,7 @@ var Demo = (function (exports) {
   var t0$1$2 = new Date,
       t1$1$2 = new Date;
 
-  function newInterval$2(floori, offseti, count, field) {
+  function newInterval$3(floori, offseti, count, field) {
 
     function interval(date) {
       return floori(date = new Date(+date)), date;
@@ -18956,7 +20004,7 @@ var Demo = (function (exports) {
     };
 
     interval.filter = function(test) {
-      return newInterval$2(function(date) {
+      return newInterval$3(function(date) {
         if (date >= date) while (floori(date), !test(date)) date.setTime(date - 1);
       }, function(date, step) {
         if (date >= date) {
@@ -18989,7 +20037,7 @@ var Demo = (function (exports) {
     return interval;
   }
 
-  var millisecond$2 = newInterval$2(function() {
+  var millisecond$3 = newInterval$3(function() {
     // noop
   }, function(date, step) {
     date.setTime(+date + step);
@@ -18998,11 +20046,11 @@ var Demo = (function (exports) {
   });
 
   // An optimized implementation for this simple case.
-  millisecond$2.every = function(k) {
+  millisecond$3.every = function(k) {
     k = Math.floor(k);
     if (!isFinite(k) || !(k > 0)) return null;
-    if (!(k > 1)) return millisecond$2;
-    return newInterval$2(function(date) {
+    if (!(k > 1)) return millisecond$3;
+    return newInterval$3(function(date) {
       date.setTime(Math.floor(date / k) * k);
     }, function(date, step) {
       date.setTime(+date + step * k);
@@ -19011,74 +20059,74 @@ var Demo = (function (exports) {
     });
   };
 
-  var durationSecond$2 = 1e3;
-  var durationMinute$2 = 6e4;
-  var durationHour$2 = 36e5;
-  var durationDay$2 = 864e5;
-  var durationWeek$2 = 6048e5;
+  var durationSecond$3 = 1e3;
+  var durationMinute$3 = 6e4;
+  var durationHour$3 = 36e5;
+  var durationDay$3 = 864e5;
+  var durationWeek$3 = 6048e5;
 
-  var second$2 = newInterval$2(function(date) {
-    date.setTime(Math.floor(date / durationSecond$2) * durationSecond$2);
+  var second$3 = newInterval$3(function(date) {
+    date.setTime(Math.floor(date / durationSecond$3) * durationSecond$3);
   }, function(date, step) {
-    date.setTime(+date + step * durationSecond$2);
+    date.setTime(+date + step * durationSecond$3);
   }, function(start, end) {
-    return (end - start) / durationSecond$2;
+    return (end - start) / durationSecond$3;
   }, function(date) {
     return date.getUTCSeconds();
   });
 
-  var minute$2 = newInterval$2(function(date) {
-    date.setTime(Math.floor(date / durationMinute$2) * durationMinute$2);
+  var minute$3 = newInterval$3(function(date) {
+    date.setTime(Math.floor(date / durationMinute$3) * durationMinute$3);
   }, function(date, step) {
-    date.setTime(+date + step * durationMinute$2);
+    date.setTime(+date + step * durationMinute$3);
   }, function(start, end) {
-    return (end - start) / durationMinute$2;
+    return (end - start) / durationMinute$3;
   }, function(date) {
     return date.getMinutes();
   });
 
-  var hour$2 = newInterval$2(function(date) {
-    var offset = date.getTimezoneOffset() * durationMinute$2 % durationHour$2;
-    if (offset < 0) offset += durationHour$2;
-    date.setTime(Math.floor((+date - offset) / durationHour$2) * durationHour$2 + offset);
+  var hour$3 = newInterval$3(function(date) {
+    var offset = date.getTimezoneOffset() * durationMinute$3 % durationHour$3;
+    if (offset < 0) offset += durationHour$3;
+    date.setTime(Math.floor((+date - offset) / durationHour$3) * durationHour$3 + offset);
   }, function(date, step) {
-    date.setTime(+date + step * durationHour$2);
+    date.setTime(+date + step * durationHour$3);
   }, function(start, end) {
-    return (end - start) / durationHour$2;
+    return (end - start) / durationHour$3;
   }, function(date) {
     return date.getHours();
   });
 
-  var day$2 = newInterval$2(function(date) {
+  var day$3 = newInterval$3(function(date) {
     date.setHours(0, 0, 0, 0);
   }, function(date, step) {
     date.setDate(date.getDate() + step);
   }, function(start, end) {
-    return (end - start - (end.getTimezoneOffset() - start.getTimezoneOffset()) * durationMinute$2) / durationDay$2;
+    return (end - start - (end.getTimezoneOffset() - start.getTimezoneOffset()) * durationMinute$3) / durationDay$3;
   }, function(date) {
     return date.getDate() - 1;
   });
 
-  function weekday$2(i) {
-    return newInterval$2(function(date) {
+  function weekday$3(i) {
+    return newInterval$3(function(date) {
       date.setDate(date.getDate() - (date.getDay() + 7 - i) % 7);
       date.setHours(0, 0, 0, 0);
     }, function(date, step) {
       date.setDate(date.getDate() + step * 7);
     }, function(start, end) {
-      return (end - start - (end.getTimezoneOffset() - start.getTimezoneOffset()) * durationMinute$2) / durationWeek$2;
+      return (end - start - (end.getTimezoneOffset() - start.getTimezoneOffset()) * durationMinute$3) / durationWeek$3;
     });
   }
 
-  var sunday$2 = weekday$2(0);
-  var monday$2 = weekday$2(1);
-  var tuesday$2 = weekday$2(2);
-  var wednesday$2 = weekday$2(3);
-  var thursday$2 = weekday$2(4);
-  var friday$2 = weekday$2(5);
-  var saturday$2 = weekday$2(6);
+  var sunday$3 = weekday$3(0);
+  var monday$3 = weekday$3(1);
+  var tuesday$3 = weekday$3(2);
+  var wednesday$3 = weekday$3(3);
+  var thursday$3 = weekday$3(4);
+  var friday$3 = weekday$3(5);
+  var saturday$3 = weekday$3(6);
 
-  var month$2 = newInterval$2(function(date) {
+  var month$3 = newInterval$3(function(date) {
     date.setDate(1);
     date.setHours(0, 0, 0, 0);
   }, function(date, step) {
@@ -19089,7 +20137,7 @@ var Demo = (function (exports) {
     return date.getMonth();
   });
 
-  var year$2 = newInterval$2(function(date) {
+  var year$3 = newInterval$3(function(date) {
     date.setMonth(0, 1);
     date.setHours(0, 0, 0, 0);
   }, function(date, step) {
@@ -19101,8 +20149,8 @@ var Demo = (function (exports) {
   });
 
   // An optimized implementation for this simple case.
-  year$2.every = function(k) {
-    return !isFinite(k = Math.floor(k)) || !(k > 0) ? null : newInterval$2(function(date) {
+  year$3.every = function(k) {
+    return !isFinite(k = Math.floor(k)) || !(k > 0) ? null : newInterval$3(function(date) {
       date.setFullYear(Math.floor(date.getFullYear() / k) * k);
       date.setMonth(0, 1);
       date.setHours(0, 0, 0, 0);
@@ -19111,56 +20159,56 @@ var Demo = (function (exports) {
     });
   };
 
-  var utcMinute$2 = newInterval$2(function(date) {
+  var utcMinute$3 = newInterval$3(function(date) {
     date.setUTCSeconds(0, 0);
   }, function(date, step) {
-    date.setTime(+date + step * durationMinute$2);
+    date.setTime(+date + step * durationMinute$3);
   }, function(start, end) {
-    return (end - start) / durationMinute$2;
+    return (end - start) / durationMinute$3;
   }, function(date) {
     return date.getUTCMinutes();
   });
 
-  var utcHour$2 = newInterval$2(function(date) {
+  var utcHour$3 = newInterval$3(function(date) {
     date.setUTCMinutes(0, 0, 0);
   }, function(date, step) {
-    date.setTime(+date + step * durationHour$2);
+    date.setTime(+date + step * durationHour$3);
   }, function(start, end) {
-    return (end - start) / durationHour$2;
+    return (end - start) / durationHour$3;
   }, function(date) {
     return date.getUTCHours();
   });
 
-  var utcDay$2 = newInterval$2(function(date) {
+  var utcDay$3 = newInterval$3(function(date) {
     date.setUTCHours(0, 0, 0, 0);
   }, function(date, step) {
     date.setUTCDate(date.getUTCDate() + step);
   }, function(start, end) {
-    return (end - start) / durationDay$2;
+    return (end - start) / durationDay$3;
   }, function(date) {
     return date.getUTCDate() - 1;
   });
 
-  function utcWeekday$2(i) {
-    return newInterval$2(function(date) {
+  function utcWeekday$3(i) {
+    return newInterval$3(function(date) {
       date.setUTCDate(date.getUTCDate() - (date.getUTCDay() + 7 - i) % 7);
       date.setUTCHours(0, 0, 0, 0);
     }, function(date, step) {
       date.setUTCDate(date.getUTCDate() + step * 7);
     }, function(start, end) {
-      return (end - start) / durationWeek$2;
+      return (end - start) / durationWeek$3;
     });
   }
 
-  var utcSunday$2 = utcWeekday$2(0);
-  var utcMonday$2 = utcWeekday$2(1);
-  var utcTuesday$2 = utcWeekday$2(2);
-  var utcWednesday$2 = utcWeekday$2(3);
-  var utcThursday$2 = utcWeekday$2(4);
-  var utcFriday$2 = utcWeekday$2(5);
-  var utcSaturday$2 = utcWeekday$2(6);
+  var utcSunday$3 = utcWeekday$3(0);
+  var utcMonday$3 = utcWeekday$3(1);
+  var utcTuesday$3 = utcWeekday$3(2);
+  var utcWednesday$3 = utcWeekday$3(3);
+  var utcThursday$3 = utcWeekday$3(4);
+  var utcFriday$3 = utcWeekday$3(5);
+  var utcSaturday$3 = utcWeekday$3(6);
 
-  var utcMonth$2 = newInterval$2(function(date) {
+  var utcMonth$3 = newInterval$3(function(date) {
     date.setUTCDate(1);
     date.setUTCHours(0, 0, 0, 0);
   }, function(date, step) {
@@ -19171,7 +20219,7 @@ var Demo = (function (exports) {
     return date.getUTCMonth();
   });
 
-  var utcYear$2 = newInterval$2(function(date) {
+  var utcYear$3 = newInterval$3(function(date) {
     date.setUTCMonth(0, 1);
     date.setUTCHours(0, 0, 0, 0);
   }, function(date, step) {
@@ -19183,8 +20231,8 @@ var Demo = (function (exports) {
   });
 
   // An optimized implementation for this simple case.
-  utcYear$2.every = function(k) {
-    return !isFinite(k = Math.floor(k)) || !(k > 0) ? null : newInterval$2(function(date) {
+  utcYear$3.every = function(k) {
+    return !isFinite(k = Math.floor(k)) || !(k > 0) ? null : newInterval$3(function(date) {
       date.setUTCFullYear(Math.floor(date.getUTCFullYear() / k) * k);
       date.setUTCMonth(0, 1);
       date.setUTCHours(0, 0, 0, 0);
@@ -19193,7 +20241,7 @@ var Demo = (function (exports) {
     });
   };
 
-  function localDate$2(d) {
+  function localDate$3(d) {
     if (0 <= d.y && d.y < 100) {
       var date = new Date(-1, d.m, d.d, d.H, d.M, d.S, d.L);
       date.setFullYear(d.y);
@@ -19202,7 +20250,7 @@ var Demo = (function (exports) {
     return new Date(d.y, d.m, d.d, d.H, d.M, d.S, d.L);
   }
 
-  function utcDate$2(d) {
+  function utcDate$3(d) {
     if (0 <= d.y && d.y < 100) {
       var date = new Date(Date.UTC(-1, d.m, d.d, d.H, d.M, d.S, d.L));
       date.setUTCFullYear(d.y);
@@ -19211,11 +20259,11 @@ var Demo = (function (exports) {
     return new Date(Date.UTC(d.y, d.m, d.d, d.H, d.M, d.S, d.L));
   }
 
-  function newYear$2(y) {
+  function newYear$3(y) {
     return {y: y, m: 0, d: 1, H: 0, M: 0, S: 0, L: 0};
   }
 
-  function formatLocale$1$2(locale) {
+  function formatLocale$1$3(locale) {
     var locale_dateTime = locale.dateTime,
         locale_date = locale.date,
         locale_time = locale.time,
@@ -19225,16 +20273,16 @@ var Demo = (function (exports) {
         locale_months = locale.months,
         locale_shortMonths = locale.shortMonths;
 
-    var periodRe = formatRe$2(locale_periods),
-        periodLookup = formatLookup$2(locale_periods),
-        weekdayRe = formatRe$2(locale_weekdays),
-        weekdayLookup = formatLookup$2(locale_weekdays),
-        shortWeekdayRe = formatRe$2(locale_shortWeekdays),
-        shortWeekdayLookup = formatLookup$2(locale_shortWeekdays),
-        monthRe = formatRe$2(locale_months),
-        monthLookup = formatLookup$2(locale_months),
-        shortMonthRe = formatRe$2(locale_shortMonths),
-        shortMonthLookup = formatLookup$2(locale_shortMonths);
+    var periodRe = formatRe$3(locale_periods),
+        periodLookup = formatLookup$3(locale_periods),
+        weekdayRe = formatRe$3(locale_weekdays),
+        weekdayLookup = formatLookup$3(locale_weekdays),
+        shortWeekdayRe = formatRe$3(locale_shortWeekdays),
+        shortWeekdayLookup = formatLookup$3(locale_shortWeekdays),
+        monthRe = formatRe$3(locale_months),
+        monthLookup = formatLookup$3(locale_months),
+        shortMonthRe = formatRe$3(locale_shortMonths),
+        shortMonthLookup = formatLookup$3(locale_shortMonths);
 
     var formats = {
       "a": formatShortWeekday,
@@ -19242,30 +20290,30 @@ var Demo = (function (exports) {
       "b": formatShortMonth,
       "B": formatMonth,
       "c": null,
-      "d": formatDayOfMonth$2,
-      "e": formatDayOfMonth$2,
-      "f": formatMicroseconds$2,
-      "H": formatHour24$2,
-      "I": formatHour12$2,
-      "j": formatDayOfYear$2,
-      "L": formatMilliseconds$2,
-      "m": formatMonthNumber$2,
-      "M": formatMinutes$2,
+      "d": formatDayOfMonth$3,
+      "e": formatDayOfMonth$3,
+      "f": formatMicroseconds$3,
+      "H": formatHour24$3,
+      "I": formatHour12$3,
+      "j": formatDayOfYear$3,
+      "L": formatMilliseconds$3,
+      "m": formatMonthNumber$3,
+      "M": formatMinutes$3,
       "p": formatPeriod,
-      "Q": formatUnixTimestamp$2,
-      "s": formatUnixTimestampSeconds$2,
-      "S": formatSeconds$2,
-      "u": formatWeekdayNumberMonday$2,
-      "U": formatWeekNumberSunday$2,
-      "V": formatWeekNumberISO$2,
-      "w": formatWeekdayNumberSunday$2,
-      "W": formatWeekNumberMonday$2,
+      "Q": formatUnixTimestamp$3,
+      "s": formatUnixTimestampSeconds$3,
+      "S": formatSeconds$3,
+      "u": formatWeekdayNumberMonday$3,
+      "U": formatWeekNumberSunday$3,
+      "V": formatWeekNumberISO$3,
+      "w": formatWeekdayNumberSunday$3,
+      "W": formatWeekNumberMonday$3,
       "x": null,
       "X": null,
-      "y": formatYear$2,
-      "Y": formatFullYear$2,
-      "Z": formatZone$2,
-      "%": formatLiteralPercent$2
+      "y": formatYear$3,
+      "Y": formatFullYear$3,
+      "Z": formatZone$3,
+      "%": formatLiteralPercent$3
     };
 
     var utcFormats = {
@@ -19274,30 +20322,30 @@ var Demo = (function (exports) {
       "b": formatUTCShortMonth,
       "B": formatUTCMonth,
       "c": null,
-      "d": formatUTCDayOfMonth$2,
-      "e": formatUTCDayOfMonth$2,
-      "f": formatUTCMicroseconds$2,
-      "H": formatUTCHour24$2,
-      "I": formatUTCHour12$2,
-      "j": formatUTCDayOfYear$2,
-      "L": formatUTCMilliseconds$2,
-      "m": formatUTCMonthNumber$2,
-      "M": formatUTCMinutes$2,
+      "d": formatUTCDayOfMonth$3,
+      "e": formatUTCDayOfMonth$3,
+      "f": formatUTCMicroseconds$3,
+      "H": formatUTCHour24$3,
+      "I": formatUTCHour12$3,
+      "j": formatUTCDayOfYear$3,
+      "L": formatUTCMilliseconds$3,
+      "m": formatUTCMonthNumber$3,
+      "M": formatUTCMinutes$3,
       "p": formatUTCPeriod,
-      "Q": formatUnixTimestamp$2,
-      "s": formatUnixTimestampSeconds$2,
-      "S": formatUTCSeconds$2,
-      "u": formatUTCWeekdayNumberMonday$2,
-      "U": formatUTCWeekNumberSunday$2,
-      "V": formatUTCWeekNumberISO$2,
-      "w": formatUTCWeekdayNumberSunday$2,
-      "W": formatUTCWeekNumberMonday$2,
+      "Q": formatUnixTimestamp$3,
+      "s": formatUnixTimestampSeconds$3,
+      "S": formatUTCSeconds$3,
+      "u": formatUTCWeekdayNumberMonday$3,
+      "U": formatUTCWeekNumberSunday$3,
+      "V": formatUTCWeekNumberISO$3,
+      "w": formatUTCWeekdayNumberSunday$3,
+      "W": formatUTCWeekNumberMonday$3,
       "x": null,
       "X": null,
-      "y": formatUTCYear$2,
-      "Y": formatUTCFullYear$2,
-      "Z": formatUTCZone$2,
-      "%": formatLiteralPercent$2
+      "y": formatUTCYear$3,
+      "Y": formatUTCFullYear$3,
+      "Z": formatUTCZone$3,
+      "%": formatLiteralPercent$3
     };
 
     var parses = {
@@ -19306,30 +20354,30 @@ var Demo = (function (exports) {
       "b": parseShortMonth,
       "B": parseMonth,
       "c": parseLocaleDateTime,
-      "d": parseDayOfMonth$2,
-      "e": parseDayOfMonth$2,
-      "f": parseMicroseconds$2,
-      "H": parseHour24$2,
-      "I": parseHour24$2,
-      "j": parseDayOfYear$2,
-      "L": parseMilliseconds$2,
-      "m": parseMonthNumber$2,
-      "M": parseMinutes$2,
+      "d": parseDayOfMonth$3,
+      "e": parseDayOfMonth$3,
+      "f": parseMicroseconds$3,
+      "H": parseHour24$3,
+      "I": parseHour24$3,
+      "j": parseDayOfYear$3,
+      "L": parseMilliseconds$3,
+      "m": parseMonthNumber$3,
+      "M": parseMinutes$3,
       "p": parsePeriod,
-      "Q": parseUnixTimestamp$2,
-      "s": parseUnixTimestampSeconds$2,
-      "S": parseSeconds$2,
-      "u": parseWeekdayNumberMonday$2,
-      "U": parseWeekNumberSunday$2,
-      "V": parseWeekNumberISO$2,
-      "w": parseWeekdayNumberSunday$2,
-      "W": parseWeekNumberMonday$2,
+      "Q": parseUnixTimestamp$3,
+      "s": parseUnixTimestampSeconds$3,
+      "S": parseSeconds$3,
+      "u": parseWeekdayNumberMonday$3,
+      "U": parseWeekNumberSunday$3,
+      "V": parseWeekNumberISO$3,
+      "w": parseWeekdayNumberSunday$3,
+      "W": parseWeekNumberMonday$3,
       "x": parseLocaleDate,
       "X": parseLocaleTime,
-      "y": parseYear$2,
-      "Y": parseFullYear$2,
-      "Z": parseZone$2,
-      "%": parseLiteralPercent$2
+      "y": parseYear$3,
+      "Y": parseFullYear$3,
+      "Z": parseZone$3,
+      "%": parseLiteralPercent$3
     };
 
     // These recursive directive definitions must be deferred.
@@ -19355,7 +20403,7 @@ var Demo = (function (exports) {
         while (++i < n) {
           if (specifier.charCodeAt(i) === 37) {
             string.push(specifier.slice(j, i));
-            if ((pad = pads$2[c = specifier.charAt(++i)]) != null) c = specifier.charAt(++i);
+            if ((pad = pads$3[c = specifier.charAt(++i)]) != null) c = specifier.charAt(++i);
             else pad = c === "e" ? " " : "0";
             if (format = formats[c]) c = format(date, pad);
             string.push(c);
@@ -19370,7 +20418,7 @@ var Demo = (function (exports) {
 
     function newParse(specifier, newDate) {
       return function(string) {
-        var d = newYear$2(1900),
+        var d = newYear$3(1900),
             i = parseSpecifier(d, specifier, string += "", 0),
             week, day$$1;
         if (i != string.length) return null;
@@ -19386,23 +20434,23 @@ var Demo = (function (exports) {
           if (d.V < 1 || d.V > 53) return null;
           if (!("w" in d)) d.w = 1;
           if ("Z" in d) {
-            week = utcDate$2(newYear$2(d.y)), day$$1 = week.getUTCDay();
-            week = day$$1 > 4 || day$$1 === 0 ? utcMonday$2.ceil(week) : utcMonday$2(week);
-            week = utcDay$2.offset(week, (d.V - 1) * 7);
+            week = utcDate$3(newYear$3(d.y)), day$$1 = week.getUTCDay();
+            week = day$$1 > 4 || day$$1 === 0 ? utcMonday$3.ceil(week) : utcMonday$3(week);
+            week = utcDay$3.offset(week, (d.V - 1) * 7);
             d.y = week.getUTCFullYear();
             d.m = week.getUTCMonth();
             d.d = week.getUTCDate() + (d.w + 6) % 7;
           } else {
-            week = newDate(newYear$2(d.y)), day$$1 = week.getDay();
-            week = day$$1 > 4 || day$$1 === 0 ? monday$2.ceil(week) : monday$2(week);
-            week = day$2.offset(week, (d.V - 1) * 7);
+            week = newDate(newYear$3(d.y)), day$$1 = week.getDay();
+            week = day$$1 > 4 || day$$1 === 0 ? monday$3.ceil(week) : monday$3(week);
+            week = day$3.offset(week, (d.V - 1) * 7);
             d.y = week.getFullYear();
             d.m = week.getMonth();
             d.d = week.getDate() + (d.w + 6) % 7;
           }
         } else if ("W" in d || "U" in d) {
           if (!("w" in d)) d.w = "u" in d ? d.u % 7 : "W" in d ? 1 : 0;
-          day$$1 = "Z" in d ? utcDate$2(newYear$2(d.y)).getUTCDay() : newDate(newYear$2(d.y)).getDay();
+          day$$1 = "Z" in d ? utcDate$3(newYear$3(d.y)).getUTCDay() : newDate(newYear$3(d.y)).getDay();
           d.m = 0;
           d.d = "W" in d ? (d.w + 6) % 7 + d.W * 7 - (day$$1 + 5) % 7 : d.w + d.U * 7 - (day$$1 + 6) % 7;
         }
@@ -19412,7 +20460,7 @@ var Demo = (function (exports) {
         if ("Z" in d) {
           d.H += d.Z / 100 | 0;
           d.M += d.Z % 100;
-          return utcDate$2(d);
+          return utcDate$3(d);
         }
 
         // Otherwise, all fields are in local time.
@@ -19432,7 +20480,7 @@ var Demo = (function (exports) {
         c = specifier.charCodeAt(i++);
         if (c === 37) {
           c = specifier.charAt(i++);
-          parse = parses[c in pads$2 ? specifier.charAt(i++) : c];
+          parse = parses[c in pads$3 ? specifier.charAt(i++) : c];
           if (!parse || ((j = parse(d, string, j)) < 0)) return -1;
         } else if (c != string.charCodeAt(j++)) {
           return -1;
@@ -19526,7 +20574,7 @@ var Demo = (function (exports) {
         return f;
       },
       parse: function(specifier) {
-        var p = newParse(specifier += "", localDate$2);
+        var p = newParse(specifier += "", localDate$3);
         p.toString = function() { return specifier; };
         return p;
       },
@@ -19536,298 +20584,298 @@ var Demo = (function (exports) {
         return f;
       },
       utcParse: function(specifier) {
-        var p = newParse(specifier, utcDate$2);
+        var p = newParse(specifier, utcDate$3);
         p.toString = function() { return specifier; };
         return p;
       }
     };
   }
 
-  var pads$2 = {"-": "", "_": " ", "0": "0"},
-      numberRe$2 = /^\s*\d+/, // note: ignores next directive
-      percentRe$2 = /^%/,
-      requoteRe$2 = /[\\^$*+?|[\]().{}]/g;
+  var pads$3 = {"-": "", "_": " ", "0": "0"},
+      numberRe$3 = /^\s*\d+/, // note: ignores next directive
+      percentRe$3 = /^%/,
+      requoteRe$3 = /[\\^$*+?|[\]().{}]/g;
 
-  function pad$2(value, fill, width) {
+  function pad$3(value, fill, width) {
     var sign = value < 0 ? "-" : "",
         string = (sign ? -value : value) + "",
         length = string.length;
     return sign + (length < width ? new Array(width - length + 1).join(fill) + string : string);
   }
 
-  function requote$2(s) {
-    return s.replace(requoteRe$2, "\\$&");
+  function requote$3(s) {
+    return s.replace(requoteRe$3, "\\$&");
   }
 
-  function formatRe$2(names) {
-    return new RegExp("^(?:" + names.map(requote$2).join("|") + ")", "i");
+  function formatRe$3(names) {
+    return new RegExp("^(?:" + names.map(requote$3).join("|") + ")", "i");
   }
 
-  function formatLookup$2(names) {
+  function formatLookup$3(names) {
     var map = {}, i = -1, n = names.length;
     while (++i < n) map[names[i].toLowerCase()] = i;
     return map;
   }
 
-  function parseWeekdayNumberSunday$2(d, string, i) {
-    var n = numberRe$2.exec(string.slice(i, i + 1));
+  function parseWeekdayNumberSunday$3(d, string, i) {
+    var n = numberRe$3.exec(string.slice(i, i + 1));
     return n ? (d.w = +n[0], i + n[0].length) : -1;
   }
 
-  function parseWeekdayNumberMonday$2(d, string, i) {
-    var n = numberRe$2.exec(string.slice(i, i + 1));
+  function parseWeekdayNumberMonday$3(d, string, i) {
+    var n = numberRe$3.exec(string.slice(i, i + 1));
     return n ? (d.u = +n[0], i + n[0].length) : -1;
   }
 
-  function parseWeekNumberSunday$2(d, string, i) {
-    var n = numberRe$2.exec(string.slice(i, i + 2));
+  function parseWeekNumberSunday$3(d, string, i) {
+    var n = numberRe$3.exec(string.slice(i, i + 2));
     return n ? (d.U = +n[0], i + n[0].length) : -1;
   }
 
-  function parseWeekNumberISO$2(d, string, i) {
-    var n = numberRe$2.exec(string.slice(i, i + 2));
+  function parseWeekNumberISO$3(d, string, i) {
+    var n = numberRe$3.exec(string.slice(i, i + 2));
     return n ? (d.V = +n[0], i + n[0].length) : -1;
   }
 
-  function parseWeekNumberMonday$2(d, string, i) {
-    var n = numberRe$2.exec(string.slice(i, i + 2));
+  function parseWeekNumberMonday$3(d, string, i) {
+    var n = numberRe$3.exec(string.slice(i, i + 2));
     return n ? (d.W = +n[0], i + n[0].length) : -1;
   }
 
-  function parseFullYear$2(d, string, i) {
-    var n = numberRe$2.exec(string.slice(i, i + 4));
+  function parseFullYear$3(d, string, i) {
+    var n = numberRe$3.exec(string.slice(i, i + 4));
     return n ? (d.y = +n[0], i + n[0].length) : -1;
   }
 
-  function parseYear$2(d, string, i) {
-    var n = numberRe$2.exec(string.slice(i, i + 2));
+  function parseYear$3(d, string, i) {
+    var n = numberRe$3.exec(string.slice(i, i + 2));
     return n ? (d.y = +n[0] + (+n[0] > 68 ? 1900 : 2000), i + n[0].length) : -1;
   }
 
-  function parseZone$2(d, string, i) {
+  function parseZone$3(d, string, i) {
     var n = /^(Z)|([+-]\d\d)(?::?(\d\d))?/.exec(string.slice(i, i + 6));
     return n ? (d.Z = n[1] ? 0 : -(n[2] + (n[3] || "00")), i + n[0].length) : -1;
   }
 
-  function parseMonthNumber$2(d, string, i) {
-    var n = numberRe$2.exec(string.slice(i, i + 2));
+  function parseMonthNumber$3(d, string, i) {
+    var n = numberRe$3.exec(string.slice(i, i + 2));
     return n ? (d.m = n[0] - 1, i + n[0].length) : -1;
   }
 
-  function parseDayOfMonth$2(d, string, i) {
-    var n = numberRe$2.exec(string.slice(i, i + 2));
+  function parseDayOfMonth$3(d, string, i) {
+    var n = numberRe$3.exec(string.slice(i, i + 2));
     return n ? (d.d = +n[0], i + n[0].length) : -1;
   }
 
-  function parseDayOfYear$2(d, string, i) {
-    var n = numberRe$2.exec(string.slice(i, i + 3));
+  function parseDayOfYear$3(d, string, i) {
+    var n = numberRe$3.exec(string.slice(i, i + 3));
     return n ? (d.m = 0, d.d = +n[0], i + n[0].length) : -1;
   }
 
-  function parseHour24$2(d, string, i) {
-    var n = numberRe$2.exec(string.slice(i, i + 2));
+  function parseHour24$3(d, string, i) {
+    var n = numberRe$3.exec(string.slice(i, i + 2));
     return n ? (d.H = +n[0], i + n[0].length) : -1;
   }
 
-  function parseMinutes$2(d, string, i) {
-    var n = numberRe$2.exec(string.slice(i, i + 2));
+  function parseMinutes$3(d, string, i) {
+    var n = numberRe$3.exec(string.slice(i, i + 2));
     return n ? (d.M = +n[0], i + n[0].length) : -1;
   }
 
-  function parseSeconds$2(d, string, i) {
-    var n = numberRe$2.exec(string.slice(i, i + 2));
+  function parseSeconds$3(d, string, i) {
+    var n = numberRe$3.exec(string.slice(i, i + 2));
     return n ? (d.S = +n[0], i + n[0].length) : -1;
   }
 
-  function parseMilliseconds$2(d, string, i) {
-    var n = numberRe$2.exec(string.slice(i, i + 3));
+  function parseMilliseconds$3(d, string, i) {
+    var n = numberRe$3.exec(string.slice(i, i + 3));
     return n ? (d.L = +n[0], i + n[0].length) : -1;
   }
 
-  function parseMicroseconds$2(d, string, i) {
-    var n = numberRe$2.exec(string.slice(i, i + 6));
+  function parseMicroseconds$3(d, string, i) {
+    var n = numberRe$3.exec(string.slice(i, i + 6));
     return n ? (d.L = Math.floor(n[0] / 1000), i + n[0].length) : -1;
   }
 
-  function parseLiteralPercent$2(d, string, i) {
-    var n = percentRe$2.exec(string.slice(i, i + 1));
+  function parseLiteralPercent$3(d, string, i) {
+    var n = percentRe$3.exec(string.slice(i, i + 1));
     return n ? i + n[0].length : -1;
   }
 
-  function parseUnixTimestamp$2(d, string, i) {
-    var n = numberRe$2.exec(string.slice(i));
+  function parseUnixTimestamp$3(d, string, i) {
+    var n = numberRe$3.exec(string.slice(i));
     return n ? (d.Q = +n[0], i + n[0].length) : -1;
   }
 
-  function parseUnixTimestampSeconds$2(d, string, i) {
-    var n = numberRe$2.exec(string.slice(i));
+  function parseUnixTimestampSeconds$3(d, string, i) {
+    var n = numberRe$3.exec(string.slice(i));
     return n ? (d.Q = (+n[0]) * 1000, i + n[0].length) : -1;
   }
 
-  function formatDayOfMonth$2(d, p) {
-    return pad$2(d.getDate(), p, 2);
+  function formatDayOfMonth$3(d, p) {
+    return pad$3(d.getDate(), p, 2);
   }
 
-  function formatHour24$2(d, p) {
-    return pad$2(d.getHours(), p, 2);
+  function formatHour24$3(d, p) {
+    return pad$3(d.getHours(), p, 2);
   }
 
-  function formatHour12$2(d, p) {
-    return pad$2(d.getHours() % 12 || 12, p, 2);
+  function formatHour12$3(d, p) {
+    return pad$3(d.getHours() % 12 || 12, p, 2);
   }
 
-  function formatDayOfYear$2(d, p) {
-    return pad$2(1 + day$2.count(year$2(d), d), p, 3);
+  function formatDayOfYear$3(d, p) {
+    return pad$3(1 + day$3.count(year$3(d), d), p, 3);
   }
 
-  function formatMilliseconds$2(d, p) {
-    return pad$2(d.getMilliseconds(), p, 3);
+  function formatMilliseconds$3(d, p) {
+    return pad$3(d.getMilliseconds(), p, 3);
   }
 
-  function formatMicroseconds$2(d, p) {
-    return formatMilliseconds$2(d, p) + "000";
+  function formatMicroseconds$3(d, p) {
+    return formatMilliseconds$3(d, p) + "000";
   }
 
-  function formatMonthNumber$2(d, p) {
-    return pad$2(d.getMonth() + 1, p, 2);
+  function formatMonthNumber$3(d, p) {
+    return pad$3(d.getMonth() + 1, p, 2);
   }
 
-  function formatMinutes$2(d, p) {
-    return pad$2(d.getMinutes(), p, 2);
+  function formatMinutes$3(d, p) {
+    return pad$3(d.getMinutes(), p, 2);
   }
 
-  function formatSeconds$2(d, p) {
-    return pad$2(d.getSeconds(), p, 2);
+  function formatSeconds$3(d, p) {
+    return pad$3(d.getSeconds(), p, 2);
   }
 
-  function formatWeekdayNumberMonday$2(d) {
+  function formatWeekdayNumberMonday$3(d) {
     var day$$1 = d.getDay();
     return day$$1 === 0 ? 7 : day$$1;
   }
 
-  function formatWeekNumberSunday$2(d, p) {
-    return pad$2(sunday$2.count(year$2(d), d), p, 2);
+  function formatWeekNumberSunday$3(d, p) {
+    return pad$3(sunday$3.count(year$3(d), d), p, 2);
   }
 
-  function formatWeekNumberISO$2(d, p) {
+  function formatWeekNumberISO$3(d, p) {
     var day$$1 = d.getDay();
-    d = (day$$1 >= 4 || day$$1 === 0) ? thursday$2(d) : thursday$2.ceil(d);
-    return pad$2(thursday$2.count(year$2(d), d) + (year$2(d).getDay() === 4), p, 2);
+    d = (day$$1 >= 4 || day$$1 === 0) ? thursday$3(d) : thursday$3.ceil(d);
+    return pad$3(thursday$3.count(year$3(d), d) + (year$3(d).getDay() === 4), p, 2);
   }
 
-  function formatWeekdayNumberSunday$2(d) {
+  function formatWeekdayNumberSunday$3(d) {
     return d.getDay();
   }
 
-  function formatWeekNumberMonday$2(d, p) {
-    return pad$2(monday$2.count(year$2(d), d), p, 2);
+  function formatWeekNumberMonday$3(d, p) {
+    return pad$3(monday$3.count(year$3(d), d), p, 2);
   }
 
-  function formatYear$2(d, p) {
-    return pad$2(d.getFullYear() % 100, p, 2);
+  function formatYear$3(d, p) {
+    return pad$3(d.getFullYear() % 100, p, 2);
   }
 
-  function formatFullYear$2(d, p) {
-    return pad$2(d.getFullYear() % 10000, p, 4);
+  function formatFullYear$3(d, p) {
+    return pad$3(d.getFullYear() % 10000, p, 4);
   }
 
-  function formatZone$2(d) {
+  function formatZone$3(d) {
     var z = d.getTimezoneOffset();
     return (z > 0 ? "-" : (z *= -1, "+"))
-        + pad$2(z / 60 | 0, "0", 2)
-        + pad$2(z % 60, "0", 2);
+        + pad$3(z / 60 | 0, "0", 2)
+        + pad$3(z % 60, "0", 2);
   }
 
-  function formatUTCDayOfMonth$2(d, p) {
-    return pad$2(d.getUTCDate(), p, 2);
+  function formatUTCDayOfMonth$3(d, p) {
+    return pad$3(d.getUTCDate(), p, 2);
   }
 
-  function formatUTCHour24$2(d, p) {
-    return pad$2(d.getUTCHours(), p, 2);
+  function formatUTCHour24$3(d, p) {
+    return pad$3(d.getUTCHours(), p, 2);
   }
 
-  function formatUTCHour12$2(d, p) {
-    return pad$2(d.getUTCHours() % 12 || 12, p, 2);
+  function formatUTCHour12$3(d, p) {
+    return pad$3(d.getUTCHours() % 12 || 12, p, 2);
   }
 
-  function formatUTCDayOfYear$2(d, p) {
-    return pad$2(1 + utcDay$2.count(utcYear$2(d), d), p, 3);
+  function formatUTCDayOfYear$3(d, p) {
+    return pad$3(1 + utcDay$3.count(utcYear$3(d), d), p, 3);
   }
 
-  function formatUTCMilliseconds$2(d, p) {
-    return pad$2(d.getUTCMilliseconds(), p, 3);
+  function formatUTCMilliseconds$3(d, p) {
+    return pad$3(d.getUTCMilliseconds(), p, 3);
   }
 
-  function formatUTCMicroseconds$2(d, p) {
-    return formatUTCMilliseconds$2(d, p) + "000";
+  function formatUTCMicroseconds$3(d, p) {
+    return formatUTCMilliseconds$3(d, p) + "000";
   }
 
-  function formatUTCMonthNumber$2(d, p) {
-    return pad$2(d.getUTCMonth() + 1, p, 2);
+  function formatUTCMonthNumber$3(d, p) {
+    return pad$3(d.getUTCMonth() + 1, p, 2);
   }
 
-  function formatUTCMinutes$2(d, p) {
-    return pad$2(d.getUTCMinutes(), p, 2);
+  function formatUTCMinutes$3(d, p) {
+    return pad$3(d.getUTCMinutes(), p, 2);
   }
 
-  function formatUTCSeconds$2(d, p) {
-    return pad$2(d.getUTCSeconds(), p, 2);
+  function formatUTCSeconds$3(d, p) {
+    return pad$3(d.getUTCSeconds(), p, 2);
   }
 
-  function formatUTCWeekdayNumberMonday$2(d) {
+  function formatUTCWeekdayNumberMonday$3(d) {
     var dow = d.getUTCDay();
     return dow === 0 ? 7 : dow;
   }
 
-  function formatUTCWeekNumberSunday$2(d, p) {
-    return pad$2(utcSunday$2.count(utcYear$2(d), d), p, 2);
+  function formatUTCWeekNumberSunday$3(d, p) {
+    return pad$3(utcSunday$3.count(utcYear$3(d), d), p, 2);
   }
 
-  function formatUTCWeekNumberISO$2(d, p) {
+  function formatUTCWeekNumberISO$3(d, p) {
     var day$$1 = d.getUTCDay();
-    d = (day$$1 >= 4 || day$$1 === 0) ? utcThursday$2(d) : utcThursday$2.ceil(d);
-    return pad$2(utcThursday$2.count(utcYear$2(d), d) + (utcYear$2(d).getUTCDay() === 4), p, 2);
+    d = (day$$1 >= 4 || day$$1 === 0) ? utcThursday$3(d) : utcThursday$3.ceil(d);
+    return pad$3(utcThursday$3.count(utcYear$3(d), d) + (utcYear$3(d).getUTCDay() === 4), p, 2);
   }
 
-  function formatUTCWeekdayNumberSunday$2(d) {
+  function formatUTCWeekdayNumberSunday$3(d) {
     return d.getUTCDay();
   }
 
-  function formatUTCWeekNumberMonday$2(d, p) {
-    return pad$2(utcMonday$2.count(utcYear$2(d), d), p, 2);
+  function formatUTCWeekNumberMonday$3(d, p) {
+    return pad$3(utcMonday$3.count(utcYear$3(d), d), p, 2);
   }
 
-  function formatUTCYear$2(d, p) {
-    return pad$2(d.getUTCFullYear() % 100, p, 2);
+  function formatUTCYear$3(d, p) {
+    return pad$3(d.getUTCFullYear() % 100, p, 2);
   }
 
-  function formatUTCFullYear$2(d, p) {
-    return pad$2(d.getUTCFullYear() % 10000, p, 4);
+  function formatUTCFullYear$3(d, p) {
+    return pad$3(d.getUTCFullYear() % 10000, p, 4);
   }
 
-  function formatUTCZone$2() {
+  function formatUTCZone$3() {
     return "+0000";
   }
 
-  function formatLiteralPercent$2() {
+  function formatLiteralPercent$3() {
     return "%";
   }
 
-  function formatUnixTimestamp$2(d) {
+  function formatUnixTimestamp$3(d) {
     return +d;
   }
 
-  function formatUnixTimestampSeconds$2(d) {
+  function formatUnixTimestampSeconds$3(d) {
     return Math.floor(+d / 1000);
   }
 
-  var locale$1$2;
-  var timeFormat$2;
-  var timeParse$2;
-  var utcFormat$2;
-  var utcParse$2;
+  var locale$1$3;
+  var timeFormat$3;
+  var timeParse$3;
+  var utcFormat$3;
+  var utcParse$3;
 
-  defaultLocale$1$2({
+  defaultLocale$1$3({
     dateTime: "%x, %X",
     date: "%-m/%-d/%Y",
     time: "%-I:%M:%S %p",
@@ -19838,33 +20886,33 @@ var Demo = (function (exports) {
     shortMonths: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
   });
 
-  function defaultLocale$1$2(definition) {
-    locale$1$2 = formatLocale$1$2(definition);
-    timeFormat$2 = locale$1$2.format;
-    timeParse$2 = locale$1$2.parse;
-    utcFormat$2 = locale$1$2.utcFormat;
-    utcParse$2 = locale$1$2.utcParse;
-    return locale$1$2;
+  function defaultLocale$1$3(definition) {
+    locale$1$3 = formatLocale$1$3(definition);
+    timeFormat$3 = locale$1$3.format;
+    timeParse$3 = locale$1$3.parse;
+    utcFormat$3 = locale$1$3.utcFormat;
+    utcParse$3 = locale$1$3.utcParse;
+    return locale$1$3;
   }
 
-  var isoSpecifier$2 = "%Y-%m-%dT%H:%M:%S.%LZ";
+  var isoSpecifier$3 = "%Y-%m-%dT%H:%M:%S.%LZ";
 
-  function formatIsoNative$2(date) {
+  function formatIsoNative$3(date) {
     return date.toISOString();
   }
 
-  var formatIso$2 = Date.prototype.toISOString
-      ? formatIsoNative$2
-      : utcFormat$2(isoSpecifier$2);
+  var formatIso$3 = Date.prototype.toISOString
+      ? formatIsoNative$3
+      : utcFormat$3(isoSpecifier$3);
 
-  function parseIsoNative$2(string) {
+  function parseIsoNative$3(string) {
     var date = new Date(string);
     return isNaN(date) ? null : date;
   }
 
-  var parseIso$2 = +new Date("2000-01-01T00:00:00.000Z")
-      ? parseIsoNative$2
-      : utcParse$2(isoSpecifier$2);
+  var parseIso$3 = +new Date("2000-01-01T00:00:00.000Z")
+      ? parseIsoNative$3
+      : utcParse$3(isoSpecifier$3);
 
   var durationSecond$1$1 = 1000,
       durationMinute$1$1 = durationSecond$1$1 * 60,
@@ -19883,7 +20931,7 @@ var Demo = (function (exports) {
   }
 
   function calendar(year$$1, month$$1, week, day$$1, hour$$1, minute$$1, second$$1, millisecond$$1, format) {
-    var scale = continuous$1(deinterpolateLinear$1, number$2),
+    var scale = continuous$1(deinterpolateLinear$1, number$2$1),
         invert = scale.invert,
         domain = scale.domain;
 
@@ -19991,7 +21039,7 @@ var Demo = (function (exports) {
   }
 
   function scaleTime() {
-    return calendar(year$2, month$2, sunday$2, day$2, hour$2, minute$2, second$2, millisecond$2, timeFormat$2).domain([new Date(2000, 0, 1), new Date(2000, 0, 2)]);
+    return calendar(year$3, month$3, sunday$3, day$3, hour$3, minute$3, second$3, millisecond$3, timeFormat$3).domain([new Date(2000, 0, 1), new Date(2000, 0, 2)]);
   }
 
   function colors$2(specifier) {
@@ -22210,7 +23258,7 @@ var Demo = (function (exports) {
     return area;
   }
 
-  var slice$3$1 = Array.prototype.slice;
+  var slice$3 = Array.prototype.slice;
 
   function point$2$1(that, x, y) {
     that._context.bezierCurveTo(
@@ -22412,7 +23460,7 @@ var Demo = (function (exports) {
     }
 
     stack.keys = function(_) {
-      return arguments.length ? (keys = typeof _ === "function" ? _ : constant$5$2(slice$3$1.call(_)), stack) : keys;
+      return arguments.length ? (keys = typeof _ === "function" ? _ : constant$5$2(slice$3.call(_)), stack) : keys;
     };
 
     stack.value = function(_) {
@@ -22420,7 +23468,7 @@ var Demo = (function (exports) {
     };
 
     stack.order = function(_) {
-      return arguments.length ? (order = _ == null ? none$2$1 : typeof _ === "function" ? _ : constant$5$2(slice$3$1.call(_)), stack) : order;
+      return arguments.length ? (order = _ == null ? none$2$1 : typeof _ === "function" ? _ : constant$5$2(slice$3.call(_)), stack) : order;
     };
 
     stack.offset = function(_) {
@@ -23844,16 +24892,16 @@ var Demo = (function (exports) {
           this.axis = { x: undefined };
           this.domain = { x: undefined, y: undefined };
           this.event = { drawn: undefined };
-          this.formatMillisecond = timeFormat$2(".%L");
-          this.formatSecond = timeFormat$2(":%S");
-          this.formatMinute = timeFormat$2("%I:%M");
-          this.formatHour = timeFormat$2("%I %p");
-          this.formatDay = timeFormat$2("%a %d");
-          this.formatWeek = timeFormat$2("%b %d");
-          this.formatMonth = timeFormat$2("%b");
-          this.formatYear = timeFormat$2("%b %Y");
+          this.formatMillisecond = timeFormat$3(".%L");
+          this.formatSecond = timeFormat$3(":%S");
+          this.formatMinute = timeFormat$3("%I:%M");
+          this.formatHour = timeFormat$3("%I %p");
+          this.formatDay = timeFormat$3("%a %d");
+          this.formatWeek = timeFormat$3("%b %d");
+          this.formatMonth = timeFormat$3("%b");
+          this.formatYear = timeFormat$3("%b %Y");
           this.margin = { top: 5, right: 20, bottom: 25, left: 15 };
-          this.parseDate = timeParse$2("%Y-%m-%d");
+          this.parseDate = timeParse$3("%Y-%m-%d");
           this.scale = { c: undefined, x: undefined, y: undefined };
           this.title = { heading: undefined, x: undefined, y: undefined };
           this.id = id;
@@ -23933,7 +24981,7 @@ var Demo = (function (exports) {
               .nice();
           this.axis.x = function (n) { return n
               .attr("transform", "translate(0, " + (height - _this.margin.bottom - _this.margin.top) + ")")
-              .call(axisBottom$1(_this.scale.x)
+              .call(axisBottom(_this.scale.x)
               .tickFormat(function (d) { return _this._multiDateFormat(d); })
               .ticks(5))
               .append("text")
@@ -23962,12 +25010,12 @@ var Demo = (function (exports) {
       };
       StreamGraph.prototype.reset = function () { reset$2.call(this); return this; };
       StreamGraph.prototype._multiDateFormat = function (date) {
-          return (second$2(date) < date ? this.formatMillisecond
-              : minute$2(date) < date ? this.formatSecond
-                  : hour$2(date) < date ? this.formatMinute
-                      : day$2(date) < date ? this.formatHour
-                          : month$2(date) < date ? (sunday$2(date) < date ? this.formatDay : this.formatWeek)
-                              : year$2(date) < date ? this.formatMonth
+          return (second$3(date) < date ? this.formatMillisecond
+              : minute$3(date) < date ? this.formatSecond
+                  : hour$3(date) < date ? this.formatMinute
+                      : day$3(date) < date ? this.formatHour
+                          : month$3(date) < date ? (sunday$3(date) < date ? this.formatDay : this.formatWeek)
+                              : year$3(date) < date ? this.formatMonth
                                   : this.formatYear)(date);
       };
       return StreamGraph;
@@ -25250,10 +26298,10 @@ var Demo = (function (exports) {
       Xn$3 = 0.96422,
       Yn$3 = 1,
       Zn$3 = 0.82521,
-      t0$4 = 4 / 29,
-      t1$4 = 6 / 29,
-      t2$3 = 3 * t1$4 * t1$4,
-      t3$3 = t1$4 * t1$4 * t1$4;
+      t0$5 = 4 / 29,
+      t1$5 = 6 / 29,
+      t2$3 = 3 * t1$5 * t1$5,
+      t3$3 = t1$5 * t1$5 * t1$5;
 
   function labConvert$3(o) {
     if (o instanceof Lab$3) return new Lab$3(o.l, o.a, o.b, o.opacity);
@@ -25309,11 +26357,11 @@ var Demo = (function (exports) {
   }));
 
   function xyz2lab$3(t) {
-    return t > t3$3 ? Math.pow(t, 1 / 3) : t / t2$3 + t0$4;
+    return t > t3$3 ? Math.pow(t, 1 / 3) : t / t2$3 + t0$5;
   }
 
   function lab2xyz$3(t) {
-    return t > t1$4 ? t * t * t : t2$3 * (t - t0$4);
+    return t > t1$5 ? t * t * t : t2$3 * (t - t0$5);
   }
 
   function lrgb2rgb$3(x) {
@@ -25450,407 +26498,41 @@ var Demo = (function (exports) {
   }
 
   var ascendingBisect$4 = bisector$4(ascending$1$5);
-  var bisectRight$2 = ascendingBisect$4.right;
 
   function extent$3(values, valueof) {
-    var n = values.length,
-        i = -1,
-        value,
-        min,
-        max;
-
-    if (valueof == null) {
-      while (++i < n) { // Find the first comparable value.
-        if ((value = values[i]) != null && value >= value) {
-          min = max = value;
-          while (++i < n) { // Compare the remaining values.
-            if ((value = values[i]) != null) {
-              if (min > value) min = value;
-              if (max < value) max = value;
-            }
+    let min;
+    let max;
+    if (valueof === undefined) {
+      for (let value of values) {
+        if (value != null && value >= value) {
+          if (min === undefined) {
+            min = max = value;
+          } else {
+            if (min > value) min = value;
+            if (max < value) max = value;
           }
         }
       }
-    }
-
-    else {
-      while (++i < n) { // Find the first comparable value.
-        if ((value = valueof(values[i], i, values)) != null && value >= value) {
-          min = max = value;
-          while (++i < n) { // Compare the remaining values.
-            if ((value = valueof(values[i], i, values)) != null) {
-              if (min > value) min = value;
-              if (max < value) max = value;
-            }
-          }
-        }
-      }
-    }
-
-    return [min, max];
-  }
-
-  var e10$3 = Math.sqrt(50),
-      e5$3 = Math.sqrt(10),
-      e2$3 = Math.sqrt(2);
-
-  function ticks$2(start, stop, count) {
-    var reverse,
-        i = -1,
-        n,
-        ticks,
-        step;
-
-    stop = +stop, start = +start, count = +count;
-    if (start === stop && count > 0) return [start];
-    if (reverse = stop < start) n = start, start = stop, stop = n;
-    if ((step = tickIncrement$2(start, stop, count)) === 0 || !isFinite(step)) return [];
-
-    if (step > 0) {
-      start = Math.ceil(start / step);
-      stop = Math.floor(stop / step);
-      ticks = new Array(n = Math.ceil(stop - start + 1));
-      while (++i < n) ticks[i] = (start + i) * step;
     } else {
-      start = Math.floor(start * step);
-      stop = Math.ceil(stop * step);
-      ticks = new Array(n = Math.ceil(start - stop + 1));
-      while (++i < n) ticks[i] = (start - i) / step;
-    }
-
-    if (reverse) ticks.reverse();
-
-    return ticks;
-  }
-
-  function tickIncrement$2(start, stop, count) {
-    var step = (stop - start) / Math.max(0, count),
-        power = Math.floor(Math.log(step) / Math.LN10),
-        error = step / Math.pow(10, power);
-    return power >= 0
-        ? (error >= e10$3 ? 10 : error >= e5$3 ? 5 : error >= e2$3 ? 2 : 1) * Math.pow(10, power)
-        : -Math.pow(10, -power) / (error >= e10$3 ? 10 : error >= e5$3 ? 5 : error >= e2$3 ? 2 : 1);
-  }
-
-  function tickStep$3(start, stop, count) {
-    var step0 = Math.abs(stop - start) / Math.max(0, count),
-        step1 = Math.pow(10, Math.floor(Math.log(step0) / Math.LN10)),
-        error = step0 / step1;
-    if (error >= e10$3) step1 *= 10;
-    else if (error >= e5$3) step1 *= 5;
-    else if (error >= e2$3) step1 *= 2;
-    return stop < start ? -step1 : step1;
-  }
-
-  // Computes the decimal coefficient and exponent of the specified number x with
-  // significant digits p, where x is positive and p is in [1, 21] or undefined.
-  // For example, formatDecimal(1.23) returns ["123", 0].
-  function formatDecimal$3(x, p) {
-    if ((i = (x = p ? x.toExponential(p - 1) : x.toExponential()).indexOf("e")) < 0) return null; // NaN, ±Infinity
-    var i, coefficient = x.slice(0, i);
-
-    // The string returned by toExponential either has the form \d\.\d+e[-+]\d+
-    // (e.g., 1.2e+3) or the form \de[-+]\d+ (e.g., 1e+3).
-    return [
-      coefficient.length > 1 ? coefficient[0] + coefficient.slice(2) : coefficient,
-      +x.slice(i + 1)
-    ];
-  }
-
-  function exponent$2(x) {
-    return x = formatDecimal$3(Math.abs(x)), x ? x[1] : NaN;
-  }
-
-  function formatGroup$3(grouping, thousands) {
-    return function(value, width) {
-      var i = value.length,
-          t = [],
-          j = 0,
-          g = grouping[0],
-          length = 0;
-
-      while (i > 0 && g > 0) {
-        if (length + g + 1 > width) g = Math.max(1, width - length);
-        t.push(value.substring(i -= g, i + g));
-        if ((length += g + 1) > width) break;
-        g = grouping[j = (j + 1) % grouping.length];
-      }
-
-      return t.reverse().join(thousands);
-    };
-  }
-
-  function formatNumerals$3(numerals) {
-    return function(value) {
-      return value.replace(/[0-9]/g, function(i) {
-        return numerals[+i];
-      });
-    };
-  }
-
-  // [[fill]align][sign][symbol][0][width][,][.precision][~][type]
-  var re$3 = /^(?:(.)?([<>=^]))?([+\-( ])?([$#])?(0)?(\d+)?(,)?(\.\d+)?(~)?([a-z%])?$/i;
-
-  function formatSpecifier$3(specifier) {
-    return new FormatSpecifier$3(specifier);
-  }
-
-  formatSpecifier$3.prototype = FormatSpecifier$3.prototype; // instanceof
-
-  function FormatSpecifier$3(specifier) {
-    if (!(match = re$3.exec(specifier))) throw new Error("invalid format: " + specifier);
-    var match;
-    this.fill = match[1] || " ";
-    this.align = match[2] || ">";
-    this.sign = match[3] || "-";
-    this.symbol = match[4] || "";
-    this.zero = !!match[5];
-    this.width = match[6] && +match[6];
-    this.comma = !!match[7];
-    this.precision = match[8] && +match[8].slice(1);
-    this.trim = !!match[9];
-    this.type = match[10] || "";
-  }
-
-  FormatSpecifier$3.prototype.toString = function() {
-    return this.fill
-        + this.align
-        + this.sign
-        + this.symbol
-        + (this.zero ? "0" : "")
-        + (this.width == null ? "" : Math.max(1, this.width | 0))
-        + (this.comma ? "," : "")
-        + (this.precision == null ? "" : "." + Math.max(0, this.precision | 0))
-        + (this.trim ? "~" : "")
-        + this.type;
-  };
-
-  // Trims insignificant zeros, e.g., replaces 1.2000k with 1.2k.
-  function formatTrim$3(s) {
-    out: for (var n = s.length, i = 1, i0 = -1, i1; i < n; ++i) {
-      switch (s[i]) {
-        case ".": i0 = i1 = i; break;
-        case "0": if (i0 === 0) i0 = i; i1 = i; break;
-        default: if (i0 > 0) { if (!+s[i]) break out; i0 = 0; } break;
-      }
-    }
-    return i0 > 0 ? s.slice(0, i0) + s.slice(i1 + 1) : s;
-  }
-
-  var prefixExponent$3;
-
-  function formatPrefixAuto$3(x, p) {
-    var d = formatDecimal$3(x, p);
-    if (!d) return x + "";
-    var coefficient = d[0],
-        exponent = d[1],
-        i = exponent - (prefixExponent$3 = Math.max(-8, Math.min(8, Math.floor(exponent / 3))) * 3) + 1,
-        n = coefficient.length;
-    return i === n ? coefficient
-        : i > n ? coefficient + new Array(i - n + 1).join("0")
-        : i > 0 ? coefficient.slice(0, i) + "." + coefficient.slice(i)
-        : "0." + new Array(1 - i).join("0") + formatDecimal$3(x, Math.max(0, p + i - 1))[0]; // less than 1y!
-  }
-
-  function formatRounded$3(x, p) {
-    var d = formatDecimal$3(x, p);
-    if (!d) return x + "";
-    var coefficient = d[0],
-        exponent = d[1];
-    return exponent < 0 ? "0." + new Array(-exponent).join("0") + coefficient
-        : coefficient.length > exponent + 1 ? coefficient.slice(0, exponent + 1) + "." + coefficient.slice(exponent + 1)
-        : coefficient + new Array(exponent - coefficient.length + 2).join("0");
-  }
-
-  var formatTypes$3 = {
-    "%": function(x, p) { return (x * 100).toFixed(p); },
-    "b": function(x) { return Math.round(x).toString(2); },
-    "c": function(x) { return x + ""; },
-    "d": function(x) { return Math.round(x).toString(10); },
-    "e": function(x, p) { return x.toExponential(p); },
-    "f": function(x, p) { return x.toFixed(p); },
-    "g": function(x, p) { return x.toPrecision(p); },
-    "o": function(x) { return Math.round(x).toString(8); },
-    "p": function(x, p) { return formatRounded$3(x * 100, p); },
-    "r": formatRounded$3,
-    "s": formatPrefixAuto$3,
-    "X": function(x) { return Math.round(x).toString(16).toUpperCase(); },
-    "x": function(x) { return Math.round(x).toString(16); }
-  };
-
-  function identity$1$3(x) {
-    return x;
-  }
-
-  var prefixes$3 = ["y","z","a","f","p","n","µ","m","","k","M","G","T","P","E","Z","Y"];
-
-  function formatLocale$4(locale) {
-    var group = locale.grouping && locale.thousands ? formatGroup$3(locale.grouping, locale.thousands) : identity$1$3,
-        currency = locale.currency,
-        decimal = locale.decimal,
-        numerals = locale.numerals ? formatNumerals$3(locale.numerals) : identity$1$3,
-        percent = locale.percent || "%";
-
-    function newFormat(specifier) {
-      specifier = formatSpecifier$3(specifier);
-
-      var fill = specifier.fill,
-          align = specifier.align,
-          sign = specifier.sign,
-          symbol = specifier.symbol,
-          zero = specifier.zero,
-          width = specifier.width,
-          comma = specifier.comma,
-          precision = specifier.precision,
-          trim = specifier.trim,
-          type = specifier.type;
-
-      // The "n" type is an alias for ",g".
-      if (type === "n") comma = true, type = "g";
-
-      // The "" type, and any invalid type, is an alias for ".12~g".
-      else if (!formatTypes$3[type]) precision == null && (precision = 12), trim = true, type = "g";
-
-      // If zero fill is specified, padding goes after sign and before digits.
-      if (zero || (fill === "0" && align === "=")) zero = true, fill = "0", align = "=";
-
-      // Compute the prefix and suffix.
-      // For SI-prefix, the suffix is lazily computed.
-      var prefix = symbol === "$" ? currency[0] : symbol === "#" && /[boxX]/.test(type) ? "0" + type.toLowerCase() : "",
-          suffix = symbol === "$" ? currency[1] : /[%p]/.test(type) ? percent : "";
-
-      // What format function should we use?
-      // Is this an integer type?
-      // Can this type generate exponential notation?
-      var formatType = formatTypes$3[type],
-          maybeSuffix = /[defgprs%]/.test(type);
-
-      // Set the default precision if not specified,
-      // or clamp the specified precision to the supported range.
-      // For significant precision, it must be in [1, 21].
-      // For fixed precision, it must be in [0, 20].
-      precision = precision == null ? 6
-          : /[gprs]/.test(type) ? Math.max(1, Math.min(21, precision))
-          : Math.max(0, Math.min(20, precision));
-
-      function format(value) {
-        var valuePrefix = prefix,
-            valueSuffix = suffix,
-            i, n, c;
-
-        if (type === "c") {
-          valueSuffix = formatType(value) + valueSuffix;
-          value = "";
-        } else {
-          value = +value;
-
-          // Perform the initial formatting.
-          var valueNegative = value < 0;
-          value = formatType(Math.abs(value), precision);
-
-          // Trim insignificant zeros.
-          if (trim) value = formatTrim$3(value);
-
-          // If a negative value rounds to zero during formatting, treat as positive.
-          if (valueNegative && +value === 0) valueNegative = false;
-
-          // Compute the prefix and suffix.
-          valuePrefix = (valueNegative ? (sign === "(" ? sign : "-") : sign === "-" || sign === "(" ? "" : sign) + valuePrefix;
-          valueSuffix = (type === "s" ? prefixes$3[8 + prefixExponent$3 / 3] : "") + valueSuffix + (valueNegative && sign === "(" ? ")" : "");
-
-          // Break the formatted value into the integer “value” part that can be
-          // grouped, and fractional or exponential “suffix” part that is not.
-          if (maybeSuffix) {
-            i = -1, n = value.length;
-            while (++i < n) {
-              if (c = value.charCodeAt(i), 48 > c || c > 57) {
-                valueSuffix = (c === 46 ? decimal + value.slice(i + 1) : value.slice(i)) + valueSuffix;
-                value = value.slice(0, i);
-                break;
-              }
-            }
+      let index = -1;
+      for (let value of values) {
+        if ((value = valueof(value, ++index, values)) != null && value >= value) {
+          if (min === undefined) {
+            min = max = value;
+          } else {
+            if (min > value) min = value;
+            if (max < value) max = value;
           }
         }
-
-        // If the fill character is not "0", grouping is applied before padding.
-        if (comma && !zero) value = group(value, Infinity);
-
-        // Compute the padding.
-        var length = valuePrefix.length + value.length + valueSuffix.length,
-            padding = length < width ? new Array(width - length + 1).join(fill) : "";
-
-        // If the fill character is "0", grouping is applied after padding.
-        if (comma && zero) value = group(padding + value, padding.length ? width - valueSuffix.length : Infinity), padding = "";
-
-        // Reconstruct the final output based on the desired alignment.
-        switch (align) {
-          case "<": value = valuePrefix + value + valueSuffix + padding; break;
-          case "=": value = valuePrefix + padding + value + valueSuffix; break;
-          case "^": value = padding.slice(0, length = padding.length >> 1) + valuePrefix + value + valueSuffix + padding.slice(length); break;
-          default: value = padding + valuePrefix + value + valueSuffix; break;
-        }
-
-        return numerals(value);
       }
-
-      format.toString = function() {
-        return specifier + "";
-      };
-
-      return format;
     }
-
-    function formatPrefix(specifier, value) {
-      var f = newFormat((specifier = formatSpecifier$3(specifier), specifier.type = "f", specifier)),
-          e = Math.max(-8, Math.min(8, Math.floor(exponent$2(value) / 3))) * 3,
-          k = Math.pow(10, -e),
-          prefix = prefixes$3[8 + e / 3];
-      return function(value) {
-        return f(k * value) + prefix;
-      };
-    }
-
-    return {
-      format: newFormat,
-      formatPrefix: formatPrefix
-    };
-  }
-
-  var locale$4;
-  var format$3;
-  var formatPrefix$3;
-
-  defaultLocale$4({
-    decimal: ".",
-    thousands: ",",
-    grouping: [3],
-    currency: ["$", ""]
-  });
-
-  function defaultLocale$4(definition) {
-    locale$4 = formatLocale$4(definition);
-    format$3 = locale$4.format;
-    formatPrefix$3 = locale$4.formatPrefix;
-    return locale$4;
-  }
-
-  function precisionFixed$2(step) {
-    return Math.max(0, -exponent$2(Math.abs(step)));
-  }
-
-  function precisionPrefix$2(step, value) {
-    return Math.max(0, Math.max(-8, Math.min(8, Math.floor(exponent$2(value) / 3))) * 3 - exponent$2(Math.abs(step)));
-  }
-
-  function precisionRound$2(step, max) {
-    step = Math.abs(step), max = Math.abs(max) - step;
-    return Math.max(0, exponent$2(max) - exponent$2(step)) + 1;
+    return [min, max];
   }
 
   var t0$1$3 = new Date,
       t1$1$3 = new Date;
 
-  function newInterval$3(floori, offseti, count, field) {
+  function newInterval$4(floori, offseti, count, field) {
 
     function interval(date) {
       return floori(date = new Date(+date)), date;
@@ -25883,7 +26565,7 @@ var Demo = (function (exports) {
     };
 
     interval.filter = function(test) {
-      return newInterval$3(function(date) {
+      return newInterval$4(function(date) {
         if (date >= date) while (floori(date), !test(date)) date.setTime(date - 1);
       }, function(date, step) {
         if (date >= date) {
@@ -25916,7 +26598,7 @@ var Demo = (function (exports) {
     return interval;
   }
 
-  var millisecond$3 = newInterval$3(function() {
+  var millisecond$4 = newInterval$4(function() {
     // noop
   }, function(date, step) {
     date.setTime(+date + step);
@@ -25925,11 +26607,11 @@ var Demo = (function (exports) {
   });
 
   // An optimized implementation for this simple case.
-  millisecond$3.every = function(k) {
+  millisecond$4.every = function(k) {
     k = Math.floor(k);
     if (!isFinite(k) || !(k > 0)) return null;
-    if (!(k > 1)) return millisecond$3;
-    return newInterval$3(function(date) {
+    if (!(k > 1)) return millisecond$4;
+    return newInterval$4(function(date) {
       date.setTime(Math.floor(date / k) * k);
     }, function(date, step) {
       date.setTime(+date + step * k);
@@ -25938,74 +26620,74 @@ var Demo = (function (exports) {
     });
   };
 
-  var durationSecond$3 = 1e3;
-  var durationMinute$3 = 6e4;
-  var durationHour$3 = 36e5;
-  var durationDay$3 = 864e5;
-  var durationWeek$3 = 6048e5;
+  var durationSecond$4 = 1e3;
+  var durationMinute$4 = 6e4;
+  var durationHour$4 = 36e5;
+  var durationDay$4 = 864e5;
+  var durationWeek$4 = 6048e5;
 
-  var second$3 = newInterval$3(function(date) {
-    date.setTime(Math.floor(date / durationSecond$3) * durationSecond$3);
+  var second$4 = newInterval$4(function(date) {
+    date.setTime(Math.floor(date / durationSecond$4) * durationSecond$4);
   }, function(date, step) {
-    date.setTime(+date + step * durationSecond$3);
+    date.setTime(+date + step * durationSecond$4);
   }, function(start, end) {
-    return (end - start) / durationSecond$3;
+    return (end - start) / durationSecond$4;
   }, function(date) {
     return date.getUTCSeconds();
   });
 
-  var minute$3 = newInterval$3(function(date) {
-    date.setTime(Math.floor(date / durationMinute$3) * durationMinute$3);
+  var minute$4 = newInterval$4(function(date) {
+    date.setTime(Math.floor(date / durationMinute$4) * durationMinute$4);
   }, function(date, step) {
-    date.setTime(+date + step * durationMinute$3);
+    date.setTime(+date + step * durationMinute$4);
   }, function(start, end) {
-    return (end - start) / durationMinute$3;
+    return (end - start) / durationMinute$4;
   }, function(date) {
     return date.getMinutes();
   });
 
-  var hour$3 = newInterval$3(function(date) {
-    var offset = date.getTimezoneOffset() * durationMinute$3 % durationHour$3;
-    if (offset < 0) offset += durationHour$3;
-    date.setTime(Math.floor((+date - offset) / durationHour$3) * durationHour$3 + offset);
+  var hour$4 = newInterval$4(function(date) {
+    var offset = date.getTimezoneOffset() * durationMinute$4 % durationHour$4;
+    if (offset < 0) offset += durationHour$4;
+    date.setTime(Math.floor((+date - offset) / durationHour$4) * durationHour$4 + offset);
   }, function(date, step) {
-    date.setTime(+date + step * durationHour$3);
+    date.setTime(+date + step * durationHour$4);
   }, function(start, end) {
-    return (end - start) / durationHour$3;
+    return (end - start) / durationHour$4;
   }, function(date) {
     return date.getHours();
   });
 
-  var day$3 = newInterval$3(function(date) {
+  var day$4 = newInterval$4(function(date) {
     date.setHours(0, 0, 0, 0);
   }, function(date, step) {
     date.setDate(date.getDate() + step);
   }, function(start, end) {
-    return (end - start - (end.getTimezoneOffset() - start.getTimezoneOffset()) * durationMinute$3) / durationDay$3;
+    return (end - start - (end.getTimezoneOffset() - start.getTimezoneOffset()) * durationMinute$4) / durationDay$4;
   }, function(date) {
     return date.getDate() - 1;
   });
 
-  function weekday$3(i) {
-    return newInterval$3(function(date) {
+  function weekday$4(i) {
+    return newInterval$4(function(date) {
       date.setDate(date.getDate() - (date.getDay() + 7 - i) % 7);
       date.setHours(0, 0, 0, 0);
     }, function(date, step) {
       date.setDate(date.getDate() + step * 7);
     }, function(start, end) {
-      return (end - start - (end.getTimezoneOffset() - start.getTimezoneOffset()) * durationMinute$3) / durationWeek$3;
+      return (end - start - (end.getTimezoneOffset() - start.getTimezoneOffset()) * durationMinute$4) / durationWeek$4;
     });
   }
 
-  var sunday$3 = weekday$3(0);
-  var monday$3 = weekday$3(1);
-  var tuesday$3 = weekday$3(2);
-  var wednesday$3 = weekday$3(3);
-  var thursday$3 = weekday$3(4);
-  var friday$3 = weekday$3(5);
-  var saturday$3 = weekday$3(6);
+  var sunday$4 = weekday$4(0);
+  var monday$4 = weekday$4(1);
+  var tuesday$4 = weekday$4(2);
+  var wednesday$4 = weekday$4(3);
+  var thursday$4 = weekday$4(4);
+  var friday$4 = weekday$4(5);
+  var saturday$4 = weekday$4(6);
 
-  var month$3 = newInterval$3(function(date) {
+  var month$4 = newInterval$4(function(date) {
     date.setDate(1);
     date.setHours(0, 0, 0, 0);
   }, function(date, step) {
@@ -26016,7 +26698,7 @@ var Demo = (function (exports) {
     return date.getMonth();
   });
 
-  var year$3 = newInterval$3(function(date) {
+  var year$4 = newInterval$4(function(date) {
     date.setMonth(0, 1);
     date.setHours(0, 0, 0, 0);
   }, function(date, step) {
@@ -26028,8 +26710,8 @@ var Demo = (function (exports) {
   });
 
   // An optimized implementation for this simple case.
-  year$3.every = function(k) {
-    return !isFinite(k = Math.floor(k)) || !(k > 0) ? null : newInterval$3(function(date) {
+  year$4.every = function(k) {
+    return !isFinite(k = Math.floor(k)) || !(k > 0) ? null : newInterval$4(function(date) {
       date.setFullYear(Math.floor(date.getFullYear() / k) * k);
       date.setMonth(0, 1);
       date.setHours(0, 0, 0, 0);
@@ -26038,56 +26720,56 @@ var Demo = (function (exports) {
     });
   };
 
-  var utcMinute$3 = newInterval$3(function(date) {
+  var utcMinute$4 = newInterval$4(function(date) {
     date.setUTCSeconds(0, 0);
   }, function(date, step) {
-    date.setTime(+date + step * durationMinute$3);
+    date.setTime(+date + step * durationMinute$4);
   }, function(start, end) {
-    return (end - start) / durationMinute$3;
+    return (end - start) / durationMinute$4;
   }, function(date) {
     return date.getUTCMinutes();
   });
 
-  var utcHour$3 = newInterval$3(function(date) {
+  var utcHour$4 = newInterval$4(function(date) {
     date.setUTCMinutes(0, 0, 0);
   }, function(date, step) {
-    date.setTime(+date + step * durationHour$3);
+    date.setTime(+date + step * durationHour$4);
   }, function(start, end) {
-    return (end - start) / durationHour$3;
+    return (end - start) / durationHour$4;
   }, function(date) {
     return date.getUTCHours();
   });
 
-  var utcDay$3 = newInterval$3(function(date) {
+  var utcDay$4 = newInterval$4(function(date) {
     date.setUTCHours(0, 0, 0, 0);
   }, function(date, step) {
     date.setUTCDate(date.getUTCDate() + step);
   }, function(start, end) {
-    return (end - start) / durationDay$3;
+    return (end - start) / durationDay$4;
   }, function(date) {
     return date.getUTCDate() - 1;
   });
 
-  function utcWeekday$3(i) {
-    return newInterval$3(function(date) {
+  function utcWeekday$4(i) {
+    return newInterval$4(function(date) {
       date.setUTCDate(date.getUTCDate() - (date.getUTCDay() + 7 - i) % 7);
       date.setUTCHours(0, 0, 0, 0);
     }, function(date, step) {
       date.setUTCDate(date.getUTCDate() + step * 7);
     }, function(start, end) {
-      return (end - start) / durationWeek$3;
+      return (end - start) / durationWeek$4;
     });
   }
 
-  var utcSunday$3 = utcWeekday$3(0);
-  var utcMonday$3 = utcWeekday$3(1);
-  var utcTuesday$3 = utcWeekday$3(2);
-  var utcWednesday$3 = utcWeekday$3(3);
-  var utcThursday$3 = utcWeekday$3(4);
-  var utcFriday$3 = utcWeekday$3(5);
-  var utcSaturday$3 = utcWeekday$3(6);
+  var utcSunday$4 = utcWeekday$4(0);
+  var utcMonday$4 = utcWeekday$4(1);
+  var utcTuesday$4 = utcWeekday$4(2);
+  var utcWednesday$4 = utcWeekday$4(3);
+  var utcThursday$4 = utcWeekday$4(4);
+  var utcFriday$4 = utcWeekday$4(5);
+  var utcSaturday$4 = utcWeekday$4(6);
 
-  var utcMonth$3 = newInterval$3(function(date) {
+  var utcMonth$4 = newInterval$4(function(date) {
     date.setUTCDate(1);
     date.setUTCHours(0, 0, 0, 0);
   }, function(date, step) {
@@ -26098,7 +26780,7 @@ var Demo = (function (exports) {
     return date.getUTCMonth();
   });
 
-  var utcYear$3 = newInterval$3(function(date) {
+  var utcYear$4 = newInterval$4(function(date) {
     date.setUTCMonth(0, 1);
     date.setUTCHours(0, 0, 0, 0);
   }, function(date, step) {
@@ -26110,8 +26792,8 @@ var Demo = (function (exports) {
   });
 
   // An optimized implementation for this simple case.
-  utcYear$3.every = function(k) {
-    return !isFinite(k = Math.floor(k)) || !(k > 0) ? null : newInterval$3(function(date) {
+  utcYear$4.every = function(k) {
+    return !isFinite(k = Math.floor(k)) || !(k > 0) ? null : newInterval$4(function(date) {
       date.setUTCFullYear(Math.floor(date.getUTCFullYear() / k) * k);
       date.setUTCMonth(0, 1);
       date.setUTCHours(0, 0, 0, 0);
@@ -26120,7 +26802,7 @@ var Demo = (function (exports) {
     });
   };
 
-  function localDate$3(d) {
+  function localDate$4(d) {
     if (0 <= d.y && d.y < 100) {
       var date = new Date(-1, d.m, d.d, d.H, d.M, d.S, d.L);
       date.setFullYear(d.y);
@@ -26129,7 +26811,7 @@ var Demo = (function (exports) {
     return new Date(d.y, d.m, d.d, d.H, d.M, d.S, d.L);
   }
 
-  function utcDate$3(d) {
+  function utcDate$4(d) {
     if (0 <= d.y && d.y < 100) {
       var date = new Date(Date.UTC(-1, d.m, d.d, d.H, d.M, d.S, d.L));
       date.setUTCFullYear(d.y);
@@ -26138,11 +26820,11 @@ var Demo = (function (exports) {
     return new Date(Date.UTC(d.y, d.m, d.d, d.H, d.M, d.S, d.L));
   }
 
-  function newYear$3(y) {
+  function newYear$4(y) {
     return {y: y, m: 0, d: 1, H: 0, M: 0, S: 0, L: 0};
   }
 
-  function formatLocale$1$3(locale) {
+  function formatLocale$5(locale) {
     var locale_dateTime = locale.dateTime,
         locale_date = locale.date,
         locale_time = locale.time,
@@ -26152,16 +26834,16 @@ var Demo = (function (exports) {
         locale_months = locale.months,
         locale_shortMonths = locale.shortMonths;
 
-    var periodRe = formatRe$3(locale_periods),
-        periodLookup = formatLookup$3(locale_periods),
-        weekdayRe = formatRe$3(locale_weekdays),
-        weekdayLookup = formatLookup$3(locale_weekdays),
-        shortWeekdayRe = formatRe$3(locale_shortWeekdays),
-        shortWeekdayLookup = formatLookup$3(locale_shortWeekdays),
-        monthRe = formatRe$3(locale_months),
-        monthLookup = formatLookup$3(locale_months),
-        shortMonthRe = formatRe$3(locale_shortMonths),
-        shortMonthLookup = formatLookup$3(locale_shortMonths);
+    var periodRe = formatRe$4(locale_periods),
+        periodLookup = formatLookup$4(locale_periods),
+        weekdayRe = formatRe$4(locale_weekdays),
+        weekdayLookup = formatLookup$4(locale_weekdays),
+        shortWeekdayRe = formatRe$4(locale_shortWeekdays),
+        shortWeekdayLookup = formatLookup$4(locale_shortWeekdays),
+        monthRe = formatRe$4(locale_months),
+        monthLookup = formatLookup$4(locale_months),
+        shortMonthRe = formatRe$4(locale_shortMonths),
+        shortMonthLookup = formatLookup$4(locale_shortMonths);
 
     var formats = {
       "a": formatShortWeekday,
@@ -26169,30 +26851,30 @@ var Demo = (function (exports) {
       "b": formatShortMonth,
       "B": formatMonth,
       "c": null,
-      "d": formatDayOfMonth$3,
-      "e": formatDayOfMonth$3,
-      "f": formatMicroseconds$3,
-      "H": formatHour24$3,
-      "I": formatHour12$3,
-      "j": formatDayOfYear$3,
-      "L": formatMilliseconds$3,
-      "m": formatMonthNumber$3,
-      "M": formatMinutes$3,
+      "d": formatDayOfMonth$4,
+      "e": formatDayOfMonth$4,
+      "f": formatMicroseconds$4,
+      "H": formatHour24$4,
+      "I": formatHour12$4,
+      "j": formatDayOfYear$4,
+      "L": formatMilliseconds$4,
+      "m": formatMonthNumber$4,
+      "M": formatMinutes$4,
       "p": formatPeriod,
-      "Q": formatUnixTimestamp$3,
-      "s": formatUnixTimestampSeconds$3,
-      "S": formatSeconds$3,
-      "u": formatWeekdayNumberMonday$3,
-      "U": formatWeekNumberSunday$3,
-      "V": formatWeekNumberISO$3,
-      "w": formatWeekdayNumberSunday$3,
-      "W": formatWeekNumberMonday$3,
+      "Q": formatUnixTimestamp$4,
+      "s": formatUnixTimestampSeconds$4,
+      "S": formatSeconds$4,
+      "u": formatWeekdayNumberMonday$4,
+      "U": formatWeekNumberSunday$4,
+      "V": formatWeekNumberISO$4,
+      "w": formatWeekdayNumberSunday$4,
+      "W": formatWeekNumberMonday$4,
       "x": null,
       "X": null,
-      "y": formatYear$3,
-      "Y": formatFullYear$3,
-      "Z": formatZone$3,
-      "%": formatLiteralPercent$3
+      "y": formatYear$4,
+      "Y": formatFullYear$4,
+      "Z": formatZone$4,
+      "%": formatLiteralPercent$4
     };
 
     var utcFormats = {
@@ -26201,30 +26883,30 @@ var Demo = (function (exports) {
       "b": formatUTCShortMonth,
       "B": formatUTCMonth,
       "c": null,
-      "d": formatUTCDayOfMonth$3,
-      "e": formatUTCDayOfMonth$3,
-      "f": formatUTCMicroseconds$3,
-      "H": formatUTCHour24$3,
-      "I": formatUTCHour12$3,
-      "j": formatUTCDayOfYear$3,
-      "L": formatUTCMilliseconds$3,
-      "m": formatUTCMonthNumber$3,
-      "M": formatUTCMinutes$3,
+      "d": formatUTCDayOfMonth$4,
+      "e": formatUTCDayOfMonth$4,
+      "f": formatUTCMicroseconds$4,
+      "H": formatUTCHour24$4,
+      "I": formatUTCHour12$4,
+      "j": formatUTCDayOfYear$4,
+      "L": formatUTCMilliseconds$4,
+      "m": formatUTCMonthNumber$4,
+      "M": formatUTCMinutes$4,
       "p": formatUTCPeriod,
-      "Q": formatUnixTimestamp$3,
-      "s": formatUnixTimestampSeconds$3,
-      "S": formatUTCSeconds$3,
-      "u": formatUTCWeekdayNumberMonday$3,
-      "U": formatUTCWeekNumberSunday$3,
-      "V": formatUTCWeekNumberISO$3,
-      "w": formatUTCWeekdayNumberSunday$3,
-      "W": formatUTCWeekNumberMonday$3,
+      "Q": formatUnixTimestamp$4,
+      "s": formatUnixTimestampSeconds$4,
+      "S": formatUTCSeconds$4,
+      "u": formatUTCWeekdayNumberMonday$4,
+      "U": formatUTCWeekNumberSunday$4,
+      "V": formatUTCWeekNumberISO$4,
+      "w": formatUTCWeekdayNumberSunday$4,
+      "W": formatUTCWeekNumberMonday$4,
       "x": null,
       "X": null,
-      "y": formatUTCYear$3,
-      "Y": formatUTCFullYear$3,
-      "Z": formatUTCZone$3,
-      "%": formatLiteralPercent$3
+      "y": formatUTCYear$4,
+      "Y": formatUTCFullYear$4,
+      "Z": formatUTCZone$4,
+      "%": formatLiteralPercent$4
     };
 
     var parses = {
@@ -26233,30 +26915,30 @@ var Demo = (function (exports) {
       "b": parseShortMonth,
       "B": parseMonth,
       "c": parseLocaleDateTime,
-      "d": parseDayOfMonth$3,
-      "e": parseDayOfMonth$3,
-      "f": parseMicroseconds$3,
-      "H": parseHour24$3,
-      "I": parseHour24$3,
-      "j": parseDayOfYear$3,
-      "L": parseMilliseconds$3,
-      "m": parseMonthNumber$3,
-      "M": parseMinutes$3,
+      "d": parseDayOfMonth$4,
+      "e": parseDayOfMonth$4,
+      "f": parseMicroseconds$4,
+      "H": parseHour24$4,
+      "I": parseHour24$4,
+      "j": parseDayOfYear$4,
+      "L": parseMilliseconds$4,
+      "m": parseMonthNumber$4,
+      "M": parseMinutes$4,
       "p": parsePeriod,
-      "Q": parseUnixTimestamp$3,
-      "s": parseUnixTimestampSeconds$3,
-      "S": parseSeconds$3,
-      "u": parseWeekdayNumberMonday$3,
-      "U": parseWeekNumberSunday$3,
-      "V": parseWeekNumberISO$3,
-      "w": parseWeekdayNumberSunday$3,
-      "W": parseWeekNumberMonday$3,
+      "Q": parseUnixTimestamp$4,
+      "s": parseUnixTimestampSeconds$4,
+      "S": parseSeconds$4,
+      "u": parseWeekdayNumberMonday$4,
+      "U": parseWeekNumberSunday$4,
+      "V": parseWeekNumberISO$4,
+      "w": parseWeekdayNumberSunday$4,
+      "W": parseWeekNumberMonday$4,
       "x": parseLocaleDate,
       "X": parseLocaleTime,
-      "y": parseYear$3,
-      "Y": parseFullYear$3,
-      "Z": parseZone$3,
-      "%": parseLiteralPercent$3
+      "y": parseYear$4,
+      "Y": parseFullYear$4,
+      "Z": parseZone$4,
+      "%": parseLiteralPercent$4
     };
 
     // These recursive directive definitions must be deferred.
@@ -26282,7 +26964,7 @@ var Demo = (function (exports) {
         while (++i < n) {
           if (specifier.charCodeAt(i) === 37) {
             string.push(specifier.slice(j, i));
-            if ((pad = pads$3[c = specifier.charAt(++i)]) != null) c = specifier.charAt(++i);
+            if ((pad = pads$4[c = specifier.charAt(++i)]) != null) c = specifier.charAt(++i);
             else pad = c === "e" ? " " : "0";
             if (format = formats[c]) c = format(date, pad);
             string.push(c);
@@ -26297,7 +26979,7 @@ var Demo = (function (exports) {
 
     function newParse(specifier, newDate) {
       return function(string) {
-        var d = newYear$3(1900),
+        var d = newYear$4(1900),
             i = parseSpecifier(d, specifier, string += "", 0),
             week, day$$1;
         if (i != string.length) return null;
@@ -26313,23 +26995,23 @@ var Demo = (function (exports) {
           if (d.V < 1 || d.V > 53) return null;
           if (!("w" in d)) d.w = 1;
           if ("Z" in d) {
-            week = utcDate$3(newYear$3(d.y)), day$$1 = week.getUTCDay();
-            week = day$$1 > 4 || day$$1 === 0 ? utcMonday$3.ceil(week) : utcMonday$3(week);
-            week = utcDay$3.offset(week, (d.V - 1) * 7);
+            week = utcDate$4(newYear$4(d.y)), day$$1 = week.getUTCDay();
+            week = day$$1 > 4 || day$$1 === 0 ? utcMonday$4.ceil(week) : utcMonday$4(week);
+            week = utcDay$4.offset(week, (d.V - 1) * 7);
             d.y = week.getUTCFullYear();
             d.m = week.getUTCMonth();
             d.d = week.getUTCDate() + (d.w + 6) % 7;
           } else {
-            week = newDate(newYear$3(d.y)), day$$1 = week.getDay();
-            week = day$$1 > 4 || day$$1 === 0 ? monday$3.ceil(week) : monday$3(week);
-            week = day$3.offset(week, (d.V - 1) * 7);
+            week = newDate(newYear$4(d.y)), day$$1 = week.getDay();
+            week = day$$1 > 4 || day$$1 === 0 ? monday$4.ceil(week) : monday$4(week);
+            week = day$4.offset(week, (d.V - 1) * 7);
             d.y = week.getFullYear();
             d.m = week.getMonth();
             d.d = week.getDate() + (d.w + 6) % 7;
           }
         } else if ("W" in d || "U" in d) {
           if (!("w" in d)) d.w = "u" in d ? d.u % 7 : "W" in d ? 1 : 0;
-          day$$1 = "Z" in d ? utcDate$3(newYear$3(d.y)).getUTCDay() : newDate(newYear$3(d.y)).getDay();
+          day$$1 = "Z" in d ? utcDate$4(newYear$4(d.y)).getUTCDay() : newDate(newYear$4(d.y)).getDay();
           d.m = 0;
           d.d = "W" in d ? (d.w + 6) % 7 + d.W * 7 - (day$$1 + 5) % 7 : d.w + d.U * 7 - (day$$1 + 6) % 7;
         }
@@ -26339,7 +27021,7 @@ var Demo = (function (exports) {
         if ("Z" in d) {
           d.H += d.Z / 100 | 0;
           d.M += d.Z % 100;
-          return utcDate$3(d);
+          return utcDate$4(d);
         }
 
         // Otherwise, all fields are in local time.
@@ -26359,7 +27041,7 @@ var Demo = (function (exports) {
         c = specifier.charCodeAt(i++);
         if (c === 37) {
           c = specifier.charAt(i++);
-          parse = parses[c in pads$3 ? specifier.charAt(i++) : c];
+          parse = parses[c in pads$4 ? specifier.charAt(i++) : c];
           if (!parse || ((j = parse(d, string, j)) < 0)) return -1;
         } else if (c != string.charCodeAt(j++)) {
           return -1;
@@ -26453,7 +27135,7 @@ var Demo = (function (exports) {
         return f;
       },
       parse: function(specifier) {
-        var p = newParse(specifier += "", localDate$3);
+        var p = newParse(specifier += "", localDate$4);
         p.toString = function() { return specifier; };
         return p;
       },
@@ -26463,298 +27145,298 @@ var Demo = (function (exports) {
         return f;
       },
       utcParse: function(specifier) {
-        var p = newParse(specifier, utcDate$3);
+        var p = newParse(specifier, utcDate$4);
         p.toString = function() { return specifier; };
         return p;
       }
     };
   }
 
-  var pads$3 = {"-": "", "_": " ", "0": "0"},
-      numberRe$3 = /^\s*\d+/, // note: ignores next directive
-      percentRe$3 = /^%/,
-      requoteRe$3 = /[\\^$*+?|[\]().{}]/g;
+  var pads$4 = {"-": "", "_": " ", "0": "0"},
+      numberRe$4 = /^\s*\d+/, // note: ignores next directive
+      percentRe$4 = /^%/,
+      requoteRe$4 = /[\\^$*+?|[\]().{}]/g;
 
-  function pad$3(value, fill, width) {
+  function pad$4(value, fill, width) {
     var sign = value < 0 ? "-" : "",
         string = (sign ? -value : value) + "",
         length = string.length;
     return sign + (length < width ? new Array(width - length + 1).join(fill) + string : string);
   }
 
-  function requote$3(s) {
-    return s.replace(requoteRe$3, "\\$&");
+  function requote$4(s) {
+    return s.replace(requoteRe$4, "\\$&");
   }
 
-  function formatRe$3(names) {
-    return new RegExp("^(?:" + names.map(requote$3).join("|") + ")", "i");
+  function formatRe$4(names) {
+    return new RegExp("^(?:" + names.map(requote$4).join("|") + ")", "i");
   }
 
-  function formatLookup$3(names) {
+  function formatLookup$4(names) {
     var map = {}, i = -1, n = names.length;
     while (++i < n) map[names[i].toLowerCase()] = i;
     return map;
   }
 
-  function parseWeekdayNumberSunday$3(d, string, i) {
-    var n = numberRe$3.exec(string.slice(i, i + 1));
+  function parseWeekdayNumberSunday$4(d, string, i) {
+    var n = numberRe$4.exec(string.slice(i, i + 1));
     return n ? (d.w = +n[0], i + n[0].length) : -1;
   }
 
-  function parseWeekdayNumberMonday$3(d, string, i) {
-    var n = numberRe$3.exec(string.slice(i, i + 1));
+  function parseWeekdayNumberMonday$4(d, string, i) {
+    var n = numberRe$4.exec(string.slice(i, i + 1));
     return n ? (d.u = +n[0], i + n[0].length) : -1;
   }
 
-  function parseWeekNumberSunday$3(d, string, i) {
-    var n = numberRe$3.exec(string.slice(i, i + 2));
+  function parseWeekNumberSunday$4(d, string, i) {
+    var n = numberRe$4.exec(string.slice(i, i + 2));
     return n ? (d.U = +n[0], i + n[0].length) : -1;
   }
 
-  function parseWeekNumberISO$3(d, string, i) {
-    var n = numberRe$3.exec(string.slice(i, i + 2));
+  function parseWeekNumberISO$4(d, string, i) {
+    var n = numberRe$4.exec(string.slice(i, i + 2));
     return n ? (d.V = +n[0], i + n[0].length) : -1;
   }
 
-  function parseWeekNumberMonday$3(d, string, i) {
-    var n = numberRe$3.exec(string.slice(i, i + 2));
+  function parseWeekNumberMonday$4(d, string, i) {
+    var n = numberRe$4.exec(string.slice(i, i + 2));
     return n ? (d.W = +n[0], i + n[0].length) : -1;
   }
 
-  function parseFullYear$3(d, string, i) {
-    var n = numberRe$3.exec(string.slice(i, i + 4));
+  function parseFullYear$4(d, string, i) {
+    var n = numberRe$4.exec(string.slice(i, i + 4));
     return n ? (d.y = +n[0], i + n[0].length) : -1;
   }
 
-  function parseYear$3(d, string, i) {
-    var n = numberRe$3.exec(string.slice(i, i + 2));
+  function parseYear$4(d, string, i) {
+    var n = numberRe$4.exec(string.slice(i, i + 2));
     return n ? (d.y = +n[0] + (+n[0] > 68 ? 1900 : 2000), i + n[0].length) : -1;
   }
 
-  function parseZone$3(d, string, i) {
+  function parseZone$4(d, string, i) {
     var n = /^(Z)|([+-]\d\d)(?::?(\d\d))?/.exec(string.slice(i, i + 6));
     return n ? (d.Z = n[1] ? 0 : -(n[2] + (n[3] || "00")), i + n[0].length) : -1;
   }
 
-  function parseMonthNumber$3(d, string, i) {
-    var n = numberRe$3.exec(string.slice(i, i + 2));
+  function parseMonthNumber$4(d, string, i) {
+    var n = numberRe$4.exec(string.slice(i, i + 2));
     return n ? (d.m = n[0] - 1, i + n[0].length) : -1;
   }
 
-  function parseDayOfMonth$3(d, string, i) {
-    var n = numberRe$3.exec(string.slice(i, i + 2));
+  function parseDayOfMonth$4(d, string, i) {
+    var n = numberRe$4.exec(string.slice(i, i + 2));
     return n ? (d.d = +n[0], i + n[0].length) : -1;
   }
 
-  function parseDayOfYear$3(d, string, i) {
-    var n = numberRe$3.exec(string.slice(i, i + 3));
+  function parseDayOfYear$4(d, string, i) {
+    var n = numberRe$4.exec(string.slice(i, i + 3));
     return n ? (d.m = 0, d.d = +n[0], i + n[0].length) : -1;
   }
 
-  function parseHour24$3(d, string, i) {
-    var n = numberRe$3.exec(string.slice(i, i + 2));
+  function parseHour24$4(d, string, i) {
+    var n = numberRe$4.exec(string.slice(i, i + 2));
     return n ? (d.H = +n[0], i + n[0].length) : -1;
   }
 
-  function parseMinutes$3(d, string, i) {
-    var n = numberRe$3.exec(string.slice(i, i + 2));
+  function parseMinutes$4(d, string, i) {
+    var n = numberRe$4.exec(string.slice(i, i + 2));
     return n ? (d.M = +n[0], i + n[0].length) : -1;
   }
 
-  function parseSeconds$3(d, string, i) {
-    var n = numberRe$3.exec(string.slice(i, i + 2));
+  function parseSeconds$4(d, string, i) {
+    var n = numberRe$4.exec(string.slice(i, i + 2));
     return n ? (d.S = +n[0], i + n[0].length) : -1;
   }
 
-  function parseMilliseconds$3(d, string, i) {
-    var n = numberRe$3.exec(string.slice(i, i + 3));
+  function parseMilliseconds$4(d, string, i) {
+    var n = numberRe$4.exec(string.slice(i, i + 3));
     return n ? (d.L = +n[0], i + n[0].length) : -1;
   }
 
-  function parseMicroseconds$3(d, string, i) {
-    var n = numberRe$3.exec(string.slice(i, i + 6));
+  function parseMicroseconds$4(d, string, i) {
+    var n = numberRe$4.exec(string.slice(i, i + 6));
     return n ? (d.L = Math.floor(n[0] / 1000), i + n[0].length) : -1;
   }
 
-  function parseLiteralPercent$3(d, string, i) {
-    var n = percentRe$3.exec(string.slice(i, i + 1));
+  function parseLiteralPercent$4(d, string, i) {
+    var n = percentRe$4.exec(string.slice(i, i + 1));
     return n ? i + n[0].length : -1;
   }
 
-  function parseUnixTimestamp$3(d, string, i) {
-    var n = numberRe$3.exec(string.slice(i));
+  function parseUnixTimestamp$4(d, string, i) {
+    var n = numberRe$4.exec(string.slice(i));
     return n ? (d.Q = +n[0], i + n[0].length) : -1;
   }
 
-  function parseUnixTimestampSeconds$3(d, string, i) {
-    var n = numberRe$3.exec(string.slice(i));
+  function parseUnixTimestampSeconds$4(d, string, i) {
+    var n = numberRe$4.exec(string.slice(i));
     return n ? (d.Q = (+n[0]) * 1000, i + n[0].length) : -1;
   }
 
-  function formatDayOfMonth$3(d, p) {
-    return pad$3(d.getDate(), p, 2);
+  function formatDayOfMonth$4(d, p) {
+    return pad$4(d.getDate(), p, 2);
   }
 
-  function formatHour24$3(d, p) {
-    return pad$3(d.getHours(), p, 2);
+  function formatHour24$4(d, p) {
+    return pad$4(d.getHours(), p, 2);
   }
 
-  function formatHour12$3(d, p) {
-    return pad$3(d.getHours() % 12 || 12, p, 2);
+  function formatHour12$4(d, p) {
+    return pad$4(d.getHours() % 12 || 12, p, 2);
   }
 
-  function formatDayOfYear$3(d, p) {
-    return pad$3(1 + day$3.count(year$3(d), d), p, 3);
+  function formatDayOfYear$4(d, p) {
+    return pad$4(1 + day$4.count(year$4(d), d), p, 3);
   }
 
-  function formatMilliseconds$3(d, p) {
-    return pad$3(d.getMilliseconds(), p, 3);
+  function formatMilliseconds$4(d, p) {
+    return pad$4(d.getMilliseconds(), p, 3);
   }
 
-  function formatMicroseconds$3(d, p) {
-    return formatMilliseconds$3(d, p) + "000";
+  function formatMicroseconds$4(d, p) {
+    return formatMilliseconds$4(d, p) + "000";
   }
 
-  function formatMonthNumber$3(d, p) {
-    return pad$3(d.getMonth() + 1, p, 2);
+  function formatMonthNumber$4(d, p) {
+    return pad$4(d.getMonth() + 1, p, 2);
   }
 
-  function formatMinutes$3(d, p) {
-    return pad$3(d.getMinutes(), p, 2);
+  function formatMinutes$4(d, p) {
+    return pad$4(d.getMinutes(), p, 2);
   }
 
-  function formatSeconds$3(d, p) {
-    return pad$3(d.getSeconds(), p, 2);
+  function formatSeconds$4(d, p) {
+    return pad$4(d.getSeconds(), p, 2);
   }
 
-  function formatWeekdayNumberMonday$3(d) {
+  function formatWeekdayNumberMonday$4(d) {
     var day$$1 = d.getDay();
     return day$$1 === 0 ? 7 : day$$1;
   }
 
-  function formatWeekNumberSunday$3(d, p) {
-    return pad$3(sunday$3.count(year$3(d), d), p, 2);
+  function formatWeekNumberSunday$4(d, p) {
+    return pad$4(sunday$4.count(year$4(d), d), p, 2);
   }
 
-  function formatWeekNumberISO$3(d, p) {
+  function formatWeekNumberISO$4(d, p) {
     var day$$1 = d.getDay();
-    d = (day$$1 >= 4 || day$$1 === 0) ? thursday$3(d) : thursday$3.ceil(d);
-    return pad$3(thursday$3.count(year$3(d), d) + (year$3(d).getDay() === 4), p, 2);
+    d = (day$$1 >= 4 || day$$1 === 0) ? thursday$4(d) : thursday$4.ceil(d);
+    return pad$4(thursday$4.count(year$4(d), d) + (year$4(d).getDay() === 4), p, 2);
   }
 
-  function formatWeekdayNumberSunday$3(d) {
+  function formatWeekdayNumberSunday$4(d) {
     return d.getDay();
   }
 
-  function formatWeekNumberMonday$3(d, p) {
-    return pad$3(monday$3.count(year$3(d), d), p, 2);
+  function formatWeekNumberMonday$4(d, p) {
+    return pad$4(monday$4.count(year$4(d), d), p, 2);
   }
 
-  function formatYear$3(d, p) {
-    return pad$3(d.getFullYear() % 100, p, 2);
+  function formatYear$4(d, p) {
+    return pad$4(d.getFullYear() % 100, p, 2);
   }
 
-  function formatFullYear$3(d, p) {
-    return pad$3(d.getFullYear() % 10000, p, 4);
+  function formatFullYear$4(d, p) {
+    return pad$4(d.getFullYear() % 10000, p, 4);
   }
 
-  function formatZone$3(d) {
+  function formatZone$4(d) {
     var z = d.getTimezoneOffset();
     return (z > 0 ? "-" : (z *= -1, "+"))
-        + pad$3(z / 60 | 0, "0", 2)
-        + pad$3(z % 60, "0", 2);
+        + pad$4(z / 60 | 0, "0", 2)
+        + pad$4(z % 60, "0", 2);
   }
 
-  function formatUTCDayOfMonth$3(d, p) {
-    return pad$3(d.getUTCDate(), p, 2);
+  function formatUTCDayOfMonth$4(d, p) {
+    return pad$4(d.getUTCDate(), p, 2);
   }
 
-  function formatUTCHour24$3(d, p) {
-    return pad$3(d.getUTCHours(), p, 2);
+  function formatUTCHour24$4(d, p) {
+    return pad$4(d.getUTCHours(), p, 2);
   }
 
-  function formatUTCHour12$3(d, p) {
-    return pad$3(d.getUTCHours() % 12 || 12, p, 2);
+  function formatUTCHour12$4(d, p) {
+    return pad$4(d.getUTCHours() % 12 || 12, p, 2);
   }
 
-  function formatUTCDayOfYear$3(d, p) {
-    return pad$3(1 + utcDay$3.count(utcYear$3(d), d), p, 3);
+  function formatUTCDayOfYear$4(d, p) {
+    return pad$4(1 + utcDay$4.count(utcYear$4(d), d), p, 3);
   }
 
-  function formatUTCMilliseconds$3(d, p) {
-    return pad$3(d.getUTCMilliseconds(), p, 3);
+  function formatUTCMilliseconds$4(d, p) {
+    return pad$4(d.getUTCMilliseconds(), p, 3);
   }
 
-  function formatUTCMicroseconds$3(d, p) {
-    return formatUTCMilliseconds$3(d, p) + "000";
+  function formatUTCMicroseconds$4(d, p) {
+    return formatUTCMilliseconds$4(d, p) + "000";
   }
 
-  function formatUTCMonthNumber$3(d, p) {
-    return pad$3(d.getUTCMonth() + 1, p, 2);
+  function formatUTCMonthNumber$4(d, p) {
+    return pad$4(d.getUTCMonth() + 1, p, 2);
   }
 
-  function formatUTCMinutes$3(d, p) {
-    return pad$3(d.getUTCMinutes(), p, 2);
+  function formatUTCMinutes$4(d, p) {
+    return pad$4(d.getUTCMinutes(), p, 2);
   }
 
-  function formatUTCSeconds$3(d, p) {
-    return pad$3(d.getUTCSeconds(), p, 2);
+  function formatUTCSeconds$4(d, p) {
+    return pad$4(d.getUTCSeconds(), p, 2);
   }
 
-  function formatUTCWeekdayNumberMonday$3(d) {
+  function formatUTCWeekdayNumberMonday$4(d) {
     var dow = d.getUTCDay();
     return dow === 0 ? 7 : dow;
   }
 
-  function formatUTCWeekNumberSunday$3(d, p) {
-    return pad$3(utcSunday$3.count(utcYear$3(d), d), p, 2);
+  function formatUTCWeekNumberSunday$4(d, p) {
+    return pad$4(utcSunday$4.count(utcYear$4(d), d), p, 2);
   }
 
-  function formatUTCWeekNumberISO$3(d, p) {
+  function formatUTCWeekNumberISO$4(d, p) {
     var day$$1 = d.getUTCDay();
-    d = (day$$1 >= 4 || day$$1 === 0) ? utcThursday$3(d) : utcThursday$3.ceil(d);
-    return pad$3(utcThursday$3.count(utcYear$3(d), d) + (utcYear$3(d).getUTCDay() === 4), p, 2);
+    d = (day$$1 >= 4 || day$$1 === 0) ? utcThursday$4(d) : utcThursday$4.ceil(d);
+    return pad$4(utcThursday$4.count(utcYear$4(d), d) + (utcYear$4(d).getUTCDay() === 4), p, 2);
   }
 
-  function formatUTCWeekdayNumberSunday$3(d) {
+  function formatUTCWeekdayNumberSunday$4(d) {
     return d.getUTCDay();
   }
 
-  function formatUTCWeekNumberMonday$3(d, p) {
-    return pad$3(utcMonday$3.count(utcYear$3(d), d), p, 2);
+  function formatUTCWeekNumberMonday$4(d, p) {
+    return pad$4(utcMonday$4.count(utcYear$4(d), d), p, 2);
   }
 
-  function formatUTCYear$3(d, p) {
-    return pad$3(d.getUTCFullYear() % 100, p, 2);
+  function formatUTCYear$4(d, p) {
+    return pad$4(d.getUTCFullYear() % 100, p, 2);
   }
 
-  function formatUTCFullYear$3(d, p) {
-    return pad$3(d.getUTCFullYear() % 10000, p, 4);
+  function formatUTCFullYear$4(d, p) {
+    return pad$4(d.getUTCFullYear() % 10000, p, 4);
   }
 
-  function formatUTCZone$3() {
+  function formatUTCZone$4() {
     return "+0000";
   }
 
-  function formatLiteralPercent$3() {
+  function formatLiteralPercent$4() {
     return "%";
   }
 
-  function formatUnixTimestamp$3(d) {
+  function formatUnixTimestamp$4(d) {
     return +d;
   }
 
-  function formatUnixTimestampSeconds$3(d) {
+  function formatUnixTimestampSeconds$4(d) {
     return Math.floor(+d / 1000);
   }
 
-  var locale$1$3;
-  var timeFormat$3;
-  var timeParse$3;
-  var utcFormat$3;
-  var utcParse$3;
+  var locale$5;
+  var timeFormat$4;
+  var timeParse$4;
+  var utcFormat$4;
+  var utcParse$4;
 
-  defaultLocale$1$3({
+  defaultLocale$5({
     dateTime: "%x, %X",
     date: "%-m/%-d/%Y",
     time: "%-I:%M:%S %p",
@@ -26765,40 +27447,131 @@ var Demo = (function (exports) {
     shortMonths: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
   });
 
-  function defaultLocale$1$3(definition) {
-    locale$1$3 = formatLocale$1$3(definition);
-    timeFormat$3 = locale$1$3.format;
-    timeParse$3 = locale$1$3.parse;
-    utcFormat$3 = locale$1$3.utcFormat;
-    utcParse$3 = locale$1$3.utcParse;
-    return locale$1$3;
+  function defaultLocale$5(definition) {
+    locale$5 = formatLocale$5(definition);
+    timeFormat$4 = locale$5.format;
+    timeParse$4 = locale$5.parse;
+    utcFormat$4 = locale$5.utcFormat;
+    utcParse$4 = locale$5.utcParse;
+    return locale$5;
   }
 
-  var isoSpecifier$3 = "%Y-%m-%dT%H:%M:%S.%LZ";
+  var isoSpecifier$4 = "%Y-%m-%dT%H:%M:%S.%LZ";
 
-  function formatIsoNative$3(date) {
+  function formatIsoNative$4(date) {
     return date.toISOString();
   }
 
-  var formatIso$3 = Date.prototype.toISOString
-      ? formatIsoNative$3
-      : utcFormat$3(isoSpecifier$3);
+  var formatIso$4 = Date.prototype.toISOString
+      ? formatIsoNative$4
+      : utcFormat$4(isoSpecifier$4);
 
-  function parseIsoNative$3(string) {
+  function parseIsoNative$4(string) {
     var date = new Date(string);
     return isNaN(date) ? null : date;
   }
 
-  var parseIso$3 = +new Date("2000-01-01T00:00:00.000Z")
-      ? parseIsoNative$3
-      : utcParse$3(isoSpecifier$3);
+  var parseIso$4 = +new Date("2000-01-01T00:00:00.000Z")
+      ? parseIsoNative$4
+      : utcParse$4(isoSpecifier$4);
+
+  function ascending$2$2(a, b) {
+    return a < b ? -1 : a > b ? 1 : a >= b ? 0 : NaN;
+  }
+
+  function bisector$1$2(compare) {
+    if (compare.length === 1) compare = ascendingComparator$1$2(compare);
+    return {
+      left: function(a, x, lo, hi) {
+        if (lo == null) lo = 0;
+        if (hi == null) hi = a.length;
+        while (lo < hi) {
+          var mid = lo + hi >>> 1;
+          if (compare(a[mid], x) < 0) lo = mid + 1;
+          else hi = mid;
+        }
+        return lo;
+      },
+      right: function(a, x, lo, hi) {
+        if (lo == null) lo = 0;
+        if (hi == null) hi = a.length;
+        while (lo < hi) {
+          var mid = lo + hi >>> 1;
+          if (compare(a[mid], x) > 0) hi = mid;
+          else lo = mid + 1;
+        }
+        return lo;
+      }
+    };
+  }
+
+  function ascendingComparator$1$2(f) {
+    return function(d, x) {
+      return ascending$2$2(f(d), x);
+    };
+  }
+
+  var ascendingBisect$1$2 = bisector$1$2(ascending$2$2);
+  var bisectRight$1$1 = ascendingBisect$1$2.right;
+
+  var e10$1$1 = Math.sqrt(50),
+      e5$1$1 = Math.sqrt(10),
+      e2$1$1 = Math.sqrt(2);
+
+  function ticks$1$1(start, stop, count) {
+    var reverse,
+        i = -1,
+        n,
+        ticks,
+        step;
+
+    stop = +stop, start = +start, count = +count;
+    if (start === stop && count > 0) return [start];
+    if (reverse = stop < start) n = start, start = stop, stop = n;
+    if ((step = tickIncrement$1$1(start, stop, count)) === 0 || !isFinite(step)) return [];
+
+    if (step > 0) {
+      start = Math.ceil(start / step);
+      stop = Math.floor(stop / step);
+      ticks = new Array(n = Math.ceil(stop - start + 1));
+      while (++i < n) ticks[i] = (start + i) * step;
+    } else {
+      start = Math.floor(start * step);
+      stop = Math.ceil(stop * step);
+      ticks = new Array(n = Math.ceil(start - stop + 1));
+      while (++i < n) ticks[i] = (start - i) / step;
+    }
+
+    if (reverse) ticks.reverse();
+
+    return ticks;
+  }
+
+  function tickIncrement$1$1(start, stop, count) {
+    var step = (stop - start) / Math.max(0, count),
+        power = Math.floor(Math.log(step) / Math.LN10),
+        error = step / Math.pow(10, power);
+    return power >= 0
+        ? (error >= e10$1$1 ? 10 : error >= e5$1$1 ? 5 : error >= e2$1$1 ? 2 : 1) * Math.pow(10, power)
+        : -Math.pow(10, -power) / (error >= e10$1$1 ? 10 : error >= e5$1$1 ? 5 : error >= e2$1$1 ? 2 : 1);
+  }
+
+  function tickStep$1$1(start, stop, count) {
+    var step0 = Math.abs(stop - start) / Math.max(0, count),
+        step1 = Math.pow(10, Math.floor(Math.log(step0) / Math.LN10)),
+        error = step0 / step1;
+    if (error >= e10$1$1) step1 *= 10;
+    else if (error >= e5$1$1) step1 *= 5;
+    else if (error >= e2$1$1) step1 *= 2;
+    return stop < start ? -step1 : step1;
+  }
 
   var prefix$3 = "$";
 
-  function Map$4() {}
+  function Map$1$1() {}
 
-  Map$4.prototype = map$1$2.prototype = {
-    constructor: Map$4,
+  Map$1$1.prototype = map$2$2.prototype = {
+    constructor: Map$1$1,
     has: function(key) {
       return (prefix$3 + key) in this;
     },
@@ -26845,11 +27618,11 @@ var Demo = (function (exports) {
     }
   };
 
-  function map$1$2(object, f) {
-    var map = new Map$4;
+  function map$2$2(object, f) {
+    var map = new Map$1$1;
 
     // Copy constructor.
-    if (object instanceof Map$4) object.each(function(value, key) { map.set(key, value); });
+    if (object instanceof Map$1$1) object.each(function(value, key) { map.set(key, value); });
 
     // Index array by numeric index or specified key function.
     else if (Array.isArray(object)) {
@@ -26869,7 +27642,7 @@ var Demo = (function (exports) {
 
   function Set$3() {}
 
-  var proto$3 = map$1$2.prototype;
+  var proto$3 = map$2$2.prototype;
 
   Set$3.prototype = set$6.prototype = {
     constructor: Set$3,
@@ -26903,19 +27676,19 @@ var Demo = (function (exports) {
     return set;
   }
 
-  var array$1$3 = Array.prototype;
+  var array$2$2 = Array.prototype;
 
-  var map$2$2 = array$1$3.map;
-  var slice$1$4 = array$1$3.slice;
+  var map$3$1 = array$2$2.map;
+  var slice$2$3 = array$2$2.slice;
 
   var implicit$3 = {name: "implicit"};
 
   function ordinal$3(range) {
-    var index = map$1$2(),
+    var index = map$2$2(),
         domain = [],
         unknown = implicit$3;
 
-    range = range == null ? [] : slice$1$4.call(range);
+    range = range == null ? [] : slice$2$3.call(range);
 
     function scale(d) {
       var key = d + "", i = index.get(key);
@@ -26928,14 +27701,14 @@ var Demo = (function (exports) {
 
     scale.domain = function(_) {
       if (!arguments.length) return domain.slice();
-      domain = [], index = map$1$2();
+      domain = [], index = map$2$2();
       var i = -1, n = _.length, d, key;
       while (++i < n) if (!index.has(key = (d = _[i]) + "")) index.set(key, domain.push(d));
       return scale;
     };
 
     scale.range = function(_) {
-      return arguments.length ? (range = slice$1$4.call(_), scale) : range.slice();
+      return arguments.length ? (range = slice$2$3.call(_), scale) : range.slice();
     };
 
     scale.unknown = function(_) {
@@ -26972,7 +27745,7 @@ var Demo = (function (exports) {
     };
   }
 
-  function constant$2$3(x) {
+  function constant$3$3(x) {
     return function() {
       return x;
     };
@@ -26992,18 +27765,18 @@ var Demo = (function (exports) {
 
   function hue$3(a, b) {
     var d = b - a;
-    return d ? linear$3(a, d > 180 || d < -180 ? d - 360 * Math.round(d / 360) : d) : constant$2$3(isNaN(a) ? b : a);
+    return d ? linear$3(a, d > 180 || d < -180 ? d - 360 * Math.round(d / 360) : d) : constant$3$3(isNaN(a) ? b : a);
   }
 
   function gamma$3(y) {
     return (y = +y) === 1 ? nogamma$3 : function(a, b) {
-      return b - a ? exponential$3(a, b, y) : constant$2$3(isNaN(a) ? b : a);
+      return b - a ? exponential$3(a, b, y) : constant$3$3(isNaN(a) ? b : a);
     };
   }
 
   function nogamma$3(a, b) {
     var d = b - a;
-    return d ? linear$3(a, d) : constant$2$3(isNaN(a) ? b : a);
+    return d ? linear$3(a, d) : constant$3$3(isNaN(a) ? b : a);
   }
 
   var rgb$1$3 = (function rgbGamma(y) {
@@ -27056,7 +27829,7 @@ var Demo = (function (exports) {
 
   var rgbBasis$2 = rgbSpline$2(basis$1$2);
 
-  function array$2$2(a, b) {
+  function array$3$1(a, b) {
     var nb = b ? b.length : 0,
         na = a ? Math.min(nb, a.length) : 0,
         x = new Array(na),
@@ -27079,7 +27852,7 @@ var Demo = (function (exports) {
     };
   }
 
-  function number$1$3(a, b) {
+  function number$2$2(a, b) {
     return a = +a, b -= a, function(t) {
       return a + b * t;
     };
@@ -27147,7 +27920,7 @@ var Demo = (function (exports) {
         else s[++i] = bm;
       } else { // interpolate non-matching numbers
         s[++i] = null;
-        q.push({i: i, x: number$1$3(am, bm)});
+        q.push({i: i, x: number$2$2(am, bm)});
       }
       bi = reB$3.lastIndex;
     }
@@ -27172,14 +27945,14 @@ var Demo = (function (exports) {
 
   function value$3(a, b) {
     var t = typeof b, c;
-    return b == null || t === "boolean" ? constant$2$3(b)
-        : (t === "number" ? number$1$3
+    return b == null || t === "boolean" ? constant$3$3(b)
+        : (t === "number" ? number$2$2
         : t === "string" ? ((c = color$3(b)) ? (b = c, rgb$1$3) : string$2)
         : b instanceof color$3 ? rgb$1$3
         : b instanceof Date ? date$2
-        : Array.isArray(b) ? array$2$2
+        : Array.isArray(b) ? array$3$1
         : typeof b.valueOf !== "function" && typeof b.toString !== "function" || isNaN(b) ? object$2
-        : number$1$3)(a, b);
+        : number$2$2)(a, b);
   }
 
   function interpolateRound$2(a, b) {
@@ -27219,13 +27992,13 @@ var Demo = (function (exports) {
   cubehelix$1$2(hue$3);
   var cubehelixLong$2 = cubehelix$1$2(nogamma$3);
 
-  function constant$3$3(x) {
+  function constant$4$3(x) {
     return function() {
       return x;
     };
   }
 
-  function number$2$1(x) {
+  function number$3$1(x) {
     return +x;
   }
 
@@ -27234,7 +28007,7 @@ var Demo = (function (exports) {
   function deinterpolateLinear$2(a, b) {
     return (b -= (a = +a))
         ? function(x) { return (x - a) / b; }
-        : constant$3$3(b);
+        : constant$4$3(b);
   }
 
   function deinterpolateClamp$2(deinterpolate) {
@@ -27276,7 +28049,7 @@ var Demo = (function (exports) {
     }
 
     return function(x) {
-      var i = bisectRight$2(domain, x, 1, j) - 1;
+      var i = bisectRight$1$1(domain, x, 1, j) - 1;
       return r[i](d[i](x));
     };
   }
@@ -27315,15 +28088,15 @@ var Demo = (function (exports) {
     };
 
     scale.domain = function(_) {
-      return arguments.length ? (domain = map$2$2.call(_, number$2$1), rescale()) : domain.slice();
+      return arguments.length ? (domain = map$3$1.call(_, number$3$1), rescale()) : domain.slice();
     };
 
     scale.range = function(_) {
-      return arguments.length ? (range = slice$1$4.call(_), rescale()) : range.slice();
+      return arguments.length ? (range = slice$2$3.call(_), rescale()) : range.slice();
     };
 
     scale.rangeRound = function(_) {
-      return range = slice$1$4.call(_), interpolate$$1 = interpolateRound$2, rescale();
+      return range = slice$2$3.call(_), interpolate$$1 = interpolateRound$2, rescale();
     };
 
     scale.clamp = function(_) {
@@ -27337,17 +28110,322 @@ var Demo = (function (exports) {
     return rescale();
   }
 
+  // Computes the decimal coefficient and exponent of the specified number x with
+  // significant digits p, where x is positive and p is in [1, 21] or undefined.
+  // For example, formatDecimal(1.23) returns ["123", 0].
+  function formatDecimal$4(x, p) {
+    if ((i = (x = p ? x.toExponential(p - 1) : x.toExponential()).indexOf("e")) < 0) return null; // NaN, ±Infinity
+    var i, coefficient = x.slice(0, i);
+
+    // The string returned by toExponential either has the form \d\.\d+e[-+]\d+
+    // (e.g., 1.2e+3) or the form \de[-+]\d+ (e.g., 1e+3).
+    return [
+      coefficient.length > 1 ? coefficient[0] + coefficient.slice(2) : coefficient,
+      +x.slice(i + 1)
+    ];
+  }
+
+  function exponent$3(x) {
+    return x = formatDecimal$4(Math.abs(x)), x ? x[1] : NaN;
+  }
+
+  function formatGroup$4(grouping, thousands) {
+    return function(value, width) {
+      var i = value.length,
+          t = [],
+          j = 0,
+          g = grouping[0],
+          length = 0;
+
+      while (i > 0 && g > 0) {
+        if (length + g + 1 > width) g = Math.max(1, width - length);
+        t.push(value.substring(i -= g, i + g));
+        if ((length += g + 1) > width) break;
+        g = grouping[j = (j + 1) % grouping.length];
+      }
+
+      return t.reverse().join(thousands);
+    };
+  }
+
+  function formatNumerals$4(numerals) {
+    return function(value) {
+      return value.replace(/[0-9]/g, function(i) {
+        return numerals[+i];
+      });
+    };
+  }
+
+  // [[fill]align][sign][symbol][0][width][,][.precision][~][type]
+  var re$4 = /^(?:(.)?([<>=^]))?([+\-( ])?([$#])?(0)?(\d+)?(,)?(\.\d+)?(~)?([a-z%])?$/i;
+
+  function formatSpecifier$4(specifier) {
+    return new FormatSpecifier$4(specifier);
+  }
+
+  formatSpecifier$4.prototype = FormatSpecifier$4.prototype; // instanceof
+
+  function FormatSpecifier$4(specifier) {
+    if (!(match = re$4.exec(specifier))) throw new Error("invalid format: " + specifier);
+    var match;
+    this.fill = match[1] || " ";
+    this.align = match[2] || ">";
+    this.sign = match[3] || "-";
+    this.symbol = match[4] || "";
+    this.zero = !!match[5];
+    this.width = match[6] && +match[6];
+    this.comma = !!match[7];
+    this.precision = match[8] && +match[8].slice(1);
+    this.trim = !!match[9];
+    this.type = match[10] || "";
+  }
+
+  FormatSpecifier$4.prototype.toString = function() {
+    return this.fill
+        + this.align
+        + this.sign
+        + this.symbol
+        + (this.zero ? "0" : "")
+        + (this.width == null ? "" : Math.max(1, this.width | 0))
+        + (this.comma ? "," : "")
+        + (this.precision == null ? "" : "." + Math.max(0, this.precision | 0))
+        + (this.trim ? "~" : "")
+        + this.type;
+  };
+
+  // Trims insignificant zeros, e.g., replaces 1.2000k with 1.2k.
+  function formatTrim$4(s) {
+    out: for (var n = s.length, i = 1, i0 = -1, i1; i < n; ++i) {
+      switch (s[i]) {
+        case ".": i0 = i1 = i; break;
+        case "0": if (i0 === 0) i0 = i; i1 = i; break;
+        default: if (i0 > 0) { if (!+s[i]) break out; i0 = 0; } break;
+      }
+    }
+    return i0 > 0 ? s.slice(0, i0) + s.slice(i1 + 1) : s;
+  }
+
+  var prefixExponent$4;
+
+  function formatPrefixAuto$4(x, p) {
+    var d = formatDecimal$4(x, p);
+    if (!d) return x + "";
+    var coefficient = d[0],
+        exponent = d[1],
+        i = exponent - (prefixExponent$4 = Math.max(-8, Math.min(8, Math.floor(exponent / 3))) * 3) + 1,
+        n = coefficient.length;
+    return i === n ? coefficient
+        : i > n ? coefficient + new Array(i - n + 1).join("0")
+        : i > 0 ? coefficient.slice(0, i) + "." + coefficient.slice(i)
+        : "0." + new Array(1 - i).join("0") + formatDecimal$4(x, Math.max(0, p + i - 1))[0]; // less than 1y!
+  }
+
+  function formatRounded$4(x, p) {
+    var d = formatDecimal$4(x, p);
+    if (!d) return x + "";
+    var coefficient = d[0],
+        exponent = d[1];
+    return exponent < 0 ? "0." + new Array(-exponent).join("0") + coefficient
+        : coefficient.length > exponent + 1 ? coefficient.slice(0, exponent + 1) + "." + coefficient.slice(exponent + 1)
+        : coefficient + new Array(exponent - coefficient.length + 2).join("0");
+  }
+
+  var formatTypes$4 = {
+    "%": function(x, p) { return (x * 100).toFixed(p); },
+    "b": function(x) { return Math.round(x).toString(2); },
+    "c": function(x) { return x + ""; },
+    "d": function(x) { return Math.round(x).toString(10); },
+    "e": function(x, p) { return x.toExponential(p); },
+    "f": function(x, p) { return x.toFixed(p); },
+    "g": function(x, p) { return x.toPrecision(p); },
+    "o": function(x) { return Math.round(x).toString(8); },
+    "p": function(x, p) { return formatRounded$4(x * 100, p); },
+    "r": formatRounded$4,
+    "s": formatPrefixAuto$4,
+    "X": function(x) { return Math.round(x).toString(16).toUpperCase(); },
+    "x": function(x) { return Math.round(x).toString(16); }
+  };
+
+  function identity$3$3(x) {
+    return x;
+  }
+
+  var prefixes$4 = ["y","z","a","f","p","n","µ","m","","k","M","G","T","P","E","Z","Y"];
+
+  function formatLocale$1$4(locale) {
+    var group = locale.grouping && locale.thousands ? formatGroup$4(locale.grouping, locale.thousands) : identity$3$3,
+        currency = locale.currency,
+        decimal = locale.decimal,
+        numerals = locale.numerals ? formatNumerals$4(locale.numerals) : identity$3$3,
+        percent = locale.percent || "%";
+
+    function newFormat(specifier) {
+      specifier = formatSpecifier$4(specifier);
+
+      var fill = specifier.fill,
+          align = specifier.align,
+          sign = specifier.sign,
+          symbol = specifier.symbol,
+          zero = specifier.zero,
+          width = specifier.width,
+          comma = specifier.comma,
+          precision = specifier.precision,
+          trim = specifier.trim,
+          type = specifier.type;
+
+      // The "n" type is an alias for ",g".
+      if (type === "n") comma = true, type = "g";
+
+      // The "" type, and any invalid type, is an alias for ".12~g".
+      else if (!formatTypes$4[type]) precision == null && (precision = 12), trim = true, type = "g";
+
+      // If zero fill is specified, padding goes after sign and before digits.
+      if (zero || (fill === "0" && align === "=")) zero = true, fill = "0", align = "=";
+
+      // Compute the prefix and suffix.
+      // For SI-prefix, the suffix is lazily computed.
+      var prefix = symbol === "$" ? currency[0] : symbol === "#" && /[boxX]/.test(type) ? "0" + type.toLowerCase() : "",
+          suffix = symbol === "$" ? currency[1] : /[%p]/.test(type) ? percent : "";
+
+      // What format function should we use?
+      // Is this an integer type?
+      // Can this type generate exponential notation?
+      var formatType = formatTypes$4[type],
+          maybeSuffix = /[defgprs%]/.test(type);
+
+      // Set the default precision if not specified,
+      // or clamp the specified precision to the supported range.
+      // For significant precision, it must be in [1, 21].
+      // For fixed precision, it must be in [0, 20].
+      precision = precision == null ? 6
+          : /[gprs]/.test(type) ? Math.max(1, Math.min(21, precision))
+          : Math.max(0, Math.min(20, precision));
+
+      function format(value) {
+        var valuePrefix = prefix,
+            valueSuffix = suffix,
+            i, n, c;
+
+        if (type === "c") {
+          valueSuffix = formatType(value) + valueSuffix;
+          value = "";
+        } else {
+          value = +value;
+
+          // Perform the initial formatting.
+          var valueNegative = value < 0;
+          value = formatType(Math.abs(value), precision);
+
+          // Trim insignificant zeros.
+          if (trim) value = formatTrim$4(value);
+
+          // If a negative value rounds to zero during formatting, treat as positive.
+          if (valueNegative && +value === 0) valueNegative = false;
+
+          // Compute the prefix and suffix.
+          valuePrefix = (valueNegative ? (sign === "(" ? sign : "-") : sign === "-" || sign === "(" ? "" : sign) + valuePrefix;
+          valueSuffix = (type === "s" ? prefixes$4[8 + prefixExponent$4 / 3] : "") + valueSuffix + (valueNegative && sign === "(" ? ")" : "");
+
+          // Break the formatted value into the integer “value” part that can be
+          // grouped, and fractional or exponential “suffix” part that is not.
+          if (maybeSuffix) {
+            i = -1, n = value.length;
+            while (++i < n) {
+              if (c = value.charCodeAt(i), 48 > c || c > 57) {
+                valueSuffix = (c === 46 ? decimal + value.slice(i + 1) : value.slice(i)) + valueSuffix;
+                value = value.slice(0, i);
+                break;
+              }
+            }
+          }
+        }
+
+        // If the fill character is not "0", grouping is applied before padding.
+        if (comma && !zero) value = group(value, Infinity);
+
+        // Compute the padding.
+        var length = valuePrefix.length + value.length + valueSuffix.length,
+            padding = length < width ? new Array(width - length + 1).join(fill) : "";
+
+        // If the fill character is "0", grouping is applied after padding.
+        if (comma && zero) value = group(padding + value, padding.length ? width - valueSuffix.length : Infinity), padding = "";
+
+        // Reconstruct the final output based on the desired alignment.
+        switch (align) {
+          case "<": value = valuePrefix + value + valueSuffix + padding; break;
+          case "=": value = valuePrefix + padding + value + valueSuffix; break;
+          case "^": value = padding.slice(0, length = padding.length >> 1) + valuePrefix + value + valueSuffix + padding.slice(length); break;
+          default: value = padding + valuePrefix + value + valueSuffix; break;
+        }
+
+        return numerals(value);
+      }
+
+      format.toString = function() {
+        return specifier + "";
+      };
+
+      return format;
+    }
+
+    function formatPrefix(specifier, value) {
+      var f = newFormat((specifier = formatSpecifier$4(specifier), specifier.type = "f", specifier)),
+          e = Math.max(-8, Math.min(8, Math.floor(exponent$3(value) / 3))) * 3,
+          k = Math.pow(10, -e),
+          prefix = prefixes$4[8 + e / 3];
+      return function(value) {
+        return f(k * value) + prefix;
+      };
+    }
+
+    return {
+      format: newFormat,
+      formatPrefix: formatPrefix
+    };
+  }
+
+  var locale$1$4;
+  var format$4;
+  var formatPrefix$4;
+
+  defaultLocale$1$4({
+    decimal: ".",
+    thousands: ",",
+    grouping: [3],
+    currency: ["$", ""]
+  });
+
+  function defaultLocale$1$4(definition) {
+    locale$1$4 = formatLocale$1$4(definition);
+    format$4 = locale$1$4.format;
+    formatPrefix$4 = locale$1$4.formatPrefix;
+    return locale$1$4;
+  }
+
+  function precisionFixed$2(step) {
+    return Math.max(0, -exponent$3(Math.abs(step)));
+  }
+
+  function precisionPrefix$2(step, value) {
+    return Math.max(0, Math.max(-8, Math.min(8, Math.floor(exponent$3(value) / 3))) * 3 - exponent$3(Math.abs(step)));
+  }
+
+  function precisionRound$2(step, max) {
+    step = Math.abs(step), max = Math.abs(max) - step;
+    return Math.max(0, exponent$3(max) - exponent$3(step)) + 1;
+  }
+
   function tickFormat$2(domain, count, specifier) {
     var start = domain[0],
         stop = domain[domain.length - 1],
-        step = tickStep$3(start, stop, count == null ? 10 : count),
+        step = tickStep$1$1(start, stop, count == null ? 10 : count),
         precision;
-    specifier = formatSpecifier$3(specifier == null ? ",f" : specifier);
+    specifier = formatSpecifier$4(specifier == null ? ",f" : specifier);
     switch (specifier.type) {
       case "s": {
         var value = Math.max(Math.abs(start), Math.abs(stop));
         if (specifier.precision == null && !isNaN(precision = precisionPrefix$2(step, value))) specifier.precision = precision;
-        return formatPrefix$3(specifier, value);
+        return formatPrefix$4(specifier, value);
       }
       case "":
       case "e":
@@ -27363,7 +28441,7 @@ var Demo = (function (exports) {
         break;
       }
     }
-    return format$3(specifier);
+    return format$4(specifier);
   }
 
   function linearish$2(scale) {
@@ -27371,7 +28449,7 @@ var Demo = (function (exports) {
 
     scale.ticks = function(count) {
       var d = domain();
-      return ticks$2(d[0], d[d.length - 1], count == null ? 10 : count);
+      return ticks$1$1(d[0], d[d.length - 1], count == null ? 10 : count);
     };
 
     scale.tickFormat = function(count, specifier) {
@@ -27393,16 +28471,16 @@ var Demo = (function (exports) {
         step = i0, i0 = i1, i1 = step;
       }
 
-      step = tickIncrement$2(start, stop, count);
+      step = tickIncrement$1$1(start, stop, count);
 
       if (step > 0) {
         start = Math.floor(start / step) * step;
         stop = Math.ceil(stop / step) * step;
-        step = tickIncrement$2(start, stop, count);
+        step = tickIncrement$1$1(start, stop, count);
       } else if (step < 0) {
         start = Math.ceil(start * step) / step;
         stop = Math.floor(stop * step) / step;
-        step = tickIncrement$2(start, stop, count);
+        step = tickIncrement$1$1(start, stop, count);
       }
 
       if (step > 0) {
@@ -27422,7 +28500,7 @@ var Demo = (function (exports) {
   }
 
   function linear$1$3() {
-    var scale = continuous$2(deinterpolateLinear$2, number$1$3);
+    var scale = continuous$2(deinterpolateLinear$2, number$2$2);
 
     scale.copy = function() {
       return copy$2(scale, linear$1$3());
@@ -27462,12 +28540,12 @@ var Demo = (function (exports) {
     return new Date(t);
   }
 
-  function number$3$2(t) {
+  function number$4$1(t) {
     return t instanceof Date ? +t : +new Date(+t);
   }
 
   function calendar$1(year$$1, month$$1, week, day$$1, hour$$1, minute$$1, second$$1, millisecond$$1, format) {
-    var scale = continuous$2(deinterpolateLinear$2, number$1$3),
+    var scale = continuous$2(deinterpolateLinear$2, number$2$2),
         invert = scale.invert,
         domain = scale.domain;
 
@@ -27519,16 +28597,16 @@ var Demo = (function (exports) {
       // Otherwise, assume interval is already a time interval and use it.
       if (typeof interval === "number") {
         var target = Math.abs(stop - start) / interval,
-            i = bisector$4(function(i) { return i[2]; }).right(tickIntervals, target);
+            i = bisector$1$2(function(i) { return i[2]; }).right(tickIntervals, target);
         if (i === tickIntervals.length) {
-          step = tickStep$3(start / durationYear$1, stop / durationYear$1, interval);
+          step = tickStep$1$1(start / durationYear$1, stop / durationYear$1, interval);
           interval = year$$1;
         } else if (i) {
           i = tickIntervals[target / tickIntervals[i - 1][2] < tickIntervals[i][2] / target ? i - 1 : i];
           step = i[1];
           interval = i[0];
         } else {
-          step = Math.max(tickStep$3(start, stop, interval), 1);
+          step = Math.max(tickStep$1$1(start, stop, interval), 1);
           interval = millisecond$$1;
         }
       }
@@ -27541,7 +28619,7 @@ var Demo = (function (exports) {
     };
 
     scale.domain = function(_) {
-      return arguments.length ? domain(map$2$2.call(_, number$3$2)) : domain().map(date$1$2);
+      return arguments.length ? domain(map$3$1.call(_, number$4$1)) : domain().map(date$1$2);
     };
 
     scale.ticks = function(interval, step) {
@@ -27575,7 +28653,7 @@ var Demo = (function (exports) {
   }
 
   function scaleTime$1() {
-    return calendar$1(year$3, month$3, sunday$3, day$3, hour$3, minute$3, second$3, millisecond$3, timeFormat$3).domain([new Date(2000, 0, 1), new Date(2000, 0, 2)]);
+    return calendar$1(year$4, month$4, sunday$4, day$4, hour$4, minute$4, second$4, millisecond$4, timeFormat$4).domain([new Date(2000, 0, 1), new Date(2000, 0, 2)]);
   }
 
   function colors$3(specifier) {
@@ -27975,180 +29053,10 @@ var Demo = (function (exports) {
 
   var plasma$3 = ramp$1$3(colors$3("0d088710078813078916078a19068c1b068d1d068e20068f2206902406912605912805922a05932c05942e05952f059631059733059735049837049938049a3a049a3c049b3e049c3f049c41049d43039e44039e46039f48039f4903a04b03a14c02a14e02a25002a25102a35302a35502a45601a45801a45901a55b01a55c01a65e01a66001a66100a76300a76400a76600a76700a86900a86a00a86c00a86e00a86f00a87100a87201a87401a87501a87701a87801a87a02a87b02a87d03a87e03a88004a88104a78305a78405a78606a68707a68808a68a09a58b0aa58d0ba58e0ca48f0da4910ea3920fa39410a29511a19613a19814a099159f9a169f9c179e9d189d9e199da01a9ca11b9ba21d9aa31e9aa51f99a62098a72197a82296aa2395ab2494ac2694ad2793ae2892b02991b12a90b22b8fb32c8eb42e8db52f8cb6308bb7318ab83289ba3388bb3488bc3587bd3786be3885bf3984c03a83c13b82c23c81c33d80c43e7fc5407ec6417dc7427cc8437bc9447aca457acb4679cc4778cc4977cd4a76ce4b75cf4c74d04d73d14e72d24f71d35171d45270d5536fd5546ed6556dd7566cd8576bd9586ada5a6ada5b69db5c68dc5d67dd5e66de5f65de6164df6263e06363e16462e26561e26660e3685fe4695ee56a5de56b5de66c5ce76e5be76f5ae87059e97158e97257ea7457eb7556eb7655ec7754ed7953ed7a52ee7b51ef7c51ef7e50f07f4ff0804ef1814df1834cf2844bf3854bf3874af48849f48948f58b47f58c46f68d45f68f44f79044f79143f79342f89441f89540f9973ff9983ef99a3efa9b3dfa9c3cfa9e3bfb9f3afba139fba238fca338fca537fca636fca835fca934fdab33fdac33fdae32fdaf31fdb130fdb22ffdb42ffdb52efeb72dfeb82cfeba2cfebb2bfebd2afebe2afec029fdc229fdc328fdc527fdc627fdc827fdca26fdcb26fccd25fcce25fcd025fcd225fbd324fbd524fbd724fad824fada24f9dc24f9dd25f8df25f8e125f7e225f7e425f6e626f6e826f5e926f5eb27f4ed27f3ee27f3f027f2f227f1f426f1f525f0f724f0f921"));
 
-  var slice$2$2 = Array.prototype.slice;
-
-  function identity$4$1(x) {
-    return x;
-  }
-
-  var top$2 = 1,
-      right$2 = 2,
-      bottom$2 = 3,
-      left$2 = 4,
-      epsilon$3 = 1e-6;
-
-  function translateX$2(x) {
-    return "translate(" + (x + 0.5) + ",0)";
-  }
-
-  function translateY$2(y) {
-    return "translate(0," + (y + 0.5) + ")";
-  }
-
-  function number$4$1(scale) {
-    return function(d) {
-      return +scale(d);
-    };
-  }
-
-  function center$3(scale) {
-    var offset = Math.max(0, scale.bandwidth() - 1) / 2; // Adjust for 0.5px offset.
-    if (scale.round()) offset = Math.round(offset);
-    return function(d) {
-      return +scale(d) + offset;
-    };
-  }
-
-  function entering$2() {
-    return !this.__axis;
-  }
-
-  function axis$2(orient, scale) {
-    var tickArguments = [],
-        tickValues = null,
-        tickFormat = null,
-        tickSizeInner = 6,
-        tickSizeOuter = 6,
-        tickPadding = 3,
-        k = orient === top$2 || orient === left$2 ? -1 : 1,
-        x = orient === left$2 || orient === right$2 ? "x" : "y",
-        transform = orient === top$2 || orient === bottom$2 ? translateX$2 : translateY$2;
-
-    function axis(context) {
-      var values = tickValues == null ? (scale.ticks ? scale.ticks.apply(scale, tickArguments) : scale.domain()) : tickValues,
-          format = tickFormat == null ? (scale.tickFormat ? scale.tickFormat.apply(scale, tickArguments) : identity$4$1) : tickFormat,
-          spacing = Math.max(tickSizeInner, 0) + tickPadding,
-          range = scale.range(),
-          range0 = +range[0] + 0.5,
-          range1 = +range[range.length - 1] + 0.5,
-          position = (scale.bandwidth ? center$3 : number$4$1)(scale.copy()),
-          selection = context.selection ? context.selection() : context,
-          path = selection.selectAll(".domain").data([null]),
-          tick = selection.selectAll(".tick").data(values, scale).order(),
-          tickExit = tick.exit(),
-          tickEnter = tick.enter().append("g").attr("class", "tick"),
-          line = tick.select("line"),
-          text = tick.select("text");
-
-      path = path.merge(path.enter().insert("path", ".tick")
-          .attr("class", "domain")
-          .attr("stroke", "currentColor"));
-
-      tick = tick.merge(tickEnter);
-
-      line = line.merge(tickEnter.append("line")
-          .attr("stroke", "currentColor")
-          .attr(x + "2", k * tickSizeInner));
-
-      text = text.merge(tickEnter.append("text")
-          .attr("fill", "currentColor")
-          .attr(x, k * spacing)
-          .attr("dy", orient === top$2 ? "0em" : orient === bottom$2 ? "0.71em" : "0.32em"));
-
-      if (context !== selection) {
-        path = path.transition(context);
-        tick = tick.transition(context);
-        line = line.transition(context);
-        text = text.transition(context);
-
-        tickExit = tickExit.transition(context)
-            .attr("opacity", epsilon$3)
-            .attr("transform", function(d) { return isFinite(d = position(d)) ? transform(d) : this.getAttribute("transform"); });
-
-        tickEnter
-            .attr("opacity", epsilon$3)
-            .attr("transform", function(d) { var p = this.parentNode.__axis; return transform(p && isFinite(p = p(d)) ? p : position(d)); });
-      }
-
-      tickExit.remove();
-
-      path
-          .attr("d", orient === left$2 || orient == right$2
-              ? (tickSizeOuter ? "M" + k * tickSizeOuter + "," + range0 + "H0.5V" + range1 + "H" + k * tickSizeOuter : "M0.5," + range0 + "V" + range1)
-              : (tickSizeOuter ? "M" + range0 + "," + k * tickSizeOuter + "V0.5H" + range1 + "V" + k * tickSizeOuter : "M" + range0 + ",0.5H" + range1));
-
-      tick
-          .attr("opacity", 1)
-          .attr("transform", function(d) { return transform(position(d)); });
-
-      line
-          .attr(x + "2", k * tickSizeInner);
-
-      text
-          .attr(x, k * spacing)
-          .text(format);
-
-      selection.filter(entering$2)
-          .attr("fill", "none")
-          .attr("font-size", 10)
-          .attr("font-family", "sans-serif")
-          .attr("text-anchor", orient === right$2 ? "start" : orient === left$2 ? "end" : "middle");
-
-      selection
-          .each(function() { this.__axis = position; });
-    }
-
-    axis.scale = function(_) {
-      return arguments.length ? (scale = _, axis) : scale;
-    };
-
-    axis.ticks = function() {
-      return tickArguments = slice$2$2.call(arguments), axis;
-    };
-
-    axis.tickArguments = function(_) {
-      return arguments.length ? (tickArguments = _ == null ? [] : slice$2$2.call(_), axis) : tickArguments.slice();
-    };
-
-    axis.tickValues = function(_) {
-      return arguments.length ? (tickValues = _ == null ? null : slice$2$2.call(_), axis) : tickValues && tickValues.slice();
-    };
-
-    axis.tickFormat = function(_) {
-      return arguments.length ? (tickFormat = _, axis) : tickFormat;
-    };
-
-    axis.tickSize = function(_) {
-      return arguments.length ? (tickSizeInner = tickSizeOuter = +_, axis) : tickSizeInner;
-    };
-
-    axis.tickSizeInner = function(_) {
-      return arguments.length ? (tickSizeInner = +_, axis) : tickSizeInner;
-    };
-
-    axis.tickSizeOuter = function(_) {
-      return arguments.length ? (tickSizeOuter = +_, axis) : tickSizeOuter;
-    };
-
-    axis.tickPadding = function(_) {
-      return arguments.length ? (tickPadding = +_, axis) : tickPadding;
-    };
-
-    return axis;
-  }
-
-  function axisBottom$2(scale) {
-    return axis$2(bottom$2, scale);
-  }
-
-  function axisLeft$1(scale) {
-    return axis$2(left$2, scale);
-  }
-
   var pi$4 = Math.PI,
       tau$4 = 2 * pi$4,
-      epsilon$1$2 = 1e-6,
-      tauEpsilon$2 = tau$4 - epsilon$1$2;
+      epsilon$2 = 1e-6,
+      tauEpsilon$2 = tau$4 - epsilon$2;
 
   function Path$2() {
     this._x0 = this._y0 = // start of current subpath
@@ -28199,12 +29107,12 @@ var Demo = (function (exports) {
       }
 
       // Or, is (x1,y1) coincident with (x0,y0)? Do nothing.
-      else if (!(l01_2 > epsilon$1$2));
+      else if (!(l01_2 > epsilon$2));
 
       // Or, are (x0,y0), (x1,y1) and (x2,y2) collinear?
       // Equivalently, is (x1,y1) coincident with (x2,y2)?
       // Or, is the radius zero? Line to (x1,y1).
-      else if (!(Math.abs(y01 * x21 - y21 * x01) > epsilon$1$2) || !r) {
+      else if (!(Math.abs(y01 * x21 - y21 * x01) > epsilon$2) || !r) {
         this._ += "L" + (this._x1 = x1) + "," + (this._y1 = y1);
       }
 
@@ -28221,7 +29129,7 @@ var Demo = (function (exports) {
             t21 = l / l21;
 
         // If the start tangent is not coincident with (x0,y0), line to.
-        if (Math.abs(t01 - 1) > epsilon$1$2) {
+        if (Math.abs(t01 - 1) > epsilon$2) {
           this._ += "L" + (x1 + t01 * x01) + "," + (y1 + t01 * y01);
         }
 
@@ -28246,7 +29154,7 @@ var Demo = (function (exports) {
       }
 
       // Or, is (x0,y0) not coincident with the previous point? Line to (x0,y0).
-      else if (Math.abs(this._x1 - x0) > epsilon$1$2 || Math.abs(this._y1 - y0) > epsilon$1$2) {
+      else if (Math.abs(this._x1 - x0) > epsilon$2 || Math.abs(this._y1 - y0) > epsilon$2) {
         this._ += "L" + x0 + "," + y0;
       }
 
@@ -28262,7 +29170,7 @@ var Demo = (function (exports) {
       }
 
       // Is this arc non-empty? Draw an arc!
-      else if (da > epsilon$1$2) {
+      else if (da > epsilon$2) {
         this._ += "A" + r + "," + r + ",0," + (+(da >= pi$4)) + "," + cw + "," + (this._x1 = x + r * Math.cos(a1)) + "," + (this._y1 = y + r * Math.sin(a1));
       }
     },
@@ -28274,7 +29182,7 @@ var Demo = (function (exports) {
     }
   };
 
-  function constant$4$3(x) {
+  function constant$5$3(x) {
     return function constant() {
       return x;
     };
@@ -28325,7 +29233,7 @@ var Demo = (function (exports) {
   function line$1() {
     var x$$1 = x$2,
         y$$1 = y$2,
-        defined = constant$4$3(true),
+        defined = constant$5$3(true),
         context = null,
         curve = curveLinear$1,
         output = null;
@@ -28351,15 +29259,15 @@ var Demo = (function (exports) {
     }
 
     line.x = function(_) {
-      return arguments.length ? (x$$1 = typeof _ === "function" ? _ : constant$4$3(+_), line) : x$$1;
+      return arguments.length ? (x$$1 = typeof _ === "function" ? _ : constant$5$3(+_), line) : x$$1;
     };
 
     line.y = function(_) {
-      return arguments.length ? (y$$1 = typeof _ === "function" ? _ : constant$4$3(+_), line) : y$$1;
+      return arguments.length ? (y$$1 = typeof _ === "function" ? _ : constant$5$3(+_), line) : y$$1;
     };
 
     line.defined = function(_) {
-      return arguments.length ? (defined = typeof _ === "function" ? _ : constant$4$3(!!_), line) : defined;
+      return arguments.length ? (defined = typeof _ === "function" ? _ : constant$5$3(!!_), line) : defined;
     };
 
     line.curve = function(_) {
@@ -28376,9 +29284,9 @@ var Demo = (function (exports) {
   function area$2() {
     var x0 = x$2,
         x1 = null,
-        y0 = constant$4$3(0),
+        y0 = constant$5$3(0),
         y1 = y$2,
-        defined = constant$4$3(true),
+        defined = constant$5$3(true),
         context = null,
         curve = curveLinear$1,
         output = null;
@@ -28426,27 +29334,27 @@ var Demo = (function (exports) {
     }
 
     area.x = function(_) {
-      return arguments.length ? (x0 = typeof _ === "function" ? _ : constant$4$3(+_), x1 = null, area) : x0;
+      return arguments.length ? (x0 = typeof _ === "function" ? _ : constant$5$3(+_), x1 = null, area) : x0;
     };
 
     area.x0 = function(_) {
-      return arguments.length ? (x0 = typeof _ === "function" ? _ : constant$4$3(+_), area) : x0;
+      return arguments.length ? (x0 = typeof _ === "function" ? _ : constant$5$3(+_), area) : x0;
     };
 
     area.x1 = function(_) {
-      return arguments.length ? (x1 = _ == null ? null : typeof _ === "function" ? _ : constant$4$3(+_), area) : x1;
+      return arguments.length ? (x1 = _ == null ? null : typeof _ === "function" ? _ : constant$5$3(+_), area) : x1;
     };
 
     area.y = function(_) {
-      return arguments.length ? (y0 = typeof _ === "function" ? _ : constant$4$3(+_), y1 = null, area) : y0;
+      return arguments.length ? (y0 = typeof _ === "function" ? _ : constant$5$3(+_), y1 = null, area) : y0;
     };
 
     area.y0 = function(_) {
-      return arguments.length ? (y0 = typeof _ === "function" ? _ : constant$4$3(+_), area) : y0;
+      return arguments.length ? (y0 = typeof _ === "function" ? _ : constant$5$3(+_), area) : y0;
     };
 
     area.y1 = function(_) {
-      return arguments.length ? (y1 = _ == null ? null : typeof _ === "function" ? _ : constant$4$3(+_), area) : y1;
+      return arguments.length ? (y1 = _ == null ? null : typeof _ === "function" ? _ : constant$5$3(+_), area) : y1;
     };
 
     area.lineX0 =
@@ -28463,7 +29371,7 @@ var Demo = (function (exports) {
     };
 
     area.defined = function(_) {
-      return arguments.length ? (defined = typeof _ === "function" ? _ : constant$4$3(!!_), area) : defined;
+      return arguments.length ? (defined = typeof _ === "function" ? _ : constant$5$3(!!_), area) : defined;
     };
 
     area.curve = function(_) {
@@ -28475,6 +29383,58 @@ var Demo = (function (exports) {
     };
 
     return area;
+  }
+
+  function point$2$2(that, x, y) {
+    that._context.bezierCurveTo(
+      (2 * that._x0 + that._x1) / 3,
+      (2 * that._y0 + that._y1) / 3,
+      (that._x0 + 2 * that._x1) / 3,
+      (that._y0 + 2 * that._y1) / 3,
+      (that._x0 + 4 * that._x1 + x) / 6,
+      (that._y0 + 4 * that._y1 + y) / 6
+    );
+  }
+
+  function Basis$1(context) {
+    this._context = context;
+  }
+
+  Basis$1.prototype = {
+    areaStart: function() {
+      this._line = 0;
+    },
+    areaEnd: function() {
+      this._line = NaN;
+    },
+    lineStart: function() {
+      this._x0 = this._x1 =
+      this._y0 = this._y1 = NaN;
+      this._point = 0;
+    },
+    lineEnd: function() {
+      switch (this._point) {
+        case 3: point$2$2(this, this._x1, this._y1); // proceed
+        case 2: this._context.lineTo(this._x1, this._y1); break;
+      }
+      if (this._line || (this._line !== 0 && this._point === 1)) this._context.closePath();
+      this._line = 1 - this._line;
+    },
+    point: function(x, y) {
+      x = +x, y = +y;
+      switch (this._point) {
+        case 0: this._point = 1; this._line ? this._context.lineTo(x, y) : this._context.moveTo(x, y); break;
+        case 1: this._point = 2; break;
+        case 2: this._point = 3; this._context.lineTo((5 * this._x0 + this._x1) / 6, (5 * this._y0 + this._y1) / 6); // proceed
+        default: point$2$2(this, x, y); break;
+      }
+      this._x0 = this._x1, this._x1 = x;
+      this._y0 = this._y1, this._y1 = y;
+    }
+  };
+
+  function curveBasis$1(context) {
+    return new Basis$1(context);
   }
 
   function sign$2(x) {
@@ -28692,7 +29652,7 @@ var Demo = (function (exports) {
     }
   }
 
-  function constant$5$3(x) {
+  function constant$6$2(x) {
     return function() {
       return x;
     };
@@ -28850,19 +29810,19 @@ var Demo = (function (exports) {
     }
 
     drag.filter = function(_) {
-      return arguments.length ? (filter = typeof _ === "function" ? _ : constant$5$3(!!_), drag) : filter;
+      return arguments.length ? (filter = typeof _ === "function" ? _ : constant$6$2(!!_), drag) : filter;
     };
 
     drag.container = function(_) {
-      return arguments.length ? (container = typeof _ === "function" ? _ : constant$5$3(_), drag) : container;
+      return arguments.length ? (container = typeof _ === "function" ? _ : constant$6$2(_), drag) : container;
     };
 
     drag.subject = function(_) {
-      return arguments.length ? (subject = typeof _ === "function" ? _ : constant$5$3(_), drag) : subject;
+      return arguments.length ? (subject = typeof _ === "function" ? _ : constant$6$2(_), drag) : subject;
     };
 
     drag.touchable = function(_) {
-      return arguments.length ? (touchable = typeof _ === "function" ? _ : constant$5$3(!!_), drag) : touchable;
+      return arguments.length ? (touchable = typeof _ === "function" ? _ : constant$6$2(!!_), drag) : touchable;
     };
 
     drag.on = function() {
@@ -28877,6 +29837,1243 @@ var Demo = (function (exports) {
     return drag;
   }
 
+  // Computes the decimal coefficient and exponent of the specified number x with
+  // significant digits p, where x is positive and p is in [1, 21] or undefined.
+  // For example, formatDecimal(1.23) returns ["123", 0].
+  function formatDecimal$1$1(x, p) {
+    if ((i = (x = p ? x.toExponential(p - 1) : x.toExponential()).indexOf("e")) < 0) return null; // NaN, ±Infinity
+    var i, coefficient = x.slice(0, i);
+
+    // The string returned by toExponential either has the form \d\.\d+e[-+]\d+
+    // (e.g., 1.2e+3) or the form \de[-+]\d+ (e.g., 1e+3).
+    return [
+      coefficient.length > 1 ? coefficient[0] + coefficient.slice(2) : coefficient,
+      +x.slice(i + 1)
+    ];
+  }
+
+  function exponent$1$2(x) {
+    return x = formatDecimal$1$1(Math.abs(x)), x ? x[1] : NaN;
+  }
+
+  function formatGroup$1$1(grouping, thousands) {
+    return function(value, width) {
+      var i = value.length,
+          t = [],
+          j = 0,
+          g = grouping[0],
+          length = 0;
+
+      while (i > 0 && g > 0) {
+        if (length + g + 1 > width) g = Math.max(1, width - length);
+        t.push(value.substring(i -= g, i + g));
+        if ((length += g + 1) > width) break;
+        g = grouping[j = (j + 1) % grouping.length];
+      }
+
+      return t.reverse().join(thousands);
+    };
+  }
+
+  function formatNumerals$1$1(numerals) {
+    return function(value) {
+      return value.replace(/[0-9]/g, function(i) {
+        return numerals[+i];
+      });
+    };
+  }
+
+  // [[fill]align][sign][symbol][0][width][,][.precision][~][type]
+  var re$1$1 = /^(?:(.)?([<>=^]))?([+\-( ])?([$#])?(0)?(\d+)?(,)?(\.\d+)?(~)?([a-z%])?$/i;
+
+  function formatSpecifier$1$1(specifier) {
+    return new FormatSpecifier$1$1(specifier);
+  }
+
+  formatSpecifier$1$1.prototype = FormatSpecifier$1$1.prototype; // instanceof
+
+  function FormatSpecifier$1$1(specifier) {
+    if (!(match = re$1$1.exec(specifier))) throw new Error("invalid format: " + specifier);
+    var match;
+    this.fill = match[1] || " ";
+    this.align = match[2] || ">";
+    this.sign = match[3] || "-";
+    this.symbol = match[4] || "";
+    this.zero = !!match[5];
+    this.width = match[6] && +match[6];
+    this.comma = !!match[7];
+    this.precision = match[8] && +match[8].slice(1);
+    this.trim = !!match[9];
+    this.type = match[10] || "";
+  }
+
+  FormatSpecifier$1$1.prototype.toString = function() {
+    return this.fill
+        + this.align
+        + this.sign
+        + this.symbol
+        + (this.zero ? "0" : "")
+        + (this.width == null ? "" : Math.max(1, this.width | 0))
+        + (this.comma ? "," : "")
+        + (this.precision == null ? "" : "." + Math.max(0, this.precision | 0))
+        + (this.trim ? "~" : "")
+        + this.type;
+  };
+
+  // Trims insignificant zeros, e.g., replaces 1.2000k with 1.2k.
+  function formatTrim$1$1(s) {
+    out: for (var n = s.length, i = 1, i0 = -1, i1; i < n; ++i) {
+      switch (s[i]) {
+        case ".": i0 = i1 = i; break;
+        case "0": if (i0 === 0) i0 = i; i1 = i; break;
+        default: if (i0 > 0) { if (!+s[i]) break out; i0 = 0; } break;
+      }
+    }
+    return i0 > 0 ? s.slice(0, i0) + s.slice(i1 + 1) : s;
+  }
+
+  var prefixExponent$1$1;
+
+  function formatPrefixAuto$1$1(x, p) {
+    var d = formatDecimal$1$1(x, p);
+    if (!d) return x + "";
+    var coefficient = d[0],
+        exponent = d[1],
+        i = exponent - (prefixExponent$1$1 = Math.max(-8, Math.min(8, Math.floor(exponent / 3))) * 3) + 1,
+        n = coefficient.length;
+    return i === n ? coefficient
+        : i > n ? coefficient + new Array(i - n + 1).join("0")
+        : i > 0 ? coefficient.slice(0, i) + "." + coefficient.slice(i)
+        : "0." + new Array(1 - i).join("0") + formatDecimal$1$1(x, Math.max(0, p + i - 1))[0]; // less than 1y!
+  }
+
+  function formatRounded$1$1(x, p) {
+    var d = formatDecimal$1$1(x, p);
+    if (!d) return x + "";
+    var coefficient = d[0],
+        exponent = d[1];
+    return exponent < 0 ? "0." + new Array(-exponent).join("0") + coefficient
+        : coefficient.length > exponent + 1 ? coefficient.slice(0, exponent + 1) + "." + coefficient.slice(exponent + 1)
+        : coefficient + new Array(exponent - coefficient.length + 2).join("0");
+  }
+
+  var formatTypes$1$1 = {
+    "%": function(x, p) { return (x * 100).toFixed(p); },
+    "b": function(x) { return Math.round(x).toString(2); },
+    "c": function(x) { return x + ""; },
+    "d": function(x) { return Math.round(x).toString(10); },
+    "e": function(x, p) { return x.toExponential(p); },
+    "f": function(x, p) { return x.toFixed(p); },
+    "g": function(x, p) { return x.toPrecision(p); },
+    "o": function(x) { return Math.round(x).toString(8); },
+    "p": function(x, p) { return formatRounded$1$1(x * 100, p); },
+    "r": formatRounded$1$1,
+    "s": formatPrefixAuto$1$1,
+    "X": function(x) { return Math.round(x).toString(16).toUpperCase(); },
+    "x": function(x) { return Math.round(x).toString(16); }
+  };
+
+  function identity$6(x) {
+    return x;
+  }
+
+  var prefixes$1$1 = ["y","z","a","f","p","n","µ","m","","k","M","G","T","P","E","Z","Y"];
+
+  function formatLocale$2$1(locale) {
+    var group = locale.grouping && locale.thousands ? formatGroup$1$1(locale.grouping, locale.thousands) : identity$6,
+        currency = locale.currency,
+        decimal = locale.decimal,
+        numerals = locale.numerals ? formatNumerals$1$1(locale.numerals) : identity$6,
+        percent = locale.percent || "%";
+
+    function newFormat(specifier) {
+      specifier = formatSpecifier$1$1(specifier);
+
+      var fill = specifier.fill,
+          align = specifier.align,
+          sign = specifier.sign,
+          symbol = specifier.symbol,
+          zero = specifier.zero,
+          width = specifier.width,
+          comma = specifier.comma,
+          precision = specifier.precision,
+          trim = specifier.trim,
+          type = specifier.type;
+
+      // The "n" type is an alias for ",g".
+      if (type === "n") comma = true, type = "g";
+
+      // The "" type, and any invalid type, is an alias for ".12~g".
+      else if (!formatTypes$1$1[type]) precision == null && (precision = 12), trim = true, type = "g";
+
+      // If zero fill is specified, padding goes after sign and before digits.
+      if (zero || (fill === "0" && align === "=")) zero = true, fill = "0", align = "=";
+
+      // Compute the prefix and suffix.
+      // For SI-prefix, the suffix is lazily computed.
+      var prefix = symbol === "$" ? currency[0] : symbol === "#" && /[boxX]/.test(type) ? "0" + type.toLowerCase() : "",
+          suffix = symbol === "$" ? currency[1] : /[%p]/.test(type) ? percent : "";
+
+      // What format function should we use?
+      // Is this an integer type?
+      // Can this type generate exponential notation?
+      var formatType = formatTypes$1$1[type],
+          maybeSuffix = /[defgprs%]/.test(type);
+
+      // Set the default precision if not specified,
+      // or clamp the specified precision to the supported range.
+      // For significant precision, it must be in [1, 21].
+      // For fixed precision, it must be in [0, 20].
+      precision = precision == null ? 6
+          : /[gprs]/.test(type) ? Math.max(1, Math.min(21, precision))
+          : Math.max(0, Math.min(20, precision));
+
+      function format(value) {
+        var valuePrefix = prefix,
+            valueSuffix = suffix,
+            i, n, c;
+
+        if (type === "c") {
+          valueSuffix = formatType(value) + valueSuffix;
+          value = "";
+        } else {
+          value = +value;
+
+          // Perform the initial formatting.
+          var valueNegative = value < 0;
+          value = formatType(Math.abs(value), precision);
+
+          // Trim insignificant zeros.
+          if (trim) value = formatTrim$1$1(value);
+
+          // If a negative value rounds to zero during formatting, treat as positive.
+          if (valueNegative && +value === 0) valueNegative = false;
+
+          // Compute the prefix and suffix.
+          valuePrefix = (valueNegative ? (sign === "(" ? sign : "-") : sign === "-" || sign === "(" ? "" : sign) + valuePrefix;
+          valueSuffix = (type === "s" ? prefixes$1$1[8 + prefixExponent$1$1 / 3] : "") + valueSuffix + (valueNegative && sign === "(" ? ")" : "");
+
+          // Break the formatted value into the integer “value” part that can be
+          // grouped, and fractional or exponential “suffix” part that is not.
+          if (maybeSuffix) {
+            i = -1, n = value.length;
+            while (++i < n) {
+              if (c = value.charCodeAt(i), 48 > c || c > 57) {
+                valueSuffix = (c === 46 ? decimal + value.slice(i + 1) : value.slice(i)) + valueSuffix;
+                value = value.slice(0, i);
+                break;
+              }
+            }
+          }
+        }
+
+        // If the fill character is not "0", grouping is applied before padding.
+        if (comma && !zero) value = group(value, Infinity);
+
+        // Compute the padding.
+        var length = valuePrefix.length + value.length + valueSuffix.length,
+            padding = length < width ? new Array(width - length + 1).join(fill) : "";
+
+        // If the fill character is "0", grouping is applied after padding.
+        if (comma && zero) value = group(padding + value, padding.length ? width - valueSuffix.length : Infinity), padding = "";
+
+        // Reconstruct the final output based on the desired alignment.
+        switch (align) {
+          case "<": value = valuePrefix + value + valueSuffix + padding; break;
+          case "=": value = valuePrefix + padding + value + valueSuffix; break;
+          case "^": value = padding.slice(0, length = padding.length >> 1) + valuePrefix + value + valueSuffix + padding.slice(length); break;
+          default: value = padding + valuePrefix + value + valueSuffix; break;
+        }
+
+        return numerals(value);
+      }
+
+      format.toString = function() {
+        return specifier + "";
+      };
+
+      return format;
+    }
+
+    function formatPrefix(specifier, value) {
+      var f = newFormat((specifier = formatSpecifier$1$1(specifier), specifier.type = "f", specifier)),
+          e = Math.max(-8, Math.min(8, Math.floor(exponent$1$2(value) / 3))) * 3,
+          k = Math.pow(10, -e),
+          prefix = prefixes$1$1[8 + e / 3];
+      return function(value) {
+        return f(k * value) + prefix;
+      };
+    }
+
+    return {
+      format: newFormat,
+      formatPrefix: formatPrefix
+    };
+  }
+
+  var locale$2$1;
+  var format$1$1;
+  var formatPrefix$1$1;
+
+  defaultLocale$2$1({
+    decimal: ".",
+    thousands: ",",
+    grouping: [3],
+    currency: ["$", ""]
+  });
+
+  function defaultLocale$2$1(definition) {
+    locale$2$1 = formatLocale$2$1(definition);
+    format$1$1 = locale$2$1.format;
+    formatPrefix$1$1 = locale$2$1.formatPrefix;
+    return locale$2$1;
+  }
+
+  var t0$2$2 = new Date,
+      t1$2$2 = new Date;
+
+  function newInterval$1$1(floori, offseti, count, field) {
+
+    function interval(date) {
+      return floori(date = new Date(+date)), date;
+    }
+
+    interval.floor = interval;
+
+    interval.ceil = function(date) {
+      return floori(date = new Date(date - 1)), offseti(date, 1), floori(date), date;
+    };
+
+    interval.round = function(date) {
+      var d0 = interval(date),
+          d1 = interval.ceil(date);
+      return date - d0 < d1 - date ? d0 : d1;
+    };
+
+    interval.offset = function(date, step) {
+      return offseti(date = new Date(+date), step == null ? 1 : Math.floor(step)), date;
+    };
+
+    interval.range = function(start, stop, step) {
+      var range = [], previous;
+      start = interval.ceil(start);
+      step = step == null ? 1 : Math.floor(step);
+      if (!(start < stop) || !(step > 0)) return range; // also handles Invalid Date
+      do range.push(previous = new Date(+start)), offseti(start, step), floori(start);
+      while (previous < start && start < stop);
+      return range;
+    };
+
+    interval.filter = function(test) {
+      return newInterval$1$1(function(date) {
+        if (date >= date) while (floori(date), !test(date)) date.setTime(date - 1);
+      }, function(date, step) {
+        if (date >= date) {
+          if (step < 0) while (++step <= 0) {
+            while (offseti(date, -1), !test(date)) {} // eslint-disable-line no-empty
+          } else while (--step >= 0) {
+            while (offseti(date, +1), !test(date)) {} // eslint-disable-line no-empty
+          }
+        }
+      });
+    };
+
+    if (count) {
+      interval.count = function(start, end) {
+        t0$2$2.setTime(+start), t1$2$2.setTime(+end);
+        floori(t0$2$2), floori(t1$2$2);
+        return Math.floor(count(t0$2$2, t1$2$2));
+      };
+
+      interval.every = function(step) {
+        step = Math.floor(step);
+        return !isFinite(step) || !(step > 0) ? null
+            : !(step > 1) ? interval
+            : interval.filter(field
+                ? function(d) { return field(d) % step === 0; }
+                : function(d) { return interval.count(0, d) % step === 0; });
+      };
+    }
+
+    return interval;
+  }
+
+  var millisecond$1$1 = newInterval$1$1(function() {
+    // noop
+  }, function(date, step) {
+    date.setTime(+date + step);
+  }, function(start, end) {
+    return end - start;
+  });
+
+  // An optimized implementation for this simple case.
+  millisecond$1$1.every = function(k) {
+    k = Math.floor(k);
+    if (!isFinite(k) || !(k > 0)) return null;
+    if (!(k > 1)) return millisecond$1$1;
+    return newInterval$1$1(function(date) {
+      date.setTime(Math.floor(date / k) * k);
+    }, function(date, step) {
+      date.setTime(+date + step * k);
+    }, function(start, end) {
+      return (end - start) / k;
+    });
+  };
+
+  var durationSecond$2$1 = 1e3;
+  var durationMinute$2$1 = 6e4;
+  var durationHour$2$1 = 36e5;
+  var durationDay$2$1 = 864e5;
+  var durationWeek$2$1 = 6048e5;
+
+  var second$1$1 = newInterval$1$1(function(date) {
+    date.setTime(Math.floor(date / durationSecond$2$1) * durationSecond$2$1);
+  }, function(date, step) {
+    date.setTime(+date + step * durationSecond$2$1);
+  }, function(start, end) {
+    return (end - start) / durationSecond$2$1;
+  }, function(date) {
+    return date.getUTCSeconds();
+  });
+
+  var minute$1$1 = newInterval$1$1(function(date) {
+    date.setTime(Math.floor(date / durationMinute$2$1) * durationMinute$2$1);
+  }, function(date, step) {
+    date.setTime(+date + step * durationMinute$2$1);
+  }, function(start, end) {
+    return (end - start) / durationMinute$2$1;
+  }, function(date) {
+    return date.getMinutes();
+  });
+
+  var hour$1$1 = newInterval$1$1(function(date) {
+    var offset = date.getTimezoneOffset() * durationMinute$2$1 % durationHour$2$1;
+    if (offset < 0) offset += durationHour$2$1;
+    date.setTime(Math.floor((+date - offset) / durationHour$2$1) * durationHour$2$1 + offset);
+  }, function(date, step) {
+    date.setTime(+date + step * durationHour$2$1);
+  }, function(start, end) {
+    return (end - start) / durationHour$2$1;
+  }, function(date) {
+    return date.getHours();
+  });
+
+  var day$1$1 = newInterval$1$1(function(date) {
+    date.setHours(0, 0, 0, 0);
+  }, function(date, step) {
+    date.setDate(date.getDate() + step);
+  }, function(start, end) {
+    return (end - start - (end.getTimezoneOffset() - start.getTimezoneOffset()) * durationMinute$2$1) / durationDay$2$1;
+  }, function(date) {
+    return date.getDate() - 1;
+  });
+
+  function weekday$1$1(i) {
+    return newInterval$1$1(function(date) {
+      date.setDate(date.getDate() - (date.getDay() + 7 - i) % 7);
+      date.setHours(0, 0, 0, 0);
+    }, function(date, step) {
+      date.setDate(date.getDate() + step * 7);
+    }, function(start, end) {
+      return (end - start - (end.getTimezoneOffset() - start.getTimezoneOffset()) * durationMinute$2$1) / durationWeek$2$1;
+    });
+  }
+
+  var sunday$1$1 = weekday$1$1(0);
+  var monday$1$1 = weekday$1$1(1);
+  var tuesday$1$1 = weekday$1$1(2);
+  var wednesday$1$1 = weekday$1$1(3);
+  var thursday$1$1 = weekday$1$1(4);
+  var friday$1$1 = weekday$1$1(5);
+  var saturday$1$1 = weekday$1$1(6);
+
+  var month$1$1 = newInterval$1$1(function(date) {
+    date.setDate(1);
+    date.setHours(0, 0, 0, 0);
+  }, function(date, step) {
+    date.setMonth(date.getMonth() + step);
+  }, function(start, end) {
+    return end.getMonth() - start.getMonth() + (end.getFullYear() - start.getFullYear()) * 12;
+  }, function(date) {
+    return date.getMonth();
+  });
+
+  var year$1$1 = newInterval$1$1(function(date) {
+    date.setMonth(0, 1);
+    date.setHours(0, 0, 0, 0);
+  }, function(date, step) {
+    date.setFullYear(date.getFullYear() + step);
+  }, function(start, end) {
+    return end.getFullYear() - start.getFullYear();
+  }, function(date) {
+    return date.getFullYear();
+  });
+
+  // An optimized implementation for this simple case.
+  year$1$1.every = function(k) {
+    return !isFinite(k = Math.floor(k)) || !(k > 0) ? null : newInterval$1$1(function(date) {
+      date.setFullYear(Math.floor(date.getFullYear() / k) * k);
+      date.setMonth(0, 1);
+      date.setHours(0, 0, 0, 0);
+    }, function(date, step) {
+      date.setFullYear(date.getFullYear() + step * k);
+    });
+  };
+
+  var utcMinute$1$1 = newInterval$1$1(function(date) {
+    date.setUTCSeconds(0, 0);
+  }, function(date, step) {
+    date.setTime(+date + step * durationMinute$2$1);
+  }, function(start, end) {
+    return (end - start) / durationMinute$2$1;
+  }, function(date) {
+    return date.getUTCMinutes();
+  });
+
+  var utcHour$1$1 = newInterval$1$1(function(date) {
+    date.setUTCMinutes(0, 0, 0);
+  }, function(date, step) {
+    date.setTime(+date + step * durationHour$2$1);
+  }, function(start, end) {
+    return (end - start) / durationHour$2$1;
+  }, function(date) {
+    return date.getUTCHours();
+  });
+
+  var utcDay$1$1 = newInterval$1$1(function(date) {
+    date.setUTCHours(0, 0, 0, 0);
+  }, function(date, step) {
+    date.setUTCDate(date.getUTCDate() + step);
+  }, function(start, end) {
+    return (end - start) / durationDay$2$1;
+  }, function(date) {
+    return date.getUTCDate() - 1;
+  });
+
+  function utcWeekday$1$1(i) {
+    return newInterval$1$1(function(date) {
+      date.setUTCDate(date.getUTCDate() - (date.getUTCDay() + 7 - i) % 7);
+      date.setUTCHours(0, 0, 0, 0);
+    }, function(date, step) {
+      date.setUTCDate(date.getUTCDate() + step * 7);
+    }, function(start, end) {
+      return (end - start) / durationWeek$2$1;
+    });
+  }
+
+  var utcSunday$1$1 = utcWeekday$1$1(0);
+  var utcMonday$1$1 = utcWeekday$1$1(1);
+  var utcTuesday$1$1 = utcWeekday$1$1(2);
+  var utcWednesday$1$1 = utcWeekday$1$1(3);
+  var utcThursday$1$1 = utcWeekday$1$1(4);
+  var utcFriday$1$1 = utcWeekday$1$1(5);
+  var utcSaturday$1$1 = utcWeekday$1$1(6);
+
+  var utcMonth$1$1 = newInterval$1$1(function(date) {
+    date.setUTCDate(1);
+    date.setUTCHours(0, 0, 0, 0);
+  }, function(date, step) {
+    date.setUTCMonth(date.getUTCMonth() + step);
+  }, function(start, end) {
+    return end.getUTCMonth() - start.getUTCMonth() + (end.getUTCFullYear() - start.getUTCFullYear()) * 12;
+  }, function(date) {
+    return date.getUTCMonth();
+  });
+
+  var utcYear$1$1 = newInterval$1$1(function(date) {
+    date.setUTCMonth(0, 1);
+    date.setUTCHours(0, 0, 0, 0);
+  }, function(date, step) {
+    date.setUTCFullYear(date.getUTCFullYear() + step);
+  }, function(start, end) {
+    return end.getUTCFullYear() - start.getUTCFullYear();
+  }, function(date) {
+    return date.getUTCFullYear();
+  });
+
+  // An optimized implementation for this simple case.
+  utcYear$1$1.every = function(k) {
+    return !isFinite(k = Math.floor(k)) || !(k > 0) ? null : newInterval$1$1(function(date) {
+      date.setUTCFullYear(Math.floor(date.getUTCFullYear() / k) * k);
+      date.setUTCMonth(0, 1);
+      date.setUTCHours(0, 0, 0, 0);
+    }, function(date, step) {
+      date.setUTCFullYear(date.getUTCFullYear() + step * k);
+    });
+  };
+
+  function localDate$1$1(d) {
+    if (0 <= d.y && d.y < 100) {
+      var date = new Date(-1, d.m, d.d, d.H, d.M, d.S, d.L);
+      date.setFullYear(d.y);
+      return date;
+    }
+    return new Date(d.y, d.m, d.d, d.H, d.M, d.S, d.L);
+  }
+
+  function utcDate$1$1(d) {
+    if (0 <= d.y && d.y < 100) {
+      var date = new Date(Date.UTC(-1, d.m, d.d, d.H, d.M, d.S, d.L));
+      date.setUTCFullYear(d.y);
+      return date;
+    }
+    return new Date(Date.UTC(d.y, d.m, d.d, d.H, d.M, d.S, d.L));
+  }
+
+  function newYear$1$1(y) {
+    return {y: y, m: 0, d: 1, H: 0, M: 0, S: 0, L: 0};
+  }
+
+  function formatLocale$1$1$1(locale) {
+    var locale_dateTime = locale.dateTime,
+        locale_date = locale.date,
+        locale_time = locale.time,
+        locale_periods = locale.periods,
+        locale_weekdays = locale.days,
+        locale_shortWeekdays = locale.shortDays,
+        locale_months = locale.months,
+        locale_shortMonths = locale.shortMonths;
+
+    var periodRe = formatRe$1$1(locale_periods),
+        periodLookup = formatLookup$1$1(locale_periods),
+        weekdayRe = formatRe$1$1(locale_weekdays),
+        weekdayLookup = formatLookup$1$1(locale_weekdays),
+        shortWeekdayRe = formatRe$1$1(locale_shortWeekdays),
+        shortWeekdayLookup = formatLookup$1$1(locale_shortWeekdays),
+        monthRe = formatRe$1$1(locale_months),
+        monthLookup = formatLookup$1$1(locale_months),
+        shortMonthRe = formatRe$1$1(locale_shortMonths),
+        shortMonthLookup = formatLookup$1$1(locale_shortMonths);
+
+    var formats = {
+      "a": formatShortWeekday,
+      "A": formatWeekday,
+      "b": formatShortMonth,
+      "B": formatMonth,
+      "c": null,
+      "d": formatDayOfMonth$1$1,
+      "e": formatDayOfMonth$1$1,
+      "f": formatMicroseconds$1$1,
+      "H": formatHour24$1$1,
+      "I": formatHour12$1$1,
+      "j": formatDayOfYear$1$1,
+      "L": formatMilliseconds$1$1,
+      "m": formatMonthNumber$1$1,
+      "M": formatMinutes$1$1,
+      "p": formatPeriod,
+      "Q": formatUnixTimestamp$1$1,
+      "s": formatUnixTimestampSeconds$1$1,
+      "S": formatSeconds$1$1,
+      "u": formatWeekdayNumberMonday$1$1,
+      "U": formatWeekNumberSunday$1$1,
+      "V": formatWeekNumberISO$1$1,
+      "w": formatWeekdayNumberSunday$1$1,
+      "W": formatWeekNumberMonday$1$1,
+      "x": null,
+      "X": null,
+      "y": formatYear$1$1,
+      "Y": formatFullYear$1$1,
+      "Z": formatZone$1$1,
+      "%": formatLiteralPercent$1$1
+    };
+
+    var utcFormats = {
+      "a": formatUTCShortWeekday,
+      "A": formatUTCWeekday,
+      "b": formatUTCShortMonth,
+      "B": formatUTCMonth,
+      "c": null,
+      "d": formatUTCDayOfMonth$1$1,
+      "e": formatUTCDayOfMonth$1$1,
+      "f": formatUTCMicroseconds$1$1,
+      "H": formatUTCHour24$1$1,
+      "I": formatUTCHour12$1$1,
+      "j": formatUTCDayOfYear$1$1,
+      "L": formatUTCMilliseconds$1$1,
+      "m": formatUTCMonthNumber$1$1,
+      "M": formatUTCMinutes$1$1,
+      "p": formatUTCPeriod,
+      "Q": formatUnixTimestamp$1$1,
+      "s": formatUnixTimestampSeconds$1$1,
+      "S": formatUTCSeconds$1$1,
+      "u": formatUTCWeekdayNumberMonday$1$1,
+      "U": formatUTCWeekNumberSunday$1$1,
+      "V": formatUTCWeekNumberISO$1$1,
+      "w": formatUTCWeekdayNumberSunday$1$1,
+      "W": formatUTCWeekNumberMonday$1$1,
+      "x": null,
+      "X": null,
+      "y": formatUTCYear$1$1,
+      "Y": formatUTCFullYear$1$1,
+      "Z": formatUTCZone$1$1,
+      "%": formatLiteralPercent$1$1
+    };
+
+    var parses = {
+      "a": parseShortWeekday,
+      "A": parseWeekday,
+      "b": parseShortMonth,
+      "B": parseMonth,
+      "c": parseLocaleDateTime,
+      "d": parseDayOfMonth$1$1,
+      "e": parseDayOfMonth$1$1,
+      "f": parseMicroseconds$1$1,
+      "H": parseHour24$1$1,
+      "I": parseHour24$1$1,
+      "j": parseDayOfYear$1$1,
+      "L": parseMilliseconds$1$1,
+      "m": parseMonthNumber$1$1,
+      "M": parseMinutes$1$1,
+      "p": parsePeriod,
+      "Q": parseUnixTimestamp$1$1,
+      "s": parseUnixTimestampSeconds$1$1,
+      "S": parseSeconds$1$1,
+      "u": parseWeekdayNumberMonday$1$1,
+      "U": parseWeekNumberSunday$1$1,
+      "V": parseWeekNumberISO$1$1,
+      "w": parseWeekdayNumberSunday$1$1,
+      "W": parseWeekNumberMonday$1$1,
+      "x": parseLocaleDate,
+      "X": parseLocaleTime,
+      "y": parseYear$1$1,
+      "Y": parseFullYear$1$1,
+      "Z": parseZone$1$1,
+      "%": parseLiteralPercent$1$1
+    };
+
+    // These recursive directive definitions must be deferred.
+    formats.x = newFormat(locale_date, formats);
+    formats.X = newFormat(locale_time, formats);
+    formats.c = newFormat(locale_dateTime, formats);
+    utcFormats.x = newFormat(locale_date, utcFormats);
+    utcFormats.X = newFormat(locale_time, utcFormats);
+    utcFormats.c = newFormat(locale_dateTime, utcFormats);
+
+    function newFormat(specifier, formats) {
+      return function(date) {
+        var string = [],
+            i = -1,
+            j = 0,
+            n = specifier.length,
+            c,
+            pad,
+            format;
+
+        if (!(date instanceof Date)) date = new Date(+date);
+
+        while (++i < n) {
+          if (specifier.charCodeAt(i) === 37) {
+            string.push(specifier.slice(j, i));
+            if ((pad = pads$1$1[c = specifier.charAt(++i)]) != null) c = specifier.charAt(++i);
+            else pad = c === "e" ? " " : "0";
+            if (format = formats[c]) c = format(date, pad);
+            string.push(c);
+            j = i + 1;
+          }
+        }
+
+        string.push(specifier.slice(j, i));
+        return string.join("");
+      };
+    }
+
+    function newParse(specifier, newDate) {
+      return function(string) {
+        var d = newYear$1$1(1900),
+            i = parseSpecifier(d, specifier, string += "", 0),
+            week, day$$1;
+        if (i != string.length) return null;
+
+        // If a UNIX timestamp is specified, return it.
+        if ("Q" in d) return new Date(d.Q);
+
+        // The am-pm flag is 0 for AM, and 1 for PM.
+        if ("p" in d) d.H = d.H % 12 + d.p * 12;
+
+        // Convert day-of-week and week-of-year to day-of-year.
+        if ("V" in d) {
+          if (d.V < 1 || d.V > 53) return null;
+          if (!("w" in d)) d.w = 1;
+          if ("Z" in d) {
+            week = utcDate$1$1(newYear$1$1(d.y)), day$$1 = week.getUTCDay();
+            week = day$$1 > 4 || day$$1 === 0 ? utcMonday$1$1.ceil(week) : utcMonday$1$1(week);
+            week = utcDay$1$1.offset(week, (d.V - 1) * 7);
+            d.y = week.getUTCFullYear();
+            d.m = week.getUTCMonth();
+            d.d = week.getUTCDate() + (d.w + 6) % 7;
+          } else {
+            week = newDate(newYear$1$1(d.y)), day$$1 = week.getDay();
+            week = day$$1 > 4 || day$$1 === 0 ? monday$1$1.ceil(week) : monday$1$1(week);
+            week = day$1$1.offset(week, (d.V - 1) * 7);
+            d.y = week.getFullYear();
+            d.m = week.getMonth();
+            d.d = week.getDate() + (d.w + 6) % 7;
+          }
+        } else if ("W" in d || "U" in d) {
+          if (!("w" in d)) d.w = "u" in d ? d.u % 7 : "W" in d ? 1 : 0;
+          day$$1 = "Z" in d ? utcDate$1$1(newYear$1$1(d.y)).getUTCDay() : newDate(newYear$1$1(d.y)).getDay();
+          d.m = 0;
+          d.d = "W" in d ? (d.w + 6) % 7 + d.W * 7 - (day$$1 + 5) % 7 : d.w + d.U * 7 - (day$$1 + 6) % 7;
+        }
+
+        // If a time zone is specified, all fields are interpreted as UTC and then
+        // offset according to the specified time zone.
+        if ("Z" in d) {
+          d.H += d.Z / 100 | 0;
+          d.M += d.Z % 100;
+          return utcDate$1$1(d);
+        }
+
+        // Otherwise, all fields are in local time.
+        return newDate(d);
+      };
+    }
+
+    function parseSpecifier(d, specifier, string, j) {
+      var i = 0,
+          n = specifier.length,
+          m = string.length,
+          c,
+          parse;
+
+      while (i < n) {
+        if (j >= m) return -1;
+        c = specifier.charCodeAt(i++);
+        if (c === 37) {
+          c = specifier.charAt(i++);
+          parse = parses[c in pads$1$1 ? specifier.charAt(i++) : c];
+          if (!parse || ((j = parse(d, string, j)) < 0)) return -1;
+        } else if (c != string.charCodeAt(j++)) {
+          return -1;
+        }
+      }
+
+      return j;
+    }
+
+    function parsePeriod(d, string, i) {
+      var n = periodRe.exec(string.slice(i));
+      return n ? (d.p = periodLookup[n[0].toLowerCase()], i + n[0].length) : -1;
+    }
+
+    function parseShortWeekday(d, string, i) {
+      var n = shortWeekdayRe.exec(string.slice(i));
+      return n ? (d.w = shortWeekdayLookup[n[0].toLowerCase()], i + n[0].length) : -1;
+    }
+
+    function parseWeekday(d, string, i) {
+      var n = weekdayRe.exec(string.slice(i));
+      return n ? (d.w = weekdayLookup[n[0].toLowerCase()], i + n[0].length) : -1;
+    }
+
+    function parseShortMonth(d, string, i) {
+      var n = shortMonthRe.exec(string.slice(i));
+      return n ? (d.m = shortMonthLookup[n[0].toLowerCase()], i + n[0].length) : -1;
+    }
+
+    function parseMonth(d, string, i) {
+      var n = monthRe.exec(string.slice(i));
+      return n ? (d.m = monthLookup[n[0].toLowerCase()], i + n[0].length) : -1;
+    }
+
+    function parseLocaleDateTime(d, string, i) {
+      return parseSpecifier(d, locale_dateTime, string, i);
+    }
+
+    function parseLocaleDate(d, string, i) {
+      return parseSpecifier(d, locale_date, string, i);
+    }
+
+    function parseLocaleTime(d, string, i) {
+      return parseSpecifier(d, locale_time, string, i);
+    }
+
+    function formatShortWeekday(d) {
+      return locale_shortWeekdays[d.getDay()];
+    }
+
+    function formatWeekday(d) {
+      return locale_weekdays[d.getDay()];
+    }
+
+    function formatShortMonth(d) {
+      return locale_shortMonths[d.getMonth()];
+    }
+
+    function formatMonth(d) {
+      return locale_months[d.getMonth()];
+    }
+
+    function formatPeriod(d) {
+      return locale_periods[+(d.getHours() >= 12)];
+    }
+
+    function formatUTCShortWeekday(d) {
+      return locale_shortWeekdays[d.getUTCDay()];
+    }
+
+    function formatUTCWeekday(d) {
+      return locale_weekdays[d.getUTCDay()];
+    }
+
+    function formatUTCShortMonth(d) {
+      return locale_shortMonths[d.getUTCMonth()];
+    }
+
+    function formatUTCMonth(d) {
+      return locale_months[d.getUTCMonth()];
+    }
+
+    function formatUTCPeriod(d) {
+      return locale_periods[+(d.getUTCHours() >= 12)];
+    }
+
+    return {
+      format: function(specifier) {
+        var f = newFormat(specifier += "", formats);
+        f.toString = function() { return specifier; };
+        return f;
+      },
+      parse: function(specifier) {
+        var p = newParse(specifier += "", localDate$1$1);
+        p.toString = function() { return specifier; };
+        return p;
+      },
+      utcFormat: function(specifier) {
+        var f = newFormat(specifier += "", utcFormats);
+        f.toString = function() { return specifier; };
+        return f;
+      },
+      utcParse: function(specifier) {
+        var p = newParse(specifier, utcDate$1$1);
+        p.toString = function() { return specifier; };
+        return p;
+      }
+    };
+  }
+
+  var pads$1$1 = {"-": "", "_": " ", "0": "0"},
+      numberRe$1$1 = /^\s*\d+/, // note: ignores next directive
+      percentRe$1$1 = /^%/,
+      requoteRe$1$1 = /[\\^$*+?|[\]().{}]/g;
+
+  function pad$1$1(value, fill, width) {
+    var sign = value < 0 ? "-" : "",
+        string = (sign ? -value : value) + "",
+        length = string.length;
+    return sign + (length < width ? new Array(width - length + 1).join(fill) + string : string);
+  }
+
+  function requote$1$1(s) {
+    return s.replace(requoteRe$1$1, "\\$&");
+  }
+
+  function formatRe$1$1(names) {
+    return new RegExp("^(?:" + names.map(requote$1$1).join("|") + ")", "i");
+  }
+
+  function formatLookup$1$1(names) {
+    var map = {}, i = -1, n = names.length;
+    while (++i < n) map[names[i].toLowerCase()] = i;
+    return map;
+  }
+
+  function parseWeekdayNumberSunday$1$1(d, string, i) {
+    var n = numberRe$1$1.exec(string.slice(i, i + 1));
+    return n ? (d.w = +n[0], i + n[0].length) : -1;
+  }
+
+  function parseWeekdayNumberMonday$1$1(d, string, i) {
+    var n = numberRe$1$1.exec(string.slice(i, i + 1));
+    return n ? (d.u = +n[0], i + n[0].length) : -1;
+  }
+
+  function parseWeekNumberSunday$1$1(d, string, i) {
+    var n = numberRe$1$1.exec(string.slice(i, i + 2));
+    return n ? (d.U = +n[0], i + n[0].length) : -1;
+  }
+
+  function parseWeekNumberISO$1$1(d, string, i) {
+    var n = numberRe$1$1.exec(string.slice(i, i + 2));
+    return n ? (d.V = +n[0], i + n[0].length) : -1;
+  }
+
+  function parseWeekNumberMonday$1$1(d, string, i) {
+    var n = numberRe$1$1.exec(string.slice(i, i + 2));
+    return n ? (d.W = +n[0], i + n[0].length) : -1;
+  }
+
+  function parseFullYear$1$1(d, string, i) {
+    var n = numberRe$1$1.exec(string.slice(i, i + 4));
+    return n ? (d.y = +n[0], i + n[0].length) : -1;
+  }
+
+  function parseYear$1$1(d, string, i) {
+    var n = numberRe$1$1.exec(string.slice(i, i + 2));
+    return n ? (d.y = +n[0] + (+n[0] > 68 ? 1900 : 2000), i + n[0].length) : -1;
+  }
+
+  function parseZone$1$1(d, string, i) {
+    var n = /^(Z)|([+-]\d\d)(?::?(\d\d))?/.exec(string.slice(i, i + 6));
+    return n ? (d.Z = n[1] ? 0 : -(n[2] + (n[3] || "00")), i + n[0].length) : -1;
+  }
+
+  function parseMonthNumber$1$1(d, string, i) {
+    var n = numberRe$1$1.exec(string.slice(i, i + 2));
+    return n ? (d.m = n[0] - 1, i + n[0].length) : -1;
+  }
+
+  function parseDayOfMonth$1$1(d, string, i) {
+    var n = numberRe$1$1.exec(string.slice(i, i + 2));
+    return n ? (d.d = +n[0], i + n[0].length) : -1;
+  }
+
+  function parseDayOfYear$1$1(d, string, i) {
+    var n = numberRe$1$1.exec(string.slice(i, i + 3));
+    return n ? (d.m = 0, d.d = +n[0], i + n[0].length) : -1;
+  }
+
+  function parseHour24$1$1(d, string, i) {
+    var n = numberRe$1$1.exec(string.slice(i, i + 2));
+    return n ? (d.H = +n[0], i + n[0].length) : -1;
+  }
+
+  function parseMinutes$1$1(d, string, i) {
+    var n = numberRe$1$1.exec(string.slice(i, i + 2));
+    return n ? (d.M = +n[0], i + n[0].length) : -1;
+  }
+
+  function parseSeconds$1$1(d, string, i) {
+    var n = numberRe$1$1.exec(string.slice(i, i + 2));
+    return n ? (d.S = +n[0], i + n[0].length) : -1;
+  }
+
+  function parseMilliseconds$1$1(d, string, i) {
+    var n = numberRe$1$1.exec(string.slice(i, i + 3));
+    return n ? (d.L = +n[0], i + n[0].length) : -1;
+  }
+
+  function parseMicroseconds$1$1(d, string, i) {
+    var n = numberRe$1$1.exec(string.slice(i, i + 6));
+    return n ? (d.L = Math.floor(n[0] / 1000), i + n[0].length) : -1;
+  }
+
+  function parseLiteralPercent$1$1(d, string, i) {
+    var n = percentRe$1$1.exec(string.slice(i, i + 1));
+    return n ? i + n[0].length : -1;
+  }
+
+  function parseUnixTimestamp$1$1(d, string, i) {
+    var n = numberRe$1$1.exec(string.slice(i));
+    return n ? (d.Q = +n[0], i + n[0].length) : -1;
+  }
+
+  function parseUnixTimestampSeconds$1$1(d, string, i) {
+    var n = numberRe$1$1.exec(string.slice(i));
+    return n ? (d.Q = (+n[0]) * 1000, i + n[0].length) : -1;
+  }
+
+  function formatDayOfMonth$1$1(d, p) {
+    return pad$1$1(d.getDate(), p, 2);
+  }
+
+  function formatHour24$1$1(d, p) {
+    return pad$1$1(d.getHours(), p, 2);
+  }
+
+  function formatHour12$1$1(d, p) {
+    return pad$1$1(d.getHours() % 12 || 12, p, 2);
+  }
+
+  function formatDayOfYear$1$1(d, p) {
+    return pad$1$1(1 + day$1$1.count(year$1$1(d), d), p, 3);
+  }
+
+  function formatMilliseconds$1$1(d, p) {
+    return pad$1$1(d.getMilliseconds(), p, 3);
+  }
+
+  function formatMicroseconds$1$1(d, p) {
+    return formatMilliseconds$1$1(d, p) + "000";
+  }
+
+  function formatMonthNumber$1$1(d, p) {
+    return pad$1$1(d.getMonth() + 1, p, 2);
+  }
+
+  function formatMinutes$1$1(d, p) {
+    return pad$1$1(d.getMinutes(), p, 2);
+  }
+
+  function formatSeconds$1$1(d, p) {
+    return pad$1$1(d.getSeconds(), p, 2);
+  }
+
+  function formatWeekdayNumberMonday$1$1(d) {
+    var day$$1 = d.getDay();
+    return day$$1 === 0 ? 7 : day$$1;
+  }
+
+  function formatWeekNumberSunday$1$1(d, p) {
+    return pad$1$1(sunday$1$1.count(year$1$1(d), d), p, 2);
+  }
+
+  function formatWeekNumberISO$1$1(d, p) {
+    var day$$1 = d.getDay();
+    d = (day$$1 >= 4 || day$$1 === 0) ? thursday$1$1(d) : thursday$1$1.ceil(d);
+    return pad$1$1(thursday$1$1.count(year$1$1(d), d) + (year$1$1(d).getDay() === 4), p, 2);
+  }
+
+  function formatWeekdayNumberSunday$1$1(d) {
+    return d.getDay();
+  }
+
+  function formatWeekNumberMonday$1$1(d, p) {
+    return pad$1$1(monday$1$1.count(year$1$1(d), d), p, 2);
+  }
+
+  function formatYear$1$1(d, p) {
+    return pad$1$1(d.getFullYear() % 100, p, 2);
+  }
+
+  function formatFullYear$1$1(d, p) {
+    return pad$1$1(d.getFullYear() % 10000, p, 4);
+  }
+
+  function formatZone$1$1(d) {
+    var z = d.getTimezoneOffset();
+    return (z > 0 ? "-" : (z *= -1, "+"))
+        + pad$1$1(z / 60 | 0, "0", 2)
+        + pad$1$1(z % 60, "0", 2);
+  }
+
+  function formatUTCDayOfMonth$1$1(d, p) {
+    return pad$1$1(d.getUTCDate(), p, 2);
+  }
+
+  function formatUTCHour24$1$1(d, p) {
+    return pad$1$1(d.getUTCHours(), p, 2);
+  }
+
+  function formatUTCHour12$1$1(d, p) {
+    return pad$1$1(d.getUTCHours() % 12 || 12, p, 2);
+  }
+
+  function formatUTCDayOfYear$1$1(d, p) {
+    return pad$1$1(1 + utcDay$1$1.count(utcYear$1$1(d), d), p, 3);
+  }
+
+  function formatUTCMilliseconds$1$1(d, p) {
+    return pad$1$1(d.getUTCMilliseconds(), p, 3);
+  }
+
+  function formatUTCMicroseconds$1$1(d, p) {
+    return formatUTCMilliseconds$1$1(d, p) + "000";
+  }
+
+  function formatUTCMonthNumber$1$1(d, p) {
+    return pad$1$1(d.getUTCMonth() + 1, p, 2);
+  }
+
+  function formatUTCMinutes$1$1(d, p) {
+    return pad$1$1(d.getUTCMinutes(), p, 2);
+  }
+
+  function formatUTCSeconds$1$1(d, p) {
+    return pad$1$1(d.getUTCSeconds(), p, 2);
+  }
+
+  function formatUTCWeekdayNumberMonday$1$1(d) {
+    var dow = d.getUTCDay();
+    return dow === 0 ? 7 : dow;
+  }
+
+  function formatUTCWeekNumberSunday$1$1(d, p) {
+    return pad$1$1(utcSunday$1$1.count(utcYear$1$1(d), d), p, 2);
+  }
+
+  function formatUTCWeekNumberISO$1$1(d, p) {
+    var day$$1 = d.getUTCDay();
+    d = (day$$1 >= 4 || day$$1 === 0) ? utcThursday$1$1(d) : utcThursday$1$1.ceil(d);
+    return pad$1$1(utcThursday$1$1.count(utcYear$1$1(d), d) + (utcYear$1$1(d).getUTCDay() === 4), p, 2);
+  }
+
+  function formatUTCWeekdayNumberSunday$1$1(d) {
+    return d.getUTCDay();
+  }
+
+  function formatUTCWeekNumberMonday$1$1(d, p) {
+    return pad$1$1(utcMonday$1$1.count(utcYear$1$1(d), d), p, 2);
+  }
+
+  function formatUTCYear$1$1(d, p) {
+    return pad$1$1(d.getUTCFullYear() % 100, p, 2);
+  }
+
+  function formatUTCFullYear$1$1(d, p) {
+    return pad$1$1(d.getUTCFullYear() % 10000, p, 4);
+  }
+
+  function formatUTCZone$1$1() {
+    return "+0000";
+  }
+
+  function formatLiteralPercent$1$1() {
+    return "%";
+  }
+
+  function formatUnixTimestamp$1$1(d) {
+    return +d;
+  }
+
+  function formatUnixTimestampSeconds$1$1(d) {
+    return Math.floor(+d / 1000);
+  }
+
+  var locale$1$1$1;
+  var timeFormat$1$1;
+  var timeParse$1$1;
+  var utcFormat$1$1;
+  var utcParse$1$1;
+
+  defaultLocale$1$1$1({
+    dateTime: "%x, %X",
+    date: "%-m/%-d/%Y",
+    time: "%-I:%M:%S %p",
+    periods: ["AM", "PM"],
+    days: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
+    shortDays: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
+    months: ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
+    shortMonths: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+  });
+
+  function defaultLocale$1$1$1(definition) {
+    locale$1$1$1 = formatLocale$1$1$1(definition);
+    timeFormat$1$1 = locale$1$1$1.format;
+    timeParse$1$1 = locale$1$1$1.parse;
+    utcFormat$1$1 = locale$1$1$1.utcFormat;
+    utcParse$1$1 = locale$1$1$1.utcParse;
+    return locale$1$1$1;
+  }
+
+  var isoSpecifier$1$1 = "%Y-%m-%dT%H:%M:%S.%LZ";
+
+  function formatIsoNative$1$1(date) {
+    return date.toISOString();
+  }
+
+  var formatIso$1$1 = Date.prototype.toISOString
+      ? formatIsoNative$1$1
+      : utcFormat$1$1(isoSpecifier$1$1);
+
+  function parseIsoNative$1$1(string) {
+    var date = new Date(string);
+    return isNaN(date) ? null : date;
+  }
+
+  var parseIso$1$1 = +new Date("2000-01-01T00:00:00.000Z")
+      ? parseIsoNative$1$1
+      : utcParse$1$1(isoSpecifier$1$1);
   var Queue$4 = (function () {
       function Queue(list) {
           var _this = this;
@@ -28983,12 +31180,12 @@ var Demo = (function (exports) {
     return new Selection$1$4(subgroups, this._parents);
   }
 
-  function empty$1$4() {
+  function empty$2$1() {
     return [];
   }
 
   function selectorAll$1$4(selector) {
-    return selector == null ? empty$1$4 : function() {
+    return selector == null ? empty$2$1 : function() {
       return this.querySelectorAll(selector);
     };
   }
@@ -29069,7 +31266,7 @@ var Demo = (function (exports) {
     querySelectorAll: function(selector) { return this._parent.querySelectorAll(selector); }
   };
 
-  function constant$6$2(x) {
+  function constant$7$1(x) {
     return function() {
       return x;
     };
@@ -29158,7 +31355,7 @@ var Demo = (function (exports) {
         parents = this._parents,
         groups = this._groups;
 
-    if (typeof value !== "function") value = constant$6$2(value);
+    if (typeof value !== "function") value = constant$7$1(value);
 
     for (var m = groups.length, update = new Array(m), enter = new Array(m), exit = new Array(m), j = 0; j < m; ++j) {
       var parent = parents[j],
@@ -29226,7 +31423,7 @@ var Demo = (function (exports) {
   }
 
   function selection_sort$1$4(compare) {
-    if (!compare) compare = ascending$3$4;
+    if (!compare) compare = ascending$4$1;
 
     function compareNode(a, b) {
       return a && b ? compare(a.__data__, b.__data__) : !a - !b;
@@ -29244,7 +31441,7 @@ var Demo = (function (exports) {
     return new Selection$1$4(sortgroups, this._parents).order();
   }
 
-  function ascending$3$4(a, b) {
+  function ascending$4$1(a, b) {
     return a < b ? -1 : a > b ? 1 : a >= b ? 0 : NaN;
   }
 
@@ -30142,27 +32339,28 @@ var Demo = (function (exports) {
     return drag;
   }
 
-  function reset$3() {
-      var canvas = this.select("g.canvas");
+  function reset$3(id) {
+      var s = select$1$4("#" + id);
+      var canvas = s.select("g.canvas");
       if (canvas && !canvas.empty()) {
-          canvas.selectAll("*")
-              .remove();
+          canvas.selectAll("*").remove();
           canvas.attr("transform", null);
-          this.select("g.pending")
+          s.select("g.pending")
               .style("display", null);
       }
   }
-  function style$3(css) {
-      var defs = this.select("defs");
-      defs.append("style")
+  function style$3(id, css) {
+      select$1$4("#" + id)
+          .select("defs")
+          .append("style")
           .attr("type", "text/css")
           .text(css);
   }
   function svg$3(id, width, height) {
-      return toNodes$3("<svg id =\"" + id + "\"\n    aria-labelledBy=\"title\" role=\"presentation\"\n    preserveAspectRatio=\"xMinYMin meet\"\n    height=\"100%\" width=\"100%\" viewBox=\"0 0 " + width + " " + height + "\"\n    xmlns=\"http://www.w3.org/2000/svg\"\n    xmlns:xlink=\"http://www.w3.org/1999/xlink\">\n    <title class=\"accessibleTitle\" lang=\"en\">Chart</title>\n    <defs>\n      <style type=\"text/css\">\n        svg {\n          font-family: Arial, Helvetica, sans-serif;\n          font-size: 0.9em;\n          user-select: none\n        }\n        .axis-label-x { fill: #000; font-size: 0.8em; text-anchor: end }\n        .axis-label-y { fill: #000; font-size: 0.8em; text-anchor: end }\n        .heading { cursor: move; font-size: 1.5em }\n        .tick > text { font-size: 0.8em }\n      </style>\n    </defs>\n    <g class=\"canvas\"></g>\n    <g class=\"pending\">\n      <rect height=\"100%\" width=\"100%\" fill=\"#eee\" stroke=\"#ccc\"></rect>\n      <text y=\"50%\" x=\"50%\" alignment-baseline=\"central\" fill=\"#666\" style=\"font-size:1.1em\" text-anchor=\"middle\">Data pending</text>\n    </g>\n  </svg>");
+      return toNodes$3("<svg id =\"" + id + "\"\n    aria-labelledBy=\"title\" role=\"presentation\"\n    preserveAspectRatio=\"xMinYMin meet\"\n    height=\"100%\" width=\"100%\" viewBox=\"0 0 " + width + " " + height + "\"\n    xmlns=\"http://www.w3.org/2000/svg\"\n    xmlns:xlink=\"http://www.w3.org/1999/xlink\">\n    <title class=\"accessibleTitle\" lang=\"en\">Chart</title>\n    <defs>\n      <style type=\"text/css\">\n        svg {\n          font-family: Arial, Helvetica, sans-serif;\n          font-size: 0.9em;\n          user-select: none\n        }\n        .heading { cursor: move; font-size: 1.5em }\n      </style>\n    </defs>\n    <g class=\"canvas\"></g>\n    <g class=\"pending\">\n      <rect height=\"100%\" width=\"100%\" fill=\"#eee\" stroke=\"#ccc\"></rect>\n      <text y=\"50%\" x=\"50%\" alignment-baseline=\"central\" fill=\"#666\" style=\"font-size:1.1em\" text-anchor=\"middle\">Data pending</text>\n    </g>\n  </svg>");
   }
-  function title$3(msg) {
-      var s = select$1$4("#" + this.id);
+  function title$3(id, msg) {
+      var s = select$1$4("#" + id);
       s.select(".accessibleTitle")
           .text(msg);
       var canvas = s.select(".canvas");
@@ -30181,8 +32379,1260 @@ var Demo = (function (exports) {
       }
   }
 
+  // Computes the decimal coefficient and exponent of the specified number x with
+  // significant digits p, where x is positive and p is in [1, 21] or undefined.
+  // For example, formatDecimal(1.23) returns ["123", 0].
+  function formatDecimal$2$1(x, p) {
+    if ((i = (x = p ? x.toExponential(p - 1) : x.toExponential()).indexOf("e")) < 0) return null; // NaN, ±Infinity
+    var i, coefficient = x.slice(0, i);
+
+    // The string returned by toExponential either has the form \d\.\d+e[-+]\d+
+    // (e.g., 1.2e+3) or the form \de[-+]\d+ (e.g., 1e+3).
+    return [
+      coefficient.length > 1 ? coefficient[0] + coefficient.slice(2) : coefficient,
+      +x.slice(i + 1)
+    ];
+  }
+
+  function exponent$2$1(x) {
+    return x = formatDecimal$2$1(Math.abs(x)), x ? x[1] : NaN;
+  }
+
+  function formatGroup$2$1(grouping, thousands) {
+    return function(value, width) {
+      var i = value.length,
+          t = [],
+          j = 0,
+          g = grouping[0],
+          length = 0;
+
+      while (i > 0 && g > 0) {
+        if (length + g + 1 > width) g = Math.max(1, width - length);
+        t.push(value.substring(i -= g, i + g));
+        if ((length += g + 1) > width) break;
+        g = grouping[j = (j + 1) % grouping.length];
+      }
+
+      return t.reverse().join(thousands);
+    };
+  }
+
+  function formatNumerals$2$1(numerals) {
+    return function(value) {
+      return value.replace(/[0-9]/g, function(i) {
+        return numerals[+i];
+      });
+    };
+  }
+
+  // [[fill]align][sign][symbol][0][width][,][.precision][~][type]
+  var re$2$1 = /^(?:(.)?([<>=^]))?([+\-( ])?([$#])?(0)?(\d+)?(,)?(\.\d+)?(~)?([a-z%])?$/i;
+
+  function formatSpecifier$2$1(specifier) {
+    return new FormatSpecifier$2$1(specifier);
+  }
+
+  formatSpecifier$2$1.prototype = FormatSpecifier$2$1.prototype; // instanceof
+
+  function FormatSpecifier$2$1(specifier) {
+    if (!(match = re$2$1.exec(specifier))) throw new Error("invalid format: " + specifier);
+    var match;
+    this.fill = match[1] || " ";
+    this.align = match[2] || ">";
+    this.sign = match[3] || "-";
+    this.symbol = match[4] || "";
+    this.zero = !!match[5];
+    this.width = match[6] && +match[6];
+    this.comma = !!match[7];
+    this.precision = match[8] && +match[8].slice(1);
+    this.trim = !!match[9];
+    this.type = match[10] || "";
+  }
+
+  FormatSpecifier$2$1.prototype.toString = function() {
+    return this.fill
+        + this.align
+        + this.sign
+        + this.symbol
+        + (this.zero ? "0" : "")
+        + (this.width == null ? "" : Math.max(1, this.width | 0))
+        + (this.comma ? "," : "")
+        + (this.precision == null ? "" : "." + Math.max(0, this.precision | 0))
+        + (this.trim ? "~" : "")
+        + this.type;
+  };
+
+  // Trims insignificant zeros, e.g., replaces 1.2000k with 1.2k.
+  function formatTrim$2$1(s) {
+    out: for (var n = s.length, i = 1, i0 = -1, i1; i < n; ++i) {
+      switch (s[i]) {
+        case ".": i0 = i1 = i; break;
+        case "0": if (i0 === 0) i0 = i; i1 = i; break;
+        default: if (i0 > 0) { if (!+s[i]) break out; i0 = 0; } break;
+      }
+    }
+    return i0 > 0 ? s.slice(0, i0) + s.slice(i1 + 1) : s;
+  }
+
+  var prefixExponent$2$1;
+
+  function formatPrefixAuto$2$1(x, p) {
+    var d = formatDecimal$2$1(x, p);
+    if (!d) return x + "";
+    var coefficient = d[0],
+        exponent = d[1],
+        i = exponent - (prefixExponent$2$1 = Math.max(-8, Math.min(8, Math.floor(exponent / 3))) * 3) + 1,
+        n = coefficient.length;
+    return i === n ? coefficient
+        : i > n ? coefficient + new Array(i - n + 1).join("0")
+        : i > 0 ? coefficient.slice(0, i) + "." + coefficient.slice(i)
+        : "0." + new Array(1 - i).join("0") + formatDecimal$2$1(x, Math.max(0, p + i - 1))[0]; // less than 1y!
+  }
+
+  function formatRounded$2$1(x, p) {
+    var d = formatDecimal$2$1(x, p);
+    if (!d) return x + "";
+    var coefficient = d[0],
+        exponent = d[1];
+    return exponent < 0 ? "0." + new Array(-exponent).join("0") + coefficient
+        : coefficient.length > exponent + 1 ? coefficient.slice(0, exponent + 1) + "." + coefficient.slice(exponent + 1)
+        : coefficient + new Array(exponent - coefficient.length + 2).join("0");
+  }
+
+  var formatTypes$2$1 = {
+    "%": function(x, p) { return (x * 100).toFixed(p); },
+    "b": function(x) { return Math.round(x).toString(2); },
+    "c": function(x) { return x + ""; },
+    "d": function(x) { return Math.round(x).toString(10); },
+    "e": function(x, p) { return x.toExponential(p); },
+    "f": function(x, p) { return x.toFixed(p); },
+    "g": function(x, p) { return x.toPrecision(p); },
+    "o": function(x) { return Math.round(x).toString(8); },
+    "p": function(x, p) { return formatRounded$2$1(x * 100, p); },
+    "r": formatRounded$2$1,
+    "s": formatPrefixAuto$2$1,
+    "X": function(x) { return Math.round(x).toString(16).toUpperCase(); },
+    "x": function(x) { return Math.round(x).toString(16); }
+  };
+
+  function identity$7(x) {
+    return x;
+  }
+
+  var prefixes$2$1 = ["y","z","a","f","p","n","µ","m","","k","M","G","T","P","E","Z","Y"];
+
+  function formatLocale$3$1(locale) {
+    var group = locale.grouping && locale.thousands ? formatGroup$2$1(locale.grouping, locale.thousands) : identity$7,
+        currency = locale.currency,
+        decimal = locale.decimal,
+        numerals = locale.numerals ? formatNumerals$2$1(locale.numerals) : identity$7,
+        percent = locale.percent || "%";
+
+    function newFormat(specifier) {
+      specifier = formatSpecifier$2$1(specifier);
+
+      var fill = specifier.fill,
+          align = specifier.align,
+          sign = specifier.sign,
+          symbol = specifier.symbol,
+          zero = specifier.zero,
+          width = specifier.width,
+          comma = specifier.comma,
+          precision = specifier.precision,
+          trim = specifier.trim,
+          type = specifier.type;
+
+      // The "n" type is an alias for ",g".
+      if (type === "n") comma = true, type = "g";
+
+      // The "" type, and any invalid type, is an alias for ".12~g".
+      else if (!formatTypes$2$1[type]) precision == null && (precision = 12), trim = true, type = "g";
+
+      // If zero fill is specified, padding goes after sign and before digits.
+      if (zero || (fill === "0" && align === "=")) zero = true, fill = "0", align = "=";
+
+      // Compute the prefix and suffix.
+      // For SI-prefix, the suffix is lazily computed.
+      var prefix = symbol === "$" ? currency[0] : symbol === "#" && /[boxX]/.test(type) ? "0" + type.toLowerCase() : "",
+          suffix = symbol === "$" ? currency[1] : /[%p]/.test(type) ? percent : "";
+
+      // What format function should we use?
+      // Is this an integer type?
+      // Can this type generate exponential notation?
+      var formatType = formatTypes$2$1[type],
+          maybeSuffix = /[defgprs%]/.test(type);
+
+      // Set the default precision if not specified,
+      // or clamp the specified precision to the supported range.
+      // For significant precision, it must be in [1, 21].
+      // For fixed precision, it must be in [0, 20].
+      precision = precision == null ? 6
+          : /[gprs]/.test(type) ? Math.max(1, Math.min(21, precision))
+          : Math.max(0, Math.min(20, precision));
+
+      function format(value) {
+        var valuePrefix = prefix,
+            valueSuffix = suffix,
+            i, n, c;
+
+        if (type === "c") {
+          valueSuffix = formatType(value) + valueSuffix;
+          value = "";
+        } else {
+          value = +value;
+
+          // Perform the initial formatting.
+          var valueNegative = value < 0;
+          value = formatType(Math.abs(value), precision);
+
+          // Trim insignificant zeros.
+          if (trim) value = formatTrim$2$1(value);
+
+          // If a negative value rounds to zero during formatting, treat as positive.
+          if (valueNegative && +value === 0) valueNegative = false;
+
+          // Compute the prefix and suffix.
+          valuePrefix = (valueNegative ? (sign === "(" ? sign : "-") : sign === "-" || sign === "(" ? "" : sign) + valuePrefix;
+          valueSuffix = (type === "s" ? prefixes$2$1[8 + prefixExponent$2$1 / 3] : "") + valueSuffix + (valueNegative && sign === "(" ? ")" : "");
+
+          // Break the formatted value into the integer “value” part that can be
+          // grouped, and fractional or exponential “suffix” part that is not.
+          if (maybeSuffix) {
+            i = -1, n = value.length;
+            while (++i < n) {
+              if (c = value.charCodeAt(i), 48 > c || c > 57) {
+                valueSuffix = (c === 46 ? decimal + value.slice(i + 1) : value.slice(i)) + valueSuffix;
+                value = value.slice(0, i);
+                break;
+              }
+            }
+          }
+        }
+
+        // If the fill character is not "0", grouping is applied before padding.
+        if (comma && !zero) value = group(value, Infinity);
+
+        // Compute the padding.
+        var length = valuePrefix.length + value.length + valueSuffix.length,
+            padding = length < width ? new Array(width - length + 1).join(fill) : "";
+
+        // If the fill character is "0", grouping is applied after padding.
+        if (comma && zero) value = group(padding + value, padding.length ? width - valueSuffix.length : Infinity), padding = "";
+
+        // Reconstruct the final output based on the desired alignment.
+        switch (align) {
+          case "<": value = valuePrefix + value + valueSuffix + padding; break;
+          case "=": value = valuePrefix + padding + value + valueSuffix; break;
+          case "^": value = padding.slice(0, length = padding.length >> 1) + valuePrefix + value + valueSuffix + padding.slice(length); break;
+          default: value = padding + valuePrefix + value + valueSuffix; break;
+        }
+
+        return numerals(value);
+      }
+
+      format.toString = function() {
+        return specifier + "";
+      };
+
+      return format;
+    }
+
+    function formatPrefix(specifier, value) {
+      var f = newFormat((specifier = formatSpecifier$2$1(specifier), specifier.type = "f", specifier)),
+          e = Math.max(-8, Math.min(8, Math.floor(exponent$2$1(value) / 3))) * 3,
+          k = Math.pow(10, -e),
+          prefix = prefixes$2$1[8 + e / 3];
+      return function(value) {
+        return f(k * value) + prefix;
+      };
+    }
+
+    return {
+      format: newFormat,
+      formatPrefix: formatPrefix
+    };
+  }
+
+  var locale$3$1;
+  var format$2$1;
+  var formatPrefix$2$1;
+
+  defaultLocale$3$1({
+    decimal: ".",
+    thousands: ",",
+    grouping: [3],
+    currency: ["$", ""]
+  });
+
+  function defaultLocale$3$1(definition) {
+    locale$3$1 = formatLocale$3$1(definition);
+    format$2$1 = locale$3$1.format;
+    formatPrefix$2$1 = locale$3$1.formatPrefix;
+    return locale$3$1;
+  }
+
+  var t0$3$1 = new Date,
+      t1$3$1 = new Date;
+
+  function newInterval$2$1(floori, offseti, count, field) {
+
+    function interval(date) {
+      return floori(date = new Date(+date)), date;
+    }
+
+    interval.floor = interval;
+
+    interval.ceil = function(date) {
+      return floori(date = new Date(date - 1)), offseti(date, 1), floori(date), date;
+    };
+
+    interval.round = function(date) {
+      var d0 = interval(date),
+          d1 = interval.ceil(date);
+      return date - d0 < d1 - date ? d0 : d1;
+    };
+
+    interval.offset = function(date, step) {
+      return offseti(date = new Date(+date), step == null ? 1 : Math.floor(step)), date;
+    };
+
+    interval.range = function(start, stop, step) {
+      var range = [], previous;
+      start = interval.ceil(start);
+      step = step == null ? 1 : Math.floor(step);
+      if (!(start < stop) || !(step > 0)) return range; // also handles Invalid Date
+      do range.push(previous = new Date(+start)), offseti(start, step), floori(start);
+      while (previous < start && start < stop);
+      return range;
+    };
+
+    interval.filter = function(test) {
+      return newInterval$2$1(function(date) {
+        if (date >= date) while (floori(date), !test(date)) date.setTime(date - 1);
+      }, function(date, step) {
+        if (date >= date) {
+          if (step < 0) while (++step <= 0) {
+            while (offseti(date, -1), !test(date)) {} // eslint-disable-line no-empty
+          } else while (--step >= 0) {
+            while (offseti(date, +1), !test(date)) {} // eslint-disable-line no-empty
+          }
+        }
+      });
+    };
+
+    if (count) {
+      interval.count = function(start, end) {
+        t0$3$1.setTime(+start), t1$3$1.setTime(+end);
+        floori(t0$3$1), floori(t1$3$1);
+        return Math.floor(count(t0$3$1, t1$3$1));
+      };
+
+      interval.every = function(step) {
+        step = Math.floor(step);
+        return !isFinite(step) || !(step > 0) ? null
+            : !(step > 1) ? interval
+            : interval.filter(field
+                ? function(d) { return field(d) % step === 0; }
+                : function(d) { return interval.count(0, d) % step === 0; });
+      };
+    }
+
+    return interval;
+  }
+
+  var millisecond$2$1 = newInterval$2$1(function() {
+    // noop
+  }, function(date, step) {
+    date.setTime(+date + step);
+  }, function(start, end) {
+    return end - start;
+  });
+
+  // An optimized implementation for this simple case.
+  millisecond$2$1.every = function(k) {
+    k = Math.floor(k);
+    if (!isFinite(k) || !(k > 0)) return null;
+    if (!(k > 1)) return millisecond$2$1;
+    return newInterval$2$1(function(date) {
+      date.setTime(Math.floor(date / k) * k);
+    }, function(date, step) {
+      date.setTime(+date + step * k);
+    }, function(start, end) {
+      return (end - start) / k;
+    });
+  };
+
+  var durationSecond$3$1 = 1e3;
+  var durationMinute$3$1 = 6e4;
+  var durationHour$3$1 = 36e5;
+  var durationDay$3$1 = 864e5;
+  var durationWeek$3$1 = 6048e5;
+
+  var second$2$1 = newInterval$2$1(function(date) {
+    date.setTime(Math.floor(date / durationSecond$3$1) * durationSecond$3$1);
+  }, function(date, step) {
+    date.setTime(+date + step * durationSecond$3$1);
+  }, function(start, end) {
+    return (end - start) / durationSecond$3$1;
+  }, function(date) {
+    return date.getUTCSeconds();
+  });
+
+  var minute$2$1 = newInterval$2$1(function(date) {
+    date.setTime(Math.floor(date / durationMinute$3$1) * durationMinute$3$1);
+  }, function(date, step) {
+    date.setTime(+date + step * durationMinute$3$1);
+  }, function(start, end) {
+    return (end - start) / durationMinute$3$1;
+  }, function(date) {
+    return date.getMinutes();
+  });
+
+  var hour$2$1 = newInterval$2$1(function(date) {
+    var offset = date.getTimezoneOffset() * durationMinute$3$1 % durationHour$3$1;
+    if (offset < 0) offset += durationHour$3$1;
+    date.setTime(Math.floor((+date - offset) / durationHour$3$1) * durationHour$3$1 + offset);
+  }, function(date, step) {
+    date.setTime(+date + step * durationHour$3$1);
+  }, function(start, end) {
+    return (end - start) / durationHour$3$1;
+  }, function(date) {
+    return date.getHours();
+  });
+
+  var day$2$1 = newInterval$2$1(function(date) {
+    date.setHours(0, 0, 0, 0);
+  }, function(date, step) {
+    date.setDate(date.getDate() + step);
+  }, function(start, end) {
+    return (end - start - (end.getTimezoneOffset() - start.getTimezoneOffset()) * durationMinute$3$1) / durationDay$3$1;
+  }, function(date) {
+    return date.getDate() - 1;
+  });
+
+  function weekday$2$1(i) {
+    return newInterval$2$1(function(date) {
+      date.setDate(date.getDate() - (date.getDay() + 7 - i) % 7);
+      date.setHours(0, 0, 0, 0);
+    }, function(date, step) {
+      date.setDate(date.getDate() + step * 7);
+    }, function(start, end) {
+      return (end - start - (end.getTimezoneOffset() - start.getTimezoneOffset()) * durationMinute$3$1) / durationWeek$3$1;
+    });
+  }
+
+  var sunday$2$1 = weekday$2$1(0);
+  var monday$2$1 = weekday$2$1(1);
+  var tuesday$2$1 = weekday$2$1(2);
+  var wednesday$2$1 = weekday$2$1(3);
+  var thursday$2$1 = weekday$2$1(4);
+  var friday$2$1 = weekday$2$1(5);
+  var saturday$2$1 = weekday$2$1(6);
+
+  var month$2$1 = newInterval$2$1(function(date) {
+    date.setDate(1);
+    date.setHours(0, 0, 0, 0);
+  }, function(date, step) {
+    date.setMonth(date.getMonth() + step);
+  }, function(start, end) {
+    return end.getMonth() - start.getMonth() + (end.getFullYear() - start.getFullYear()) * 12;
+  }, function(date) {
+    return date.getMonth();
+  });
+
+  var year$2$1 = newInterval$2$1(function(date) {
+    date.setMonth(0, 1);
+    date.setHours(0, 0, 0, 0);
+  }, function(date, step) {
+    date.setFullYear(date.getFullYear() + step);
+  }, function(start, end) {
+    return end.getFullYear() - start.getFullYear();
+  }, function(date) {
+    return date.getFullYear();
+  });
+
+  // An optimized implementation for this simple case.
+  year$2$1.every = function(k) {
+    return !isFinite(k = Math.floor(k)) || !(k > 0) ? null : newInterval$2$1(function(date) {
+      date.setFullYear(Math.floor(date.getFullYear() / k) * k);
+      date.setMonth(0, 1);
+      date.setHours(0, 0, 0, 0);
+    }, function(date, step) {
+      date.setFullYear(date.getFullYear() + step * k);
+    });
+  };
+
+  var utcMinute$2$1 = newInterval$2$1(function(date) {
+    date.setUTCSeconds(0, 0);
+  }, function(date, step) {
+    date.setTime(+date + step * durationMinute$3$1);
+  }, function(start, end) {
+    return (end - start) / durationMinute$3$1;
+  }, function(date) {
+    return date.getUTCMinutes();
+  });
+
+  var utcHour$2$1 = newInterval$2$1(function(date) {
+    date.setUTCMinutes(0, 0, 0);
+  }, function(date, step) {
+    date.setTime(+date + step * durationHour$3$1);
+  }, function(start, end) {
+    return (end - start) / durationHour$3$1;
+  }, function(date) {
+    return date.getUTCHours();
+  });
+
+  var utcDay$2$1 = newInterval$2$1(function(date) {
+    date.setUTCHours(0, 0, 0, 0);
+  }, function(date, step) {
+    date.setUTCDate(date.getUTCDate() + step);
+  }, function(start, end) {
+    return (end - start) / durationDay$3$1;
+  }, function(date) {
+    return date.getUTCDate() - 1;
+  });
+
+  function utcWeekday$2$1(i) {
+    return newInterval$2$1(function(date) {
+      date.setUTCDate(date.getUTCDate() - (date.getUTCDay() + 7 - i) % 7);
+      date.setUTCHours(0, 0, 0, 0);
+    }, function(date, step) {
+      date.setUTCDate(date.getUTCDate() + step * 7);
+    }, function(start, end) {
+      return (end - start) / durationWeek$3$1;
+    });
+  }
+
+  var utcSunday$2$1 = utcWeekday$2$1(0);
+  var utcMonday$2$1 = utcWeekday$2$1(1);
+  var utcTuesday$2$1 = utcWeekday$2$1(2);
+  var utcWednesday$2$1 = utcWeekday$2$1(3);
+  var utcThursday$2$1 = utcWeekday$2$1(4);
+  var utcFriday$2$1 = utcWeekday$2$1(5);
+  var utcSaturday$2$1 = utcWeekday$2$1(6);
+
+  var utcMonth$2$1 = newInterval$2$1(function(date) {
+    date.setUTCDate(1);
+    date.setUTCHours(0, 0, 0, 0);
+  }, function(date, step) {
+    date.setUTCMonth(date.getUTCMonth() + step);
+  }, function(start, end) {
+    return end.getUTCMonth() - start.getUTCMonth() + (end.getUTCFullYear() - start.getUTCFullYear()) * 12;
+  }, function(date) {
+    return date.getUTCMonth();
+  });
+
+  var utcYear$2$1 = newInterval$2$1(function(date) {
+    date.setUTCMonth(0, 1);
+    date.setUTCHours(0, 0, 0, 0);
+  }, function(date, step) {
+    date.setUTCFullYear(date.getUTCFullYear() + step);
+  }, function(start, end) {
+    return end.getUTCFullYear() - start.getUTCFullYear();
+  }, function(date) {
+    return date.getUTCFullYear();
+  });
+
+  // An optimized implementation for this simple case.
+  utcYear$2$1.every = function(k) {
+    return !isFinite(k = Math.floor(k)) || !(k > 0) ? null : newInterval$2$1(function(date) {
+      date.setUTCFullYear(Math.floor(date.getUTCFullYear() / k) * k);
+      date.setUTCMonth(0, 1);
+      date.setUTCHours(0, 0, 0, 0);
+    }, function(date, step) {
+      date.setUTCFullYear(date.getUTCFullYear() + step * k);
+    });
+  };
+
+  function localDate$2$1(d) {
+    if (0 <= d.y && d.y < 100) {
+      var date = new Date(-1, d.m, d.d, d.H, d.M, d.S, d.L);
+      date.setFullYear(d.y);
+      return date;
+    }
+    return new Date(d.y, d.m, d.d, d.H, d.M, d.S, d.L);
+  }
+
+  function utcDate$2$1(d) {
+    if (0 <= d.y && d.y < 100) {
+      var date = new Date(Date.UTC(-1, d.m, d.d, d.H, d.M, d.S, d.L));
+      date.setUTCFullYear(d.y);
+      return date;
+    }
+    return new Date(Date.UTC(d.y, d.m, d.d, d.H, d.M, d.S, d.L));
+  }
+
+  function newYear$2$1(y) {
+    return {y: y, m: 0, d: 1, H: 0, M: 0, S: 0, L: 0};
+  }
+
+  function formatLocale$1$2$1(locale) {
+    var locale_dateTime = locale.dateTime,
+        locale_date = locale.date,
+        locale_time = locale.time,
+        locale_periods = locale.periods,
+        locale_weekdays = locale.days,
+        locale_shortWeekdays = locale.shortDays,
+        locale_months = locale.months,
+        locale_shortMonths = locale.shortMonths;
+
+    var periodRe = formatRe$2$1(locale_periods),
+        periodLookup = formatLookup$2$1(locale_periods),
+        weekdayRe = formatRe$2$1(locale_weekdays),
+        weekdayLookup = formatLookup$2$1(locale_weekdays),
+        shortWeekdayRe = formatRe$2$1(locale_shortWeekdays),
+        shortWeekdayLookup = formatLookup$2$1(locale_shortWeekdays),
+        monthRe = formatRe$2$1(locale_months),
+        monthLookup = formatLookup$2$1(locale_months),
+        shortMonthRe = formatRe$2$1(locale_shortMonths),
+        shortMonthLookup = formatLookup$2$1(locale_shortMonths);
+
+    var formats = {
+      "a": formatShortWeekday,
+      "A": formatWeekday,
+      "b": formatShortMonth,
+      "B": formatMonth,
+      "c": null,
+      "d": formatDayOfMonth$2$1,
+      "e": formatDayOfMonth$2$1,
+      "f": formatMicroseconds$2$1,
+      "H": formatHour24$2$1,
+      "I": formatHour12$2$1,
+      "j": formatDayOfYear$2$1,
+      "L": formatMilliseconds$2$1,
+      "m": formatMonthNumber$2$1,
+      "M": formatMinutes$2$1,
+      "p": formatPeriod,
+      "Q": formatUnixTimestamp$2$1,
+      "s": formatUnixTimestampSeconds$2$1,
+      "S": formatSeconds$2$1,
+      "u": formatWeekdayNumberMonday$2$1,
+      "U": formatWeekNumberSunday$2$1,
+      "V": formatWeekNumberISO$2$1,
+      "w": formatWeekdayNumberSunday$2$1,
+      "W": formatWeekNumberMonday$2$1,
+      "x": null,
+      "X": null,
+      "y": formatYear$2$1,
+      "Y": formatFullYear$2$1,
+      "Z": formatZone$2$1,
+      "%": formatLiteralPercent$2$1
+    };
+
+    var utcFormats = {
+      "a": formatUTCShortWeekday,
+      "A": formatUTCWeekday,
+      "b": formatUTCShortMonth,
+      "B": formatUTCMonth,
+      "c": null,
+      "d": formatUTCDayOfMonth$2$1,
+      "e": formatUTCDayOfMonth$2$1,
+      "f": formatUTCMicroseconds$2$1,
+      "H": formatUTCHour24$2$1,
+      "I": formatUTCHour12$2$1,
+      "j": formatUTCDayOfYear$2$1,
+      "L": formatUTCMilliseconds$2$1,
+      "m": formatUTCMonthNumber$2$1,
+      "M": formatUTCMinutes$2$1,
+      "p": formatUTCPeriod,
+      "Q": formatUnixTimestamp$2$1,
+      "s": formatUnixTimestampSeconds$2$1,
+      "S": formatUTCSeconds$2$1,
+      "u": formatUTCWeekdayNumberMonday$2$1,
+      "U": formatUTCWeekNumberSunday$2$1,
+      "V": formatUTCWeekNumberISO$2$1,
+      "w": formatUTCWeekdayNumberSunday$2$1,
+      "W": formatUTCWeekNumberMonday$2$1,
+      "x": null,
+      "X": null,
+      "y": formatUTCYear$2$1,
+      "Y": formatUTCFullYear$2$1,
+      "Z": formatUTCZone$2$1,
+      "%": formatLiteralPercent$2$1
+    };
+
+    var parses = {
+      "a": parseShortWeekday,
+      "A": parseWeekday,
+      "b": parseShortMonth,
+      "B": parseMonth,
+      "c": parseLocaleDateTime,
+      "d": parseDayOfMonth$2$1,
+      "e": parseDayOfMonth$2$1,
+      "f": parseMicroseconds$2$1,
+      "H": parseHour24$2$1,
+      "I": parseHour24$2$1,
+      "j": parseDayOfYear$2$1,
+      "L": parseMilliseconds$2$1,
+      "m": parseMonthNumber$2$1,
+      "M": parseMinutes$2$1,
+      "p": parsePeriod,
+      "Q": parseUnixTimestamp$2$1,
+      "s": parseUnixTimestampSeconds$2$1,
+      "S": parseSeconds$2$1,
+      "u": parseWeekdayNumberMonday$2$1,
+      "U": parseWeekNumberSunday$2$1,
+      "V": parseWeekNumberISO$2$1,
+      "w": parseWeekdayNumberSunday$2$1,
+      "W": parseWeekNumberMonday$2$1,
+      "x": parseLocaleDate,
+      "X": parseLocaleTime,
+      "y": parseYear$2$1,
+      "Y": parseFullYear$2$1,
+      "Z": parseZone$2$1,
+      "%": parseLiteralPercent$2$1
+    };
+
+    // These recursive directive definitions must be deferred.
+    formats.x = newFormat(locale_date, formats);
+    formats.X = newFormat(locale_time, formats);
+    formats.c = newFormat(locale_dateTime, formats);
+    utcFormats.x = newFormat(locale_date, utcFormats);
+    utcFormats.X = newFormat(locale_time, utcFormats);
+    utcFormats.c = newFormat(locale_dateTime, utcFormats);
+
+    function newFormat(specifier, formats) {
+      return function(date) {
+        var string = [],
+            i = -1,
+            j = 0,
+            n = specifier.length,
+            c,
+            pad,
+            format;
+
+        if (!(date instanceof Date)) date = new Date(+date);
+
+        while (++i < n) {
+          if (specifier.charCodeAt(i) === 37) {
+            string.push(specifier.slice(j, i));
+            if ((pad = pads$2$1[c = specifier.charAt(++i)]) != null) c = specifier.charAt(++i);
+            else pad = c === "e" ? " " : "0";
+            if (format = formats[c]) c = format(date, pad);
+            string.push(c);
+            j = i + 1;
+          }
+        }
+
+        string.push(specifier.slice(j, i));
+        return string.join("");
+      };
+    }
+
+    function newParse(specifier, newDate) {
+      return function(string) {
+        var d = newYear$2$1(1900),
+            i = parseSpecifier(d, specifier, string += "", 0),
+            week, day$$1;
+        if (i != string.length) return null;
+
+        // If a UNIX timestamp is specified, return it.
+        if ("Q" in d) return new Date(d.Q);
+
+        // The am-pm flag is 0 for AM, and 1 for PM.
+        if ("p" in d) d.H = d.H % 12 + d.p * 12;
+
+        // Convert day-of-week and week-of-year to day-of-year.
+        if ("V" in d) {
+          if (d.V < 1 || d.V > 53) return null;
+          if (!("w" in d)) d.w = 1;
+          if ("Z" in d) {
+            week = utcDate$2$1(newYear$2$1(d.y)), day$$1 = week.getUTCDay();
+            week = day$$1 > 4 || day$$1 === 0 ? utcMonday$2$1.ceil(week) : utcMonday$2$1(week);
+            week = utcDay$2$1.offset(week, (d.V - 1) * 7);
+            d.y = week.getUTCFullYear();
+            d.m = week.getUTCMonth();
+            d.d = week.getUTCDate() + (d.w + 6) % 7;
+          } else {
+            week = newDate(newYear$2$1(d.y)), day$$1 = week.getDay();
+            week = day$$1 > 4 || day$$1 === 0 ? monday$2$1.ceil(week) : monday$2$1(week);
+            week = day$2$1.offset(week, (d.V - 1) * 7);
+            d.y = week.getFullYear();
+            d.m = week.getMonth();
+            d.d = week.getDate() + (d.w + 6) % 7;
+          }
+        } else if ("W" in d || "U" in d) {
+          if (!("w" in d)) d.w = "u" in d ? d.u % 7 : "W" in d ? 1 : 0;
+          day$$1 = "Z" in d ? utcDate$2$1(newYear$2$1(d.y)).getUTCDay() : newDate(newYear$2$1(d.y)).getDay();
+          d.m = 0;
+          d.d = "W" in d ? (d.w + 6) % 7 + d.W * 7 - (day$$1 + 5) % 7 : d.w + d.U * 7 - (day$$1 + 6) % 7;
+        }
+
+        // If a time zone is specified, all fields are interpreted as UTC and then
+        // offset according to the specified time zone.
+        if ("Z" in d) {
+          d.H += d.Z / 100 | 0;
+          d.M += d.Z % 100;
+          return utcDate$2$1(d);
+        }
+
+        // Otherwise, all fields are in local time.
+        return newDate(d);
+      };
+    }
+
+    function parseSpecifier(d, specifier, string, j) {
+      var i = 0,
+          n = specifier.length,
+          m = string.length,
+          c,
+          parse;
+
+      while (i < n) {
+        if (j >= m) return -1;
+        c = specifier.charCodeAt(i++);
+        if (c === 37) {
+          c = specifier.charAt(i++);
+          parse = parses[c in pads$2$1 ? specifier.charAt(i++) : c];
+          if (!parse || ((j = parse(d, string, j)) < 0)) return -1;
+        } else if (c != string.charCodeAt(j++)) {
+          return -1;
+        }
+      }
+
+      return j;
+    }
+
+    function parsePeriod(d, string, i) {
+      var n = periodRe.exec(string.slice(i));
+      return n ? (d.p = periodLookup[n[0].toLowerCase()], i + n[0].length) : -1;
+    }
+
+    function parseShortWeekday(d, string, i) {
+      var n = shortWeekdayRe.exec(string.slice(i));
+      return n ? (d.w = shortWeekdayLookup[n[0].toLowerCase()], i + n[0].length) : -1;
+    }
+
+    function parseWeekday(d, string, i) {
+      var n = weekdayRe.exec(string.slice(i));
+      return n ? (d.w = weekdayLookup[n[0].toLowerCase()], i + n[0].length) : -1;
+    }
+
+    function parseShortMonth(d, string, i) {
+      var n = shortMonthRe.exec(string.slice(i));
+      return n ? (d.m = shortMonthLookup[n[0].toLowerCase()], i + n[0].length) : -1;
+    }
+
+    function parseMonth(d, string, i) {
+      var n = monthRe.exec(string.slice(i));
+      return n ? (d.m = monthLookup[n[0].toLowerCase()], i + n[0].length) : -1;
+    }
+
+    function parseLocaleDateTime(d, string, i) {
+      return parseSpecifier(d, locale_dateTime, string, i);
+    }
+
+    function parseLocaleDate(d, string, i) {
+      return parseSpecifier(d, locale_date, string, i);
+    }
+
+    function parseLocaleTime(d, string, i) {
+      return parseSpecifier(d, locale_time, string, i);
+    }
+
+    function formatShortWeekday(d) {
+      return locale_shortWeekdays[d.getDay()];
+    }
+
+    function formatWeekday(d) {
+      return locale_weekdays[d.getDay()];
+    }
+
+    function formatShortMonth(d) {
+      return locale_shortMonths[d.getMonth()];
+    }
+
+    function formatMonth(d) {
+      return locale_months[d.getMonth()];
+    }
+
+    function formatPeriod(d) {
+      return locale_periods[+(d.getHours() >= 12)];
+    }
+
+    function formatUTCShortWeekday(d) {
+      return locale_shortWeekdays[d.getUTCDay()];
+    }
+
+    function formatUTCWeekday(d) {
+      return locale_weekdays[d.getUTCDay()];
+    }
+
+    function formatUTCShortMonth(d) {
+      return locale_shortMonths[d.getUTCMonth()];
+    }
+
+    function formatUTCMonth(d) {
+      return locale_months[d.getUTCMonth()];
+    }
+
+    function formatUTCPeriod(d) {
+      return locale_periods[+(d.getUTCHours() >= 12)];
+    }
+
+    return {
+      format: function(specifier) {
+        var f = newFormat(specifier += "", formats);
+        f.toString = function() { return specifier; };
+        return f;
+      },
+      parse: function(specifier) {
+        var p = newParse(specifier += "", localDate$2$1);
+        p.toString = function() { return specifier; };
+        return p;
+      },
+      utcFormat: function(specifier) {
+        var f = newFormat(specifier += "", utcFormats);
+        f.toString = function() { return specifier; };
+        return f;
+      },
+      utcParse: function(specifier) {
+        var p = newParse(specifier, utcDate$2$1);
+        p.toString = function() { return specifier; };
+        return p;
+      }
+    };
+  }
+
+  var pads$2$1 = {"-": "", "_": " ", "0": "0"},
+      numberRe$2$1 = /^\s*\d+/, // note: ignores next directive
+      percentRe$2$1 = /^%/,
+      requoteRe$2$1 = /[\\^$*+?|[\]().{}]/g;
+
+  function pad$2$1(value, fill, width) {
+    var sign = value < 0 ? "-" : "",
+        string = (sign ? -value : value) + "",
+        length = string.length;
+    return sign + (length < width ? new Array(width - length + 1).join(fill) + string : string);
+  }
+
+  function requote$2$1(s) {
+    return s.replace(requoteRe$2$1, "\\$&");
+  }
+
+  function formatRe$2$1(names) {
+    return new RegExp("^(?:" + names.map(requote$2$1).join("|") + ")", "i");
+  }
+
+  function formatLookup$2$1(names) {
+    var map = {}, i = -1, n = names.length;
+    while (++i < n) map[names[i].toLowerCase()] = i;
+    return map;
+  }
+
+  function parseWeekdayNumberSunday$2$1(d, string, i) {
+    var n = numberRe$2$1.exec(string.slice(i, i + 1));
+    return n ? (d.w = +n[0], i + n[0].length) : -1;
+  }
+
+  function parseWeekdayNumberMonday$2$1(d, string, i) {
+    var n = numberRe$2$1.exec(string.slice(i, i + 1));
+    return n ? (d.u = +n[0], i + n[0].length) : -1;
+  }
+
+  function parseWeekNumberSunday$2$1(d, string, i) {
+    var n = numberRe$2$1.exec(string.slice(i, i + 2));
+    return n ? (d.U = +n[0], i + n[0].length) : -1;
+  }
+
+  function parseWeekNumberISO$2$1(d, string, i) {
+    var n = numberRe$2$1.exec(string.slice(i, i + 2));
+    return n ? (d.V = +n[0], i + n[0].length) : -1;
+  }
+
+  function parseWeekNumberMonday$2$1(d, string, i) {
+    var n = numberRe$2$1.exec(string.slice(i, i + 2));
+    return n ? (d.W = +n[0], i + n[0].length) : -1;
+  }
+
+  function parseFullYear$2$1(d, string, i) {
+    var n = numberRe$2$1.exec(string.slice(i, i + 4));
+    return n ? (d.y = +n[0], i + n[0].length) : -1;
+  }
+
+  function parseYear$2$1(d, string, i) {
+    var n = numberRe$2$1.exec(string.slice(i, i + 2));
+    return n ? (d.y = +n[0] + (+n[0] > 68 ? 1900 : 2000), i + n[0].length) : -1;
+  }
+
+  function parseZone$2$1(d, string, i) {
+    var n = /^(Z)|([+-]\d\d)(?::?(\d\d))?/.exec(string.slice(i, i + 6));
+    return n ? (d.Z = n[1] ? 0 : -(n[2] + (n[3] || "00")), i + n[0].length) : -1;
+  }
+
+  function parseMonthNumber$2$1(d, string, i) {
+    var n = numberRe$2$1.exec(string.slice(i, i + 2));
+    return n ? (d.m = n[0] - 1, i + n[0].length) : -1;
+  }
+
+  function parseDayOfMonth$2$1(d, string, i) {
+    var n = numberRe$2$1.exec(string.slice(i, i + 2));
+    return n ? (d.d = +n[0], i + n[0].length) : -1;
+  }
+
+  function parseDayOfYear$2$1(d, string, i) {
+    var n = numberRe$2$1.exec(string.slice(i, i + 3));
+    return n ? (d.m = 0, d.d = +n[0], i + n[0].length) : -1;
+  }
+
+  function parseHour24$2$1(d, string, i) {
+    var n = numberRe$2$1.exec(string.slice(i, i + 2));
+    return n ? (d.H = +n[0], i + n[0].length) : -1;
+  }
+
+  function parseMinutes$2$1(d, string, i) {
+    var n = numberRe$2$1.exec(string.slice(i, i + 2));
+    return n ? (d.M = +n[0], i + n[0].length) : -1;
+  }
+
+  function parseSeconds$2$1(d, string, i) {
+    var n = numberRe$2$1.exec(string.slice(i, i + 2));
+    return n ? (d.S = +n[0], i + n[0].length) : -1;
+  }
+
+  function parseMilliseconds$2$1(d, string, i) {
+    var n = numberRe$2$1.exec(string.slice(i, i + 3));
+    return n ? (d.L = +n[0], i + n[0].length) : -1;
+  }
+
+  function parseMicroseconds$2$1(d, string, i) {
+    var n = numberRe$2$1.exec(string.slice(i, i + 6));
+    return n ? (d.L = Math.floor(n[0] / 1000), i + n[0].length) : -1;
+  }
+
+  function parseLiteralPercent$2$1(d, string, i) {
+    var n = percentRe$2$1.exec(string.slice(i, i + 1));
+    return n ? i + n[0].length : -1;
+  }
+
+  function parseUnixTimestamp$2$1(d, string, i) {
+    var n = numberRe$2$1.exec(string.slice(i));
+    return n ? (d.Q = +n[0], i + n[0].length) : -1;
+  }
+
+  function parseUnixTimestampSeconds$2$1(d, string, i) {
+    var n = numberRe$2$1.exec(string.slice(i));
+    return n ? (d.Q = (+n[0]) * 1000, i + n[0].length) : -1;
+  }
+
+  function formatDayOfMonth$2$1(d, p) {
+    return pad$2$1(d.getDate(), p, 2);
+  }
+
+  function formatHour24$2$1(d, p) {
+    return pad$2$1(d.getHours(), p, 2);
+  }
+
+  function formatHour12$2$1(d, p) {
+    return pad$2$1(d.getHours() % 12 || 12, p, 2);
+  }
+
+  function formatDayOfYear$2$1(d, p) {
+    return pad$2$1(1 + day$2$1.count(year$2$1(d), d), p, 3);
+  }
+
+  function formatMilliseconds$2$1(d, p) {
+    return pad$2$1(d.getMilliseconds(), p, 3);
+  }
+
+  function formatMicroseconds$2$1(d, p) {
+    return formatMilliseconds$2$1(d, p) + "000";
+  }
+
+  function formatMonthNumber$2$1(d, p) {
+    return pad$2$1(d.getMonth() + 1, p, 2);
+  }
+
+  function formatMinutes$2$1(d, p) {
+    return pad$2$1(d.getMinutes(), p, 2);
+  }
+
+  function formatSeconds$2$1(d, p) {
+    return pad$2$1(d.getSeconds(), p, 2);
+  }
+
+  function formatWeekdayNumberMonday$2$1(d) {
+    var day$$1 = d.getDay();
+    return day$$1 === 0 ? 7 : day$$1;
+  }
+
+  function formatWeekNumberSunday$2$1(d, p) {
+    return pad$2$1(sunday$2$1.count(year$2$1(d), d), p, 2);
+  }
+
+  function formatWeekNumberISO$2$1(d, p) {
+    var day$$1 = d.getDay();
+    d = (day$$1 >= 4 || day$$1 === 0) ? thursday$2$1(d) : thursday$2$1.ceil(d);
+    return pad$2$1(thursday$2$1.count(year$2$1(d), d) + (year$2$1(d).getDay() === 4), p, 2);
+  }
+
+  function formatWeekdayNumberSunday$2$1(d) {
+    return d.getDay();
+  }
+
+  function formatWeekNumberMonday$2$1(d, p) {
+    return pad$2$1(monday$2$1.count(year$2$1(d), d), p, 2);
+  }
+
+  function formatYear$2$1(d, p) {
+    return pad$2$1(d.getFullYear() % 100, p, 2);
+  }
+
+  function formatFullYear$2$1(d, p) {
+    return pad$2$1(d.getFullYear() % 10000, p, 4);
+  }
+
+  function formatZone$2$1(d) {
+    var z = d.getTimezoneOffset();
+    return (z > 0 ? "-" : (z *= -1, "+"))
+        + pad$2$1(z / 60 | 0, "0", 2)
+        + pad$2$1(z % 60, "0", 2);
+  }
+
+  function formatUTCDayOfMonth$2$1(d, p) {
+    return pad$2$1(d.getUTCDate(), p, 2);
+  }
+
+  function formatUTCHour24$2$1(d, p) {
+    return pad$2$1(d.getUTCHours(), p, 2);
+  }
+
+  function formatUTCHour12$2$1(d, p) {
+    return pad$2$1(d.getUTCHours() % 12 || 12, p, 2);
+  }
+
+  function formatUTCDayOfYear$2$1(d, p) {
+    return pad$2$1(1 + utcDay$2$1.count(utcYear$2$1(d), d), p, 3);
+  }
+
+  function formatUTCMilliseconds$2$1(d, p) {
+    return pad$2$1(d.getUTCMilliseconds(), p, 3);
+  }
+
+  function formatUTCMicroseconds$2$1(d, p) {
+    return formatUTCMilliseconds$2$1(d, p) + "000";
+  }
+
+  function formatUTCMonthNumber$2$1(d, p) {
+    return pad$2$1(d.getUTCMonth() + 1, p, 2);
+  }
+
+  function formatUTCMinutes$2$1(d, p) {
+    return pad$2$1(d.getUTCMinutes(), p, 2);
+  }
+
+  function formatUTCSeconds$2$1(d, p) {
+    return pad$2$1(d.getUTCSeconds(), p, 2);
+  }
+
+  function formatUTCWeekdayNumberMonday$2$1(d) {
+    var dow = d.getUTCDay();
+    return dow === 0 ? 7 : dow;
+  }
+
+  function formatUTCWeekNumberSunday$2$1(d, p) {
+    return pad$2$1(utcSunday$2$1.count(utcYear$2$1(d), d), p, 2);
+  }
+
+  function formatUTCWeekNumberISO$2$1(d, p) {
+    var day$$1 = d.getUTCDay();
+    d = (day$$1 >= 4 || day$$1 === 0) ? utcThursday$2$1(d) : utcThursday$2$1.ceil(d);
+    return pad$2$1(utcThursday$2$1.count(utcYear$2$1(d), d) + (utcYear$2$1(d).getUTCDay() === 4), p, 2);
+  }
+
+  function formatUTCWeekdayNumberSunday$2$1(d) {
+    return d.getUTCDay();
+  }
+
+  function formatUTCWeekNumberMonday$2$1(d, p) {
+    return pad$2$1(utcMonday$2$1.count(utcYear$2$1(d), d), p, 2);
+  }
+
+  function formatUTCYear$2$1(d, p) {
+    return pad$2$1(d.getUTCFullYear() % 100, p, 2);
+  }
+
+  function formatUTCFullYear$2$1(d, p) {
+    return pad$2$1(d.getUTCFullYear() % 10000, p, 4);
+  }
+
+  function formatUTCZone$2$1() {
+    return "+0000";
+  }
+
+  function formatLiteralPercent$2$1() {
+    return "%";
+  }
+
+  function formatUnixTimestamp$2$1(d) {
+    return +d;
+  }
+
+  function formatUnixTimestampSeconds$2$1(d) {
+    return Math.floor(+d / 1000);
+  }
+
+  var locale$1$2$1;
+  var timeFormat$2$1;
+  var timeParse$2$1;
+  var utcFormat$2$1;
+  var utcParse$2$1;
+
+  defaultLocale$1$2$1({
+    dateTime: "%x, %X",
+    date: "%-m/%-d/%Y",
+    time: "%-I:%M:%S %p",
+    periods: ["AM", "PM"],
+    days: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
+    shortDays: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
+    months: ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
+    shortMonths: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+  });
+
+  function defaultLocale$1$2$1(definition) {
+    locale$1$2$1 = formatLocale$1$2$1(definition);
+    timeFormat$2$1 = locale$1$2$1.format;
+    timeParse$2$1 = locale$1$2$1.parse;
+    utcFormat$2$1 = locale$1$2$1.utcFormat;
+    utcParse$2$1 = locale$1$2$1.utcParse;
+    return locale$1$2$1;
+  }
+
+  var isoSpecifier$2$1 = "%Y-%m-%dT%H:%M:%S.%LZ";
+
+  function formatIsoNative$2$1(date) {
+    return date.toISOString();
+  }
+
+  var formatIso$2$1 = Date.prototype.toISOString
+      ? formatIsoNative$2$1
+      : utcFormat$2$1(isoSpecifier$2$1);
+
+  function parseIsoNative$2$1(string) {
+    var date = new Date(string);
+    return isNaN(date) ? null : date;
+  }
+
+  var parseIso$2$1 = +new Date("2000-01-01T00:00:00.000Z")
+      ? parseIsoNative$2$1
+      : utcParse$2$1(isoSpecifier$2$1);
+  function formatDate(date) {
+      return (second$2$1(date) < date ? timeFormat$2$1(".%L")
+          : minute$2$1(date) < date ? timeFormat$2$1(":%S")
+              : hour$2$1(date) < date ? timeFormat$2$1("%I:%M")
+                  : day$2$1(date) < date ? timeFormat$2$1("%I %p")
+                      : month$2$1(date) < date
+                          ? (sunday$2$1(date) < date
+                              ? timeFormat$2$1("%a %d")
+                              : timeFormat$2$1("%b %d"))
+                          : year$2$1(date) < date ? timeFormat$2$1("%b")
+                              : timeFormat$2$1("%b %Y"))(date);
+  }
   function isDate$1(d) {
-      return Object.prototype.toString.call(d) === "[object Date]";
+      var pd = Date.parse(d);
+      var rd = isNaN(d);
+      var pdt = !isNaN(pd);
+      return d instanceof Date || (rd && pdt);
   }
   var Queue$1$3 = (function () {
       function Queue(list) {
@@ -30227,23 +33677,15 @@ var Demo = (function (exports) {
 
   var Line = (function () {
       function Line(parentid, id) {
-          this._bisectDate = bisector$4(function (d) { return d[0]; }).left;
+          this._bisectXAxis = bisector$4(function (d) { return d[0]; }).left;
           this._boundCharts = [];
-          this._xAxisType = "number";
-          this.axis = { x: undefined, y: undefined };
+          this._curveFunction = curveLinear$1;
+          this._showArea = true;
+          this._showPoints = false;
           this.domain = { x: undefined, y: undefined };
           this.event = { drawn: undefined };
-          this.format = { r: "", x: "", y: "" };
-          this.formatMillisecond = timeFormat$3(".%L");
-          this.formatSecond = timeFormat$3(":%S");
-          this.formatMinute = timeFormat$3("%I:%M");
-          this.formatHour = timeFormat$3("%I %p");
-          this.formatDay = timeFormat$3("%a %d");
-          this.formatWeek = timeFormat$3("%b %d");
-          this.formatMonth = timeFormat$3("%b");
-          this.formatYear = timeFormat$3("%b %Y");
-          this.margin = { top: 10, right: 5, bottom: 25, left: 25 };
-          this.parseDate = timeParse$3("%Y-%m-%d");
+          this.margin = { top: 10, right: 10, bottom: 20, left: 20 };
+          this.parseDate = timeParse$4("%Y-%m-%d");
           this.scale = { c: ordinal$3(schemeCategory10$3), x: undefined, y: undefined };
           this.title = { heading: undefined, x: undefined, y: undefined };
           this.id = id;
@@ -30251,9 +33693,14 @@ var Demo = (function (exports) {
           var p = document.getElementById(parentid);
           var b = p.getBoundingClientRect();
           p.appendChild(svg$3(id, b.width, b.height));
-          this._svg = select$5("#" + this.id).classed("line", true);
-          style$3.call(this._svg, "path.areaFill { fill-opacity: 0.8 }\n    path.areaLine { fill: none; stroke-width: 2 }\n    circle.areaLineDot { cursor: pointer; fill: #0facf3 }\n    text.areaLineDot { cursor: move; font-size: 0.9em }");
+          this.svg = select$5("#" + this.id).classed("line", true);
+          style$3(this.id, "circle.area { stroke-width: 1px }\n    path.areaFill { fill-opacity: 0.8 }\n    path.areaLine { fill: none; stroke-width: 1.5; stroke-linejoin: round }\n    circle.areaLineDot { cursor: pointer; fill: #0facf3 }\n    circle.bookmark { fill: #fff; fill-opacity: 0.8; stroke: #000; stroke-width: 1px }\n    text.areaLineDot { cursor: move; font-size: 0.9em }\n    rect.bookmark { fill: #fff; fill-opacity: 0.8; stroke: #000 }");
       }
+      Line.prototype.area = function (show) {
+          if (show === void 0) { show = true; }
+          this._showArea = show;
+          return this;
+      };
       Line.prototype.bind = function (charts) {
           var _this = this;
           if (Array.isArray(charts)) {
@@ -30262,6 +33709,11 @@ var Demo = (function (exports) {
           else {
               this._boundCharts.push(charts);
           }
+          return this;
+      };
+      Line.prototype.curve = function (show) {
+          if (show === void 0) { show = false; }
+          this._curveFunction = show ? curveBasis$1 : curveLinear$1;
           return this;
       };
       Line.prototype.data = function (data) {
@@ -30279,8 +33731,7 @@ var Demo = (function (exports) {
               }
               s.values.forEach(function (v) {
                   if (isDate$1(v[0])) {
-                      _this._xAxisType = "date";
-                      v[0] = _this.parseDate(v[0]);
+                      v[0] = v[0] instanceof Date ? v[0] : _this.parseDate(v[0]);
                   }
                   else {
                       v[0] = +v[0];
@@ -30298,52 +33749,37 @@ var Demo = (function (exports) {
               return this;
           }
           var self = this;
-          var canvas = this._svg.select(".canvas");
-          var box = this._svg.node().getBoundingClientRect();
+          var canvas = this.svg.select(".canvas");
+          var box = this.svg.node().getBoundingClientRect();
           var height = box.height;
           var width = box.width;
           var adjHeight = height - this.margin.top - this.margin.bottom;
           var adjWidth = width - this.margin.left - this.margin.right;
           canvas.attr("transform", "translate(" + this.margin.left + " " + this.margin.top + ")");
-          this._svg
+          this.svg
               .select("g.pending")
               .style("display", "none");
-          title$3.call(this, this.title.heading);
-          if (this._xAxisType === "date") {
+          title$3(this.id, this.title.heading);
+          if (isDate$1(this.domain.x[0])) {
               this.scale.x = scaleTime$1()
                   .domain(this.domain.x)
-                  .range([0, adjWidth])
-                  .nice();
+                  .range([0, adjWidth]);
           }
           else {
               this.scale.x = linear$1$3()
                   .domain(this.domain.x)
-                  .range([0, adjWidth])
-                  .nice();
+                  .range([0, adjWidth]);
           }
           this.scale.y = linear$1$3()
               .domain(this.domain.y)
-              .range([adjHeight, 0])
-              .nice();
-          this.axis.x = function (n) { return n
-              .attr("transform", "translate(0, " + (height - _this.margin.bottom - _this.margin.top) + ")")
-              .call(axisBottom$2(_this.scale.x)
-              .ticks(5)
-              .tickFormat(_this._xAxisType === "date"
-              ? _this._multiDateFormat
-              : format$3(_this.format.x))); };
-          this.axis.y = function (n) { return n
-              .attr("transform", "translate(0, 0)")
-              .call(axisLeft$1(_this.scale.y)
-              .tickSizeInner(4)
-              .tickPadding(3)
-              .tickFormat(format$3(_this.format.y))
-              .tickValues(_this.domain.y)).call(function (gr) { return gr.selectAll("g > line").remove(); }); };
+              .range([adjHeight, 0]);
           var areaFill = area$2()
+              .curve(self._curveFunction)
               .x(function (d) { return self.scale.x(d[0]); })
               .y0(self.scale.y(self.domain.y[0]))
               .y1(function (d) { return self.scale.y(d[1]); });
           var areaLine = line$1()
+              .curve(self._curveFunction)
               .x(function (d) { return _this.scale.x(d[0]); })
               .y(function (d) { return _this.scale.y(d[1]); });
           var g = canvas.selectAll("g")
@@ -30353,24 +33789,37 @@ var Demo = (function (exports) {
           g.each(function (d) {
               var grp = select$5(this);
               self._topLayer = grp;
-              grp.append("path")
-                  .datum(d.values)
-                  .attr("d", areaFill)
-                  .attr("class", "areaFill")
-                  .attr("fill", function () { return d.fill; })
-                  .on("click", function () {
-                  grp.raise();
-                  self._topLayer = grp;
-              });
+              if (self._showArea) {
+                  grp.append("path")
+                      .datum(d.values)
+                      .attr("d", areaFill)
+                      .attr("class", "areaFill")
+                      .attr("fill", function () { return d.fill; })
+                      .on("click", function () {
+                      grp.raise();
+                      self._topLayer = grp;
+                  });
+              }
               grp.append("path")
                   .datum(d.values)
                   .attr("d", areaLine)
                   .attr("class", "areaLine")
-                  .attr("stroke", function () { return color$3(d.fill).darker(1); })
+                  .attr("stroke", function () { return self._showArea ? color$3(d.fill).darker(1) : d.fill; })
                   .on("click", function () {
                   grp.raise();
                   self._topLayer = grp;
               });
+              if (self._showPoints) {
+                  grp.selectAll("circle")
+                      .data(d.values)
+                      .enter()
+                      .append("circle")
+                      .attr("class", "area")
+                      .attr("fill", function () { return self._showArea ? color$3(d.fill).darker(1) : d.fill; })
+                      .attr("cx", function (d1) { return self.scale.x(d1[0]); })
+                      .attr("cy", function (d1) { return self.scale.y(d1[1]); })
+                      .attr("r", 3);
+              }
               var lb = grp.append("text")
                   .attr("class", "areaLineDot")
                   .call(drag$3()
@@ -30403,8 +33852,6 @@ var Demo = (function (exports) {
                       .text(d[2]);
               });
           });
-          canvas.append("g").call(this.axis.x);
-          canvas.append("g").call(this.axis.y);
           var left = function () { return; };
           var moved = function () {
               var m = mouse$2(this);
@@ -30429,30 +33876,47 @@ var Demo = (function (exports) {
                   .on("mouseenter", entered)
                   .on("mouseleave", left);
           }
+          window.dispatchEvent(this.event.drawn);
           return this;
       };
       Line.prototype.createBookmark = function () {
           if (this._bookmark) {
               this._bookmark.remove();
           }
-          var canvas = this._svg.select(".canvas");
+          var canvas = this.svg.select(".canvas");
           this._bookmark = canvas.append("g");
           this._bookmark.append("line").attr("class", "bookmark");
           this._bookmark.append("circle").attr("class", "bookmark").attr("r", 4);
-          this._bookmark.append("text")
+          var gy = this._bookmark.append("g")
+              .attr("class", "bookmark y");
+          gy.append("rect")
               .attr("class", "bookmark y")
-              .attr("dy", -10);
-          this._bookmark.append("text")
+              .attr("rx", "5px")
+              .attr("ry", "5px");
+          gy.append("text")
+              .attr("class", "bookmark y")
+              .attr("dy", -10)
+              .attr("x", 0)
+              .attr("y", 0);
+          var gx = this._bookmark.append("g")
+              .attr("class", "bookmark x");
+          gx.append("rect")
               .attr("class", "bookmark x")
-              .attr("dy", -10);
+              .attr("rx", "5px")
+              .attr("ry", "5px");
+          gx.append("text")
+              .attr("class", "bookmark x")
+              .attr("dy", -10)
+              .attr("x", 0)
+              .attr("y", 0);
           return this;
       };
       Line.prototype.moveBookmark = function (axisValue, remote) {
           if (remote === void 0) { remote = false; }
-          var box = this._svg.node().getBoundingClientRect();
+          var box = this.svg.node().getBoundingClientRect();
           var width = box.width;
           var datum = this._topLayer.datum().values;
-          var i = this._bisectDate(datum, axisValue);
+          var i = this._bisectXAxis(datum, axisValue);
           if (i < 1 || i > datum.length - 1) {
               return this;
           }
@@ -30467,13 +33931,15 @@ var Demo = (function (exports) {
           this._bookmark.select("circle.bookmark")
               .attr("cx", x)
               .attr("cy", y);
-          this._bookmark.select("line.bookmark")
-              .attr("x1", x)
-              .attr("y1", this.scale.y(this.domain.y[0]))
-              .attr("x2", x)
-              .attr("y2", y);
-          this._bookmark.select("text.bookmark.y")
-              .attr("transform", "translate(" + x + "," + y + ")")
+          var ypos = y + (box.height - box.top) * 0.05 > box.height - box.top
+              ? y - 50
+              : y < 50
+                  ? 50
+                  : y;
+          var gy = this._bookmark.select("g.bookmark.y")
+              .attr("transform", "translate(" + x + "," + ypos + ")");
+          var msgy = isDate$1(data[1]) ? formatDate(data[1]) : data[1];
+          var ty = gy.select("text")
               .attr("text-anchor", function () {
               return (x > width * 0.8)
                   ? "end"
@@ -30481,9 +33947,17 @@ var Demo = (function (exports) {
                       ? "start"
                       : "middle";
           })
-              .text(data[1]);
-          this._bookmark.select("text.bookmark.x")
-              .attr("transform", "translate(" + x + "," + this.scale.y(this.domain.y[0]) + ")")
+              .text(msgy);
+          var tybox = ty.node().getBBox();
+          gy.select("rect")
+              .attr("height", (tybox.height + 5) + "px")
+              .attr("width", (tybox.width + 10) + "px")
+              .attr("x", (tybox.x - 5) + "px")
+              .attr("y", (tybox.y - 2) + "px");
+          var gx = this._bookmark.select("g.bookmark.x")
+              .attr("transform", "translate(" + x + "," + this.scale.y(this.domain.y[0]) + ")");
+          var msgx = isDate$1(data[0]) ? formatDate(data[0]) : data[0];
+          var tx = gx.select("text")
               .attr("text-anchor", function () {
               return (x > width * 0.8)
                   ? "end"
@@ -30491,19 +33965,21 @@ var Demo = (function (exports) {
                       ? "start"
                       : "middle";
           })
-              .text(data[0]);
+              .text(msgx);
+          var txbox = tx.node().getBBox();
+          gx.select("rect")
+              .attr("height", (txbox.height + 5) + "px")
+              .attr("width", (txbox.width + 10) + "px")
+              .attr("x", (txbox.x - 5) + "px")
+              .attr("y", (txbox.y - 2) + "px");
           return this;
       };
-      Line.prototype.reset = function () { reset$3.call(this); return this; };
-      Line.prototype._multiDateFormat = function (date) {
-          return (second$3(date) < date ? this.formatMillisecond
-              : minute$3(date) < date ? this.formatSecond
-                  : hour$3(date) < date ? this.formatMinute
-                      : day$3(date) < date ? this.formatHour
-                          : month$3(date) < date ? (sunday$3(date) < date ? this.formatDay : this.formatWeek)
-                              : year$3(date) < date ? this.formatMonth
-                                  : this.formatYear)(date);
+      Line.prototype.points = function (show) {
+          if (show === void 0) { show = false; }
+          this._showPoints = show;
+          return this;
       };
+      Line.prototype.reset = function () { reset$3(this.id); return this; };
       return Line;
   }());
 
@@ -30612,13 +34088,13 @@ var Demo = (function (exports) {
   }
 
   var ascendingBisect$6 = bisector$6(ascending$8);
-  var bisectRight$4 = ascendingBisect$6.right;
+  var bisectRight$3 = ascendingBisect$6.right;
 
-  var e10$5 = Math.sqrt(50),
-      e5$5 = Math.sqrt(10),
-      e2$5 = Math.sqrt(2);
+  var e10$4 = Math.sqrt(50),
+      e5$4 = Math.sqrt(10),
+      e2$4 = Math.sqrt(2);
 
-  function ticks$4(start, stop, count) {
+  function ticks$3(start, stop, count) {
     var reverse,
         i = -1,
         n,
@@ -30628,7 +34104,7 @@ var Demo = (function (exports) {
     stop = +stop, start = +start, count = +count;
     if (start === stop && count > 0) return [start];
     if (reverse = stop < start) n = start, start = stop, stop = n;
-    if ((step = tickIncrement$4(start, stop, count)) === 0 || !isFinite(step)) return [];
+    if ((step = tickIncrement$3(start, stop, count)) === 0 || !isFinite(step)) return [];
 
     if (step > 0) {
       start = Math.ceil(start / step);
@@ -30647,31 +34123,31 @@ var Demo = (function (exports) {
     return ticks;
   }
 
-  function tickIncrement$4(start, stop, count) {
+  function tickIncrement$3(start, stop, count) {
     var step = (stop - start) / Math.max(0, count),
         power = Math.floor(Math.log(step) / Math.LN10),
         error = step / Math.pow(10, power);
     return power >= 0
-        ? (error >= e10$5 ? 10 : error >= e5$5 ? 5 : error >= e2$5 ? 2 : 1) * Math.pow(10, power)
-        : -Math.pow(10, -power) / (error >= e10$5 ? 10 : error >= e5$5 ? 5 : error >= e2$5 ? 2 : 1);
+        ? (error >= e10$4 ? 10 : error >= e5$4 ? 5 : error >= e2$4 ? 2 : 1) * Math.pow(10, power)
+        : -Math.pow(10, -power) / (error >= e10$4 ? 10 : error >= e5$4 ? 5 : error >= e2$4 ? 2 : 1);
   }
 
-  function tickStep$5(start, stop, count) {
+  function tickStep$4(start, stop, count) {
     var step0 = Math.abs(stop - start) / Math.max(0, count),
         step1 = Math.pow(10, Math.floor(Math.log(step0) / Math.LN10)),
         error = step0 / step1;
-    if (error >= e10$5) step1 *= 10;
-    else if (error >= e5$5) step1 *= 5;
-    else if (error >= e2$5) step1 *= 2;
+    if (error >= e10$4) step1 *= 10;
+    else if (error >= e5$4) step1 *= 5;
+    else if (error >= e2$4) step1 *= 2;
     return stop < start ? -step1 : step1;
   }
 
   var prefix$4 = "$";
 
-  function Map$5() {}
+  function Map$4() {}
 
-  Map$5.prototype = map$5.prototype = {
-    constructor: Map$5,
+  Map$4.prototype = map$5.prototype = {
+    constructor: Map$4,
     has: function(key) {
       return (prefix$4 + key) in this;
     },
@@ -30719,10 +34195,10 @@ var Demo = (function (exports) {
   };
 
   function map$5(object, f) {
-    var map = new Map$5;
+    var map = new Map$4;
 
     // Copy constructor.
-    if (object instanceof Map$5) object.each(function(value, key) { map.set(key, value); });
+    if (object instanceof Map$4) object.each(function(value, key) { map.set(key, value); });
 
     // Index array by numeric index or specified key function.
     else if (Array.isArray(object)) {
@@ -31140,10 +34616,10 @@ var Demo = (function (exports) {
       Xn$4 = 0.96422,
       Yn$4 = 1,
       Zn$4 = 0.82521,
-      t0$5 = 4 / 29,
-      t1$5 = 6 / 29,
-      t2$4 = 3 * t1$5 * t1$5,
-      t3$4 = t1$5 * t1$5 * t1$5;
+      t0$6 = 4 / 29,
+      t1$6 = 6 / 29,
+      t2$4 = 3 * t1$6 * t1$6,
+      t3$4 = t1$6 * t1$6 * t1$6;
 
   function labConvert$4(o) {
     if (o instanceof Lab$4) return new Lab$4(o.l, o.a, o.b, o.opacity);
@@ -31199,11 +34675,11 @@ var Demo = (function (exports) {
   }));
 
   function xyz2lab$4(t) {
-    return t > t3$4 ? Math.pow(t, 1 / 3) : t / t2$4 + t0$5;
+    return t > t3$4 ? Math.pow(t, 1 / 3) : t / t2$4 + t0$6;
   }
 
   function lab2xyz$4(t) {
-    return t > t1$5 ? t * t * t : t2$4 * (t - t0$5);
+    return t > t1$6 ? t * t * t : t2$4 * (t - t0$6);
   }
 
   function lrgb2rgb$4(x) {
@@ -31547,7 +35023,7 @@ var Demo = (function (exports) {
     }
 
     return function(x) {
-      var i = bisectRight$4(domain, x, 1, j) - 1;
+      var i = bisectRight$3(domain, x, 1, j) - 1;
       return r[i](d[i](x));
     };
   }
@@ -31611,7 +35087,7 @@ var Demo = (function (exports) {
   // Computes the decimal coefficient and exponent of the specified number x with
   // significant digits p, where x is positive and p is in [1, 21] or undefined.
   // For example, formatDecimal(1.23) returns ["123", 0].
-  function formatDecimal$4(x, p) {
+  function formatDecimal$5(x, p) {
     if ((i = (x = p ? x.toExponential(p - 1) : x.toExponential()).indexOf("e")) < 0) return null; // NaN, ±Infinity
     var i, coefficient = x.slice(0, i);
 
@@ -31623,11 +35099,11 @@ var Demo = (function (exports) {
     ];
   }
 
-  function exponent$3(x) {
-    return x = formatDecimal$4(Math.abs(x)), x ? x[1] : NaN;
+  function exponent$4(x) {
+    return x = formatDecimal$5(Math.abs(x)), x ? x[1] : NaN;
   }
 
-  function formatGroup$4(grouping, thousands) {
+  function formatGroup$5(grouping, thousands) {
     return function(value, width) {
       var i = value.length,
           t = [],
@@ -31646,7 +35122,7 @@ var Demo = (function (exports) {
     };
   }
 
-  function formatNumerals$4(numerals) {
+  function formatNumerals$5(numerals) {
     return function(value) {
       return value.replace(/[0-9]/g, function(i) {
         return numerals[+i];
@@ -31655,16 +35131,16 @@ var Demo = (function (exports) {
   }
 
   // [[fill]align][sign][symbol][0][width][,][.precision][~][type]
-  var re$4 = /^(?:(.)?([<>=^]))?([+\-( ])?([$#])?(0)?(\d+)?(,)?(\.\d+)?(~)?([a-z%])?$/i;
+  var re$5 = /^(?:(.)?([<>=^]))?([+\-( ])?([$#])?(0)?(\d+)?(,)?(\.\d+)?(~)?([a-z%])?$/i;
 
-  function formatSpecifier$4(specifier) {
-    return new FormatSpecifier$4(specifier);
+  function formatSpecifier$5(specifier) {
+    return new FormatSpecifier$5(specifier);
   }
 
-  formatSpecifier$4.prototype = FormatSpecifier$4.prototype; // instanceof
+  formatSpecifier$5.prototype = FormatSpecifier$5.prototype; // instanceof
 
-  function FormatSpecifier$4(specifier) {
-    if (!(match = re$4.exec(specifier))) throw new Error("invalid format: " + specifier);
+  function FormatSpecifier$5(specifier) {
+    if (!(match = re$5.exec(specifier))) throw new Error("invalid format: " + specifier);
     var match;
     this.fill = match[1] || " ";
     this.align = match[2] || ">";
@@ -31678,7 +35154,7 @@ var Demo = (function (exports) {
     this.type = match[10] || "";
   }
 
-  FormatSpecifier$4.prototype.toString = function() {
+  FormatSpecifier$5.prototype.toString = function() {
     return this.fill
         + this.align
         + this.sign
@@ -31692,7 +35168,7 @@ var Demo = (function (exports) {
   };
 
   // Trims insignificant zeros, e.g., replaces 1.2000k with 1.2k.
-  function formatTrim$4(s) {
+  function formatTrim$5(s) {
     out: for (var n = s.length, i = 1, i0 = -1, i1; i < n; ++i) {
       switch (s[i]) {
         case ".": i0 = i1 = i; break;
@@ -31703,23 +35179,23 @@ var Demo = (function (exports) {
     return i0 > 0 ? s.slice(0, i0) + s.slice(i1 + 1) : s;
   }
 
-  var prefixExponent$4;
+  var prefixExponent$5;
 
-  function formatPrefixAuto$4(x, p) {
-    var d = formatDecimal$4(x, p);
+  function formatPrefixAuto$5(x, p) {
+    var d = formatDecimal$5(x, p);
     if (!d) return x + "";
     var coefficient = d[0],
         exponent = d[1],
-        i = exponent - (prefixExponent$4 = Math.max(-8, Math.min(8, Math.floor(exponent / 3))) * 3) + 1,
+        i = exponent - (prefixExponent$5 = Math.max(-8, Math.min(8, Math.floor(exponent / 3))) * 3) + 1,
         n = coefficient.length;
     return i === n ? coefficient
         : i > n ? coefficient + new Array(i - n + 1).join("0")
         : i > 0 ? coefficient.slice(0, i) + "." + coefficient.slice(i)
-        : "0." + new Array(1 - i).join("0") + formatDecimal$4(x, Math.max(0, p + i - 1))[0]; // less than 1y!
+        : "0." + new Array(1 - i).join("0") + formatDecimal$5(x, Math.max(0, p + i - 1))[0]; // less than 1y!
   }
 
-  function formatRounded$4(x, p) {
-    var d = formatDecimal$4(x, p);
+  function formatRounded$5(x, p) {
+    var d = formatDecimal$5(x, p);
     if (!d) return x + "";
     var coefficient = d[0],
         exponent = d[1];
@@ -31728,7 +35204,7 @@ var Demo = (function (exports) {
         : coefficient + new Array(exponent - coefficient.length + 2).join("0");
   }
 
-  var formatTypes$4 = {
+  var formatTypes$5 = {
     "%": function(x, p) { return (x * 100).toFixed(p); },
     "b": function(x) { return Math.round(x).toString(2); },
     "c": function(x) { return x + ""; },
@@ -31737,28 +35213,28 @@ var Demo = (function (exports) {
     "f": function(x, p) { return x.toFixed(p); },
     "g": function(x, p) { return x.toPrecision(p); },
     "o": function(x) { return Math.round(x).toString(8); },
-    "p": function(x, p) { return formatRounded$4(x * 100, p); },
-    "r": formatRounded$4,
-    "s": formatPrefixAuto$4,
+    "p": function(x, p) { return formatRounded$5(x * 100, p); },
+    "r": formatRounded$5,
+    "s": formatPrefixAuto$5,
     "X": function(x) { return Math.round(x).toString(16).toUpperCase(); },
     "x": function(x) { return Math.round(x).toString(16); }
   };
 
-  function identity$7(x) {
+  function identity$9(x) {
     return x;
   }
 
-  var prefixes$4 = ["y","z","a","f","p","n","µ","m","","k","M","G","T","P","E","Z","Y"];
+  var prefixes$5 = ["y","z","a","f","p","n","µ","m","","k","M","G","T","P","E","Z","Y"];
 
-  function formatLocale$5(locale) {
-    var group = locale.grouping && locale.thousands ? formatGroup$4(locale.grouping, locale.thousands) : identity$7,
+  function formatLocale$6(locale) {
+    var group = locale.grouping && locale.thousands ? formatGroup$5(locale.grouping, locale.thousands) : identity$9,
         currency = locale.currency,
         decimal = locale.decimal,
-        numerals = locale.numerals ? formatNumerals$4(locale.numerals) : identity$7,
+        numerals = locale.numerals ? formatNumerals$5(locale.numerals) : identity$9,
         percent = locale.percent || "%";
 
     function newFormat(specifier) {
-      specifier = formatSpecifier$4(specifier);
+      specifier = formatSpecifier$5(specifier);
 
       var fill = specifier.fill,
           align = specifier.align,
@@ -31775,7 +35251,7 @@ var Demo = (function (exports) {
       if (type === "n") comma = true, type = "g";
 
       // The "" type, and any invalid type, is an alias for ".12~g".
-      else if (!formatTypes$4[type]) precision == null && (precision = 12), trim = true, type = "g";
+      else if (!formatTypes$5[type]) precision == null && (precision = 12), trim = true, type = "g";
 
       // If zero fill is specified, padding goes after sign and before digits.
       if (zero || (fill === "0" && align === "=")) zero = true, fill = "0", align = "=";
@@ -31788,7 +35264,7 @@ var Demo = (function (exports) {
       // What format function should we use?
       // Is this an integer type?
       // Can this type generate exponential notation?
-      var formatType = formatTypes$4[type],
+      var formatType = formatTypes$5[type],
           maybeSuffix = /[defgprs%]/.test(type);
 
       // Set the default precision if not specified,
@@ -31815,14 +35291,14 @@ var Demo = (function (exports) {
           value = formatType(Math.abs(value), precision);
 
           // Trim insignificant zeros.
-          if (trim) value = formatTrim$4(value);
+          if (trim) value = formatTrim$5(value);
 
           // If a negative value rounds to zero during formatting, treat as positive.
           if (valueNegative && +value === 0) valueNegative = false;
 
           // Compute the prefix and suffix.
           valuePrefix = (valueNegative ? (sign === "(" ? sign : "-") : sign === "-" || sign === "(" ? "" : sign) + valuePrefix;
-          valueSuffix = (type === "s" ? prefixes$4[8 + prefixExponent$4 / 3] : "") + valueSuffix + (valueNegative && sign === "(" ? ")" : "");
+          valueSuffix = (type === "s" ? prefixes$5[8 + prefixExponent$5 / 3] : "") + valueSuffix + (valueNegative && sign === "(" ? ")" : "");
 
           // Break the formatted value into the integer “value” part that can be
           // grouped, and fractional or exponential “suffix” part that is not.
@@ -31867,10 +35343,10 @@ var Demo = (function (exports) {
     }
 
     function formatPrefix(specifier, value) {
-      var f = newFormat((specifier = formatSpecifier$4(specifier), specifier.type = "f", specifier)),
-          e = Math.max(-8, Math.min(8, Math.floor(exponent$3(value) / 3))) * 3,
+      var f = newFormat((specifier = formatSpecifier$5(specifier), specifier.type = "f", specifier)),
+          e = Math.max(-8, Math.min(8, Math.floor(exponent$4(value) / 3))) * 3,
           k = Math.pow(10, -e),
-          prefix = prefixes$4[8 + e / 3];
+          prefix = prefixes$5[8 + e / 3];
       return function(value) {
         return f(k * value) + prefix;
       };
@@ -31882,48 +35358,48 @@ var Demo = (function (exports) {
     };
   }
 
-  var locale$5;
-  var format$4;
-  var formatPrefix$4;
+  var locale$6;
+  var format$5;
+  var formatPrefix$5;
 
-  defaultLocale$5({
+  defaultLocale$6({
     decimal: ".",
     thousands: ",",
     grouping: [3],
     currency: ["$", ""]
   });
 
-  function defaultLocale$5(definition) {
-    locale$5 = formatLocale$5(definition);
-    format$4 = locale$5.format;
-    formatPrefix$4 = locale$5.formatPrefix;
-    return locale$5;
+  function defaultLocale$6(definition) {
+    locale$6 = formatLocale$6(definition);
+    format$5 = locale$6.format;
+    formatPrefix$5 = locale$6.formatPrefix;
+    return locale$6;
   }
 
   function precisionFixed$3(step) {
-    return Math.max(0, -exponent$3(Math.abs(step)));
+    return Math.max(0, -exponent$4(Math.abs(step)));
   }
 
   function precisionPrefix$3(step, value) {
-    return Math.max(0, Math.max(-8, Math.min(8, Math.floor(exponent$3(value) / 3))) * 3 - exponent$3(Math.abs(step)));
+    return Math.max(0, Math.max(-8, Math.min(8, Math.floor(exponent$4(value) / 3))) * 3 - exponent$4(Math.abs(step)));
   }
 
   function precisionRound$3(step, max) {
     step = Math.abs(step), max = Math.abs(max) - step;
-    return Math.max(0, exponent$3(max) - exponent$3(step)) + 1;
+    return Math.max(0, exponent$4(max) - exponent$4(step)) + 1;
   }
 
   function tickFormat$3(domain, count, specifier) {
     var start = domain[0],
         stop = domain[domain.length - 1],
-        step = tickStep$5(start, stop, count == null ? 10 : count),
+        step = tickStep$4(start, stop, count == null ? 10 : count),
         precision;
-    specifier = formatSpecifier$4(specifier == null ? ",f" : specifier);
+    specifier = formatSpecifier$5(specifier == null ? ",f" : specifier);
     switch (specifier.type) {
       case "s": {
         var value = Math.max(Math.abs(start), Math.abs(stop));
         if (specifier.precision == null && !isNaN(precision = precisionPrefix$3(step, value))) specifier.precision = precision;
-        return formatPrefix$4(specifier, value);
+        return formatPrefix$5(specifier, value);
       }
       case "":
       case "e":
@@ -31939,7 +35415,7 @@ var Demo = (function (exports) {
         break;
       }
     }
-    return format$4(specifier);
+    return format$5(specifier);
   }
 
   function linearish$3(scale) {
@@ -31947,7 +35423,7 @@ var Demo = (function (exports) {
 
     scale.ticks = function(count) {
       var d = domain();
-      return ticks$4(d[0], d[d.length - 1], count == null ? 10 : count);
+      return ticks$3(d[0], d[d.length - 1], count == null ? 10 : count);
     };
 
     scale.tickFormat = function(count, specifier) {
@@ -31969,16 +35445,16 @@ var Demo = (function (exports) {
         step = i0, i0 = i1, i1 = step;
       }
 
-      step = tickIncrement$4(start, stop, count);
+      step = tickIncrement$3(start, stop, count);
 
       if (step > 0) {
         start = Math.floor(start / step) * step;
         stop = Math.ceil(stop / step) * step;
-        step = tickIncrement$4(start, stop, count);
+        step = tickIncrement$3(start, stop, count);
       } else if (step < 0) {
         start = Math.ceil(start * step) / step;
         stop = Math.floor(stop * step) / step;
-        step = tickIncrement$4(start, stop, count);
+        step = tickIncrement$3(start, stop, count);
       }
 
       if (step > 0) {
@@ -32007,10 +35483,10 @@ var Demo = (function (exports) {
     return linearish$3(scale);
   }
 
-  var t0$6 = new Date,
-      t1$6 = new Date;
+  var t0$7 = new Date,
+      t1$7 = new Date;
 
-  function newInterval$4(floori, offseti, count, field) {
+  function newInterval$5(floori, offseti, count, field) {
 
     function interval(date) {
       return floori(date = new Date(+date)), date;
@@ -32043,7 +35519,7 @@ var Demo = (function (exports) {
     };
 
     interval.filter = function(test) {
-      return newInterval$4(function(date) {
+      return newInterval$5(function(date) {
         if (date >= date) while (floori(date), !test(date)) date.setTime(date - 1);
       }, function(date, step) {
         if (date >= date) {
@@ -32058,9 +35534,9 @@ var Demo = (function (exports) {
 
     if (count) {
       interval.count = function(start, end) {
-        t0$6.setTime(+start), t1$6.setTime(+end);
-        floori(t0$6), floori(t1$6);
-        return Math.floor(count(t0$6, t1$6));
+        t0$7.setTime(+start), t1$7.setTime(+end);
+        floori(t0$7), floori(t1$7);
+        return Math.floor(count(t0$7, t1$7));
       };
 
       interval.every = function(step) {
@@ -32076,7 +35552,7 @@ var Demo = (function (exports) {
     return interval;
   }
 
-  var millisecond$4 = newInterval$4(function() {
+  var millisecond$5 = newInterval$5(function() {
     // noop
   }, function(date, step) {
     date.setTime(+date + step);
@@ -32085,11 +35561,11 @@ var Demo = (function (exports) {
   });
 
   // An optimized implementation for this simple case.
-  millisecond$4.every = function(k) {
+  millisecond$5.every = function(k) {
     k = Math.floor(k);
     if (!isFinite(k) || !(k > 0)) return null;
-    if (!(k > 1)) return millisecond$4;
-    return newInterval$4(function(date) {
+    if (!(k > 1)) return millisecond$5;
+    return newInterval$5(function(date) {
       date.setTime(Math.floor(date / k) * k);
     }, function(date, step) {
       date.setTime(+date + step * k);
@@ -32097,82 +35573,82 @@ var Demo = (function (exports) {
       return (end - start) / k;
     });
   };
-  var milliseconds$3 = millisecond$4.range;
+  var milliseconds$4 = millisecond$5.range;
 
-  var durationSecond$4 = 1e3;
-  var durationMinute$4 = 6e4;
-  var durationHour$4 = 36e5;
-  var durationDay$4 = 864e5;
-  var durationWeek$4 = 6048e5;
+  var durationSecond$5 = 1e3;
+  var durationMinute$5 = 6e4;
+  var durationHour$5 = 36e5;
+  var durationDay$5 = 864e5;
+  var durationWeek$5 = 6048e5;
 
-  var second$4 = newInterval$4(function(date) {
-    date.setTime(Math.floor(date / durationSecond$4) * durationSecond$4);
+  var second$5 = newInterval$5(function(date) {
+    date.setTime(Math.floor(date / durationSecond$5) * durationSecond$5);
   }, function(date, step) {
-    date.setTime(+date + step * durationSecond$4);
+    date.setTime(+date + step * durationSecond$5);
   }, function(start, end) {
-    return (end - start) / durationSecond$4;
+    return (end - start) / durationSecond$5;
   }, function(date) {
     return date.getUTCSeconds();
   });
-  var seconds$3 = second$4.range;
+  var seconds$4 = second$5.range;
 
-  var minute$4 = newInterval$4(function(date) {
-    date.setTime(Math.floor(date / durationMinute$4) * durationMinute$4);
+  var minute$5 = newInterval$5(function(date) {
+    date.setTime(Math.floor(date / durationMinute$5) * durationMinute$5);
   }, function(date, step) {
-    date.setTime(+date + step * durationMinute$4);
+    date.setTime(+date + step * durationMinute$5);
   }, function(start, end) {
-    return (end - start) / durationMinute$4;
+    return (end - start) / durationMinute$5;
   }, function(date) {
     return date.getMinutes();
   });
-  var minutes$3 = minute$4.range;
+  var minutes$4 = minute$5.range;
 
-  var hour$4 = newInterval$4(function(date) {
-    var offset = date.getTimezoneOffset() * durationMinute$4 % durationHour$4;
-    if (offset < 0) offset += durationHour$4;
-    date.setTime(Math.floor((+date - offset) / durationHour$4) * durationHour$4 + offset);
+  var hour$5 = newInterval$5(function(date) {
+    var offset = date.getTimezoneOffset() * durationMinute$5 % durationHour$5;
+    if (offset < 0) offset += durationHour$5;
+    date.setTime(Math.floor((+date - offset) / durationHour$5) * durationHour$5 + offset);
   }, function(date, step) {
-    date.setTime(+date + step * durationHour$4);
+    date.setTime(+date + step * durationHour$5);
   }, function(start, end) {
-    return (end - start) / durationHour$4;
+    return (end - start) / durationHour$5;
   }, function(date) {
     return date.getHours();
   });
-  var hours$3 = hour$4.range;
+  var hours$4 = hour$5.range;
 
-  var day$4 = newInterval$4(function(date) {
+  var day$5 = newInterval$5(function(date) {
     date.setHours(0, 0, 0, 0);
   }, function(date, step) {
     date.setDate(date.getDate() + step);
   }, function(start, end) {
-    return (end - start - (end.getTimezoneOffset() - start.getTimezoneOffset()) * durationMinute$4) / durationDay$4;
+    return (end - start - (end.getTimezoneOffset() - start.getTimezoneOffset()) * durationMinute$5) / durationDay$5;
   }, function(date) {
     return date.getDate() - 1;
   });
-  var days$3 = day$4.range;
+  var days$4 = day$5.range;
 
-  function weekday$4(i) {
-    return newInterval$4(function(date) {
+  function weekday$5(i) {
+    return newInterval$5(function(date) {
       date.setDate(date.getDate() - (date.getDay() + 7 - i) % 7);
       date.setHours(0, 0, 0, 0);
     }, function(date, step) {
       date.setDate(date.getDate() + step * 7);
     }, function(start, end) {
-      return (end - start - (end.getTimezoneOffset() - start.getTimezoneOffset()) * durationMinute$4) / durationWeek$4;
+      return (end - start - (end.getTimezoneOffset() - start.getTimezoneOffset()) * durationMinute$5) / durationWeek$5;
     });
   }
 
-  var sunday$4 = weekday$4(0);
-  var monday$4 = weekday$4(1);
-  var tuesday$4 = weekday$4(2);
-  var wednesday$4 = weekday$4(3);
-  var thursday$4 = weekday$4(4);
-  var friday$4 = weekday$4(5);
-  var saturday$4 = weekday$4(6);
+  var sunday$5 = weekday$5(0);
+  var monday$5 = weekday$5(1);
+  var tuesday$5 = weekday$5(2);
+  var wednesday$5 = weekday$5(3);
+  var thursday$5 = weekday$5(4);
+  var friday$5 = weekday$5(5);
+  var saturday$5 = weekday$5(6);
 
-  var sundays$4 = sunday$4.range;
+  var sundays$4 = sunday$5.range;
 
-  var month$4 = newInterval$4(function(date) {
+  var month$5 = newInterval$5(function(date) {
     date.setDate(1);
     date.setHours(0, 0, 0, 0);
   }, function(date, step) {
@@ -32182,9 +35658,9 @@ var Demo = (function (exports) {
   }, function(date) {
     return date.getMonth();
   });
-  var months$3 = month$4.range;
+  var months$4 = month$5.range;
 
-  var year$4 = newInterval$4(function(date) {
+  var year$5 = newInterval$5(function(date) {
     date.setMonth(0, 1);
     date.setHours(0, 0, 0, 0);
   }, function(date, step) {
@@ -32196,8 +35672,8 @@ var Demo = (function (exports) {
   });
 
   // An optimized implementation for this simple case.
-  year$4.every = function(k) {
-    return !isFinite(k = Math.floor(k)) || !(k > 0) ? null : newInterval$4(function(date) {
+  year$5.every = function(k) {
+    return !isFinite(k = Math.floor(k)) || !(k > 0) ? null : newInterval$5(function(date) {
       date.setFullYear(Math.floor(date.getFullYear() / k) * k);
       date.setMonth(0, 1);
       date.setHours(0, 0, 0, 0);
@@ -32205,63 +35681,63 @@ var Demo = (function (exports) {
       date.setFullYear(date.getFullYear() + step * k);
     });
   };
-  var years$3 = year$4.range;
+  var years$4 = year$5.range;
 
-  var utcMinute$4 = newInterval$4(function(date) {
+  var utcMinute$5 = newInterval$5(function(date) {
     date.setUTCSeconds(0, 0);
   }, function(date, step) {
-    date.setTime(+date + step * durationMinute$4);
+    date.setTime(+date + step * durationMinute$5);
   }, function(start, end) {
-    return (end - start) / durationMinute$4;
+    return (end - start) / durationMinute$5;
   }, function(date) {
     return date.getUTCMinutes();
   });
-  var utcMinutes$3 = utcMinute$4.range;
+  var utcMinutes$4 = utcMinute$5.range;
 
-  var utcHour$4 = newInterval$4(function(date) {
+  var utcHour$5 = newInterval$5(function(date) {
     date.setUTCMinutes(0, 0, 0);
   }, function(date, step) {
-    date.setTime(+date + step * durationHour$4);
+    date.setTime(+date + step * durationHour$5);
   }, function(start, end) {
-    return (end - start) / durationHour$4;
+    return (end - start) / durationHour$5;
   }, function(date) {
     return date.getUTCHours();
   });
-  var utcHours$3 = utcHour$4.range;
+  var utcHours$4 = utcHour$5.range;
 
-  var utcDay$4 = newInterval$4(function(date) {
+  var utcDay$5 = newInterval$5(function(date) {
     date.setUTCHours(0, 0, 0, 0);
   }, function(date, step) {
     date.setUTCDate(date.getUTCDate() + step);
   }, function(start, end) {
-    return (end - start) / durationDay$4;
+    return (end - start) / durationDay$5;
   }, function(date) {
     return date.getUTCDate() - 1;
   });
-  var utcDays$3 = utcDay$4.range;
+  var utcDays$4 = utcDay$5.range;
 
-  function utcWeekday$4(i) {
-    return newInterval$4(function(date) {
+  function utcWeekday$5(i) {
+    return newInterval$5(function(date) {
       date.setUTCDate(date.getUTCDate() - (date.getUTCDay() + 7 - i) % 7);
       date.setUTCHours(0, 0, 0, 0);
     }, function(date, step) {
       date.setUTCDate(date.getUTCDate() + step * 7);
     }, function(start, end) {
-      return (end - start) / durationWeek$4;
+      return (end - start) / durationWeek$5;
     });
   }
 
-  var utcSunday$4 = utcWeekday$4(0);
-  var utcMonday$4 = utcWeekday$4(1);
-  var utcTuesday$4 = utcWeekday$4(2);
-  var utcWednesday$4 = utcWeekday$4(3);
-  var utcThursday$4 = utcWeekday$4(4);
-  var utcFriday$4 = utcWeekday$4(5);
-  var utcSaturday$4 = utcWeekday$4(6);
+  var utcSunday$5 = utcWeekday$5(0);
+  var utcMonday$5 = utcWeekday$5(1);
+  var utcTuesday$5 = utcWeekday$5(2);
+  var utcWednesday$5 = utcWeekday$5(3);
+  var utcThursday$5 = utcWeekday$5(4);
+  var utcFriday$5 = utcWeekday$5(5);
+  var utcSaturday$5 = utcWeekday$5(6);
 
-  var utcSundays$4 = utcSunday$4.range;
+  var utcSundays$4 = utcSunday$5.range;
 
-  var utcMonth$4 = newInterval$4(function(date) {
+  var utcMonth$5 = newInterval$5(function(date) {
     date.setUTCDate(1);
     date.setUTCHours(0, 0, 0, 0);
   }, function(date, step) {
@@ -32271,9 +35747,9 @@ var Demo = (function (exports) {
   }, function(date) {
     return date.getUTCMonth();
   });
-  var utcMonths$3 = utcMonth$4.range;
+  var utcMonths$4 = utcMonth$5.range;
 
-  var utcYear$4 = newInterval$4(function(date) {
+  var utcYear$5 = newInterval$5(function(date) {
     date.setUTCMonth(0, 1);
     date.setUTCHours(0, 0, 0, 0);
   }, function(date, step) {
@@ -32285,8 +35761,8 @@ var Demo = (function (exports) {
   });
 
   // An optimized implementation for this simple case.
-  utcYear$4.every = function(k) {
-    return !isFinite(k = Math.floor(k)) || !(k > 0) ? null : newInterval$4(function(date) {
+  utcYear$5.every = function(k) {
+    return !isFinite(k = Math.floor(k)) || !(k > 0) ? null : newInterval$5(function(date) {
       date.setUTCFullYear(Math.floor(date.getUTCFullYear() / k) * k);
       date.setUTCMonth(0, 1);
       date.setUTCHours(0, 0, 0, 0);
@@ -32294,9 +35770,9 @@ var Demo = (function (exports) {
       date.setUTCFullYear(date.getUTCFullYear() + step * k);
     });
   };
-  var utcYears$3 = utcYear$4.range;
+  var utcYears$4 = utcYear$5.range;
 
-  function localDate$4(d) {
+  function localDate$5(d) {
     if (0 <= d.y && d.y < 100) {
       var date = new Date(-1, d.m, d.d, d.H, d.M, d.S, d.L);
       date.setFullYear(d.y);
@@ -32305,7 +35781,7 @@ var Demo = (function (exports) {
     return new Date(d.y, d.m, d.d, d.H, d.M, d.S, d.L);
   }
 
-  function utcDate$4(d) {
+  function utcDate$5(d) {
     if (0 <= d.y && d.y < 100) {
       var date = new Date(Date.UTC(-1, d.m, d.d, d.H, d.M, d.S, d.L));
       date.setUTCFullYear(d.y);
@@ -32314,11 +35790,11 @@ var Demo = (function (exports) {
     return new Date(Date.UTC(d.y, d.m, d.d, d.H, d.M, d.S, d.L));
   }
 
-  function newYear$4(y) {
+  function newYear$5(y) {
     return {y: y, m: 0, d: 1, H: 0, M: 0, S: 0, L: 0};
   }
 
-  function formatLocale$6(locale) {
+  function formatLocale$7(locale) {
     var locale_dateTime = locale.dateTime,
         locale_date = locale.date,
         locale_time = locale.time,
@@ -32328,16 +35804,16 @@ var Demo = (function (exports) {
         locale_months = locale.months,
         locale_shortMonths = locale.shortMonths;
 
-    var periodRe = formatRe$4(locale_periods),
-        periodLookup = formatLookup$4(locale_periods),
-        weekdayRe = formatRe$4(locale_weekdays),
-        weekdayLookup = formatLookup$4(locale_weekdays),
-        shortWeekdayRe = formatRe$4(locale_shortWeekdays),
-        shortWeekdayLookup = formatLookup$4(locale_shortWeekdays),
-        monthRe = formatRe$4(locale_months),
-        monthLookup = formatLookup$4(locale_months),
-        shortMonthRe = formatRe$4(locale_shortMonths),
-        shortMonthLookup = formatLookup$4(locale_shortMonths);
+    var periodRe = formatRe$5(locale_periods),
+        periodLookup = formatLookup$5(locale_periods),
+        weekdayRe = formatRe$5(locale_weekdays),
+        weekdayLookup = formatLookup$5(locale_weekdays),
+        shortWeekdayRe = formatRe$5(locale_shortWeekdays),
+        shortWeekdayLookup = formatLookup$5(locale_shortWeekdays),
+        monthRe = formatRe$5(locale_months),
+        monthLookup = formatLookup$5(locale_months),
+        shortMonthRe = formatRe$5(locale_shortMonths),
+        shortMonthLookup = formatLookup$5(locale_shortMonths);
 
     var formats = {
       "a": formatShortWeekday,
@@ -32345,30 +35821,30 @@ var Demo = (function (exports) {
       "b": formatShortMonth,
       "B": formatMonth,
       "c": null,
-      "d": formatDayOfMonth$4,
-      "e": formatDayOfMonth$4,
-      "f": formatMicroseconds$4,
-      "H": formatHour24$4,
-      "I": formatHour12$4,
-      "j": formatDayOfYear$4,
-      "L": formatMilliseconds$4,
-      "m": formatMonthNumber$4,
-      "M": formatMinutes$4,
+      "d": formatDayOfMonth$5,
+      "e": formatDayOfMonth$5,
+      "f": formatMicroseconds$5,
+      "H": formatHour24$5,
+      "I": formatHour12$5,
+      "j": formatDayOfYear$5,
+      "L": formatMilliseconds$5,
+      "m": formatMonthNumber$5,
+      "M": formatMinutes$5,
       "p": formatPeriod,
-      "Q": formatUnixTimestamp$4,
-      "s": formatUnixTimestampSeconds$4,
-      "S": formatSeconds$4,
-      "u": formatWeekdayNumberMonday$4,
-      "U": formatWeekNumberSunday$4,
-      "V": formatWeekNumberISO$4,
-      "w": formatWeekdayNumberSunday$4,
-      "W": formatWeekNumberMonday$4,
+      "Q": formatUnixTimestamp$5,
+      "s": formatUnixTimestampSeconds$5,
+      "S": formatSeconds$5,
+      "u": formatWeekdayNumberMonday$5,
+      "U": formatWeekNumberSunday$5,
+      "V": formatWeekNumberISO$5,
+      "w": formatWeekdayNumberSunday$5,
+      "W": formatWeekNumberMonday$5,
       "x": null,
       "X": null,
-      "y": formatYear$4,
-      "Y": formatFullYear$4,
-      "Z": formatZone$4,
-      "%": formatLiteralPercent$4
+      "y": formatYear$5,
+      "Y": formatFullYear$5,
+      "Z": formatZone$5,
+      "%": formatLiteralPercent$5
     };
 
     var utcFormats = {
@@ -32377,30 +35853,30 @@ var Demo = (function (exports) {
       "b": formatUTCShortMonth,
       "B": formatUTCMonth,
       "c": null,
-      "d": formatUTCDayOfMonth$4,
-      "e": formatUTCDayOfMonth$4,
-      "f": formatUTCMicroseconds$4,
-      "H": formatUTCHour24$4,
-      "I": formatUTCHour12$4,
-      "j": formatUTCDayOfYear$4,
-      "L": formatUTCMilliseconds$4,
-      "m": formatUTCMonthNumber$4,
-      "M": formatUTCMinutes$4,
+      "d": formatUTCDayOfMonth$5,
+      "e": formatUTCDayOfMonth$5,
+      "f": formatUTCMicroseconds$5,
+      "H": formatUTCHour24$5,
+      "I": formatUTCHour12$5,
+      "j": formatUTCDayOfYear$5,
+      "L": formatUTCMilliseconds$5,
+      "m": formatUTCMonthNumber$5,
+      "M": formatUTCMinutes$5,
       "p": formatUTCPeriod,
-      "Q": formatUnixTimestamp$4,
-      "s": formatUnixTimestampSeconds$4,
-      "S": formatUTCSeconds$4,
-      "u": formatUTCWeekdayNumberMonday$4,
-      "U": formatUTCWeekNumberSunday$4,
-      "V": formatUTCWeekNumberISO$4,
-      "w": formatUTCWeekdayNumberSunday$4,
-      "W": formatUTCWeekNumberMonday$4,
+      "Q": formatUnixTimestamp$5,
+      "s": formatUnixTimestampSeconds$5,
+      "S": formatUTCSeconds$5,
+      "u": formatUTCWeekdayNumberMonday$5,
+      "U": formatUTCWeekNumberSunday$5,
+      "V": formatUTCWeekNumberISO$5,
+      "w": formatUTCWeekdayNumberSunday$5,
+      "W": formatUTCWeekNumberMonday$5,
       "x": null,
       "X": null,
-      "y": formatUTCYear$4,
-      "Y": formatUTCFullYear$4,
-      "Z": formatUTCZone$4,
-      "%": formatLiteralPercent$4
+      "y": formatUTCYear$5,
+      "Y": formatUTCFullYear$5,
+      "Z": formatUTCZone$5,
+      "%": formatLiteralPercent$5
     };
 
     var parses = {
@@ -32409,30 +35885,30 @@ var Demo = (function (exports) {
       "b": parseShortMonth,
       "B": parseMonth,
       "c": parseLocaleDateTime,
-      "d": parseDayOfMonth$4,
-      "e": parseDayOfMonth$4,
-      "f": parseMicroseconds$4,
-      "H": parseHour24$4,
-      "I": parseHour24$4,
-      "j": parseDayOfYear$4,
-      "L": parseMilliseconds$4,
-      "m": parseMonthNumber$4,
-      "M": parseMinutes$4,
+      "d": parseDayOfMonth$5,
+      "e": parseDayOfMonth$5,
+      "f": parseMicroseconds$5,
+      "H": parseHour24$5,
+      "I": parseHour24$5,
+      "j": parseDayOfYear$5,
+      "L": parseMilliseconds$5,
+      "m": parseMonthNumber$5,
+      "M": parseMinutes$5,
       "p": parsePeriod,
-      "Q": parseUnixTimestamp$4,
-      "s": parseUnixTimestampSeconds$4,
-      "S": parseSeconds$4,
-      "u": parseWeekdayNumberMonday$4,
-      "U": parseWeekNumberSunday$4,
-      "V": parseWeekNumberISO$4,
-      "w": parseWeekdayNumberSunday$4,
-      "W": parseWeekNumberMonday$4,
+      "Q": parseUnixTimestamp$5,
+      "s": parseUnixTimestampSeconds$5,
+      "S": parseSeconds$5,
+      "u": parseWeekdayNumberMonday$5,
+      "U": parseWeekNumberSunday$5,
+      "V": parseWeekNumberISO$5,
+      "w": parseWeekdayNumberSunday$5,
+      "W": parseWeekNumberMonday$5,
       "x": parseLocaleDate,
       "X": parseLocaleTime,
-      "y": parseYear$4,
-      "Y": parseFullYear$4,
-      "Z": parseZone$4,
-      "%": parseLiteralPercent$4
+      "y": parseYear$5,
+      "Y": parseFullYear$5,
+      "Z": parseZone$5,
+      "%": parseLiteralPercent$5
     };
 
     // These recursive directive definitions must be deferred.
@@ -32458,7 +35934,7 @@ var Demo = (function (exports) {
         while (++i < n) {
           if (specifier.charCodeAt(i) === 37) {
             string.push(specifier.slice(j, i));
-            if ((pad = pads$4[c = specifier.charAt(++i)]) != null) c = specifier.charAt(++i);
+            if ((pad = pads$5[c = specifier.charAt(++i)]) != null) c = specifier.charAt(++i);
             else pad = c === "e" ? " " : "0";
             if (format = formats[c]) c = format(date, pad);
             string.push(c);
@@ -32473,7 +35949,7 @@ var Demo = (function (exports) {
 
     function newParse(specifier, newDate) {
       return function(string) {
-        var d = newYear$4(1900),
+        var d = newYear$5(1900),
             i = parseSpecifier(d, specifier, string += "", 0),
             week, day;
         if (i != string.length) return null;
@@ -32489,23 +35965,23 @@ var Demo = (function (exports) {
           if (d.V < 1 || d.V > 53) return null;
           if (!("w" in d)) d.w = 1;
           if ("Z" in d) {
-            week = utcDate$4(newYear$4(d.y)), day = week.getUTCDay();
-            week = day > 4 || day === 0 ? utcMonday$4.ceil(week) : utcMonday$4(week);
-            week = utcDay$4.offset(week, (d.V - 1) * 7);
+            week = utcDate$5(newYear$5(d.y)), day = week.getUTCDay();
+            week = day > 4 || day === 0 ? utcMonday$5.ceil(week) : utcMonday$5(week);
+            week = utcDay$5.offset(week, (d.V - 1) * 7);
             d.y = week.getUTCFullYear();
             d.m = week.getUTCMonth();
             d.d = week.getUTCDate() + (d.w + 6) % 7;
           } else {
-            week = newDate(newYear$4(d.y)), day = week.getDay();
-            week = day > 4 || day === 0 ? monday$4.ceil(week) : monday$4(week);
-            week = day$4.offset(week, (d.V - 1) * 7);
+            week = newDate(newYear$5(d.y)), day = week.getDay();
+            week = day > 4 || day === 0 ? monday$5.ceil(week) : monday$5(week);
+            week = day$5.offset(week, (d.V - 1) * 7);
             d.y = week.getFullYear();
             d.m = week.getMonth();
             d.d = week.getDate() + (d.w + 6) % 7;
           }
         } else if ("W" in d || "U" in d) {
           if (!("w" in d)) d.w = "u" in d ? d.u % 7 : "W" in d ? 1 : 0;
-          day = "Z" in d ? utcDate$4(newYear$4(d.y)).getUTCDay() : newDate(newYear$4(d.y)).getDay();
+          day = "Z" in d ? utcDate$5(newYear$5(d.y)).getUTCDay() : newDate(newYear$5(d.y)).getDay();
           d.m = 0;
           d.d = "W" in d ? (d.w + 6) % 7 + d.W * 7 - (day + 5) % 7 : d.w + d.U * 7 - (day + 6) % 7;
         }
@@ -32515,7 +35991,7 @@ var Demo = (function (exports) {
         if ("Z" in d) {
           d.H += d.Z / 100 | 0;
           d.M += d.Z % 100;
-          return utcDate$4(d);
+          return utcDate$5(d);
         }
 
         // Otherwise, all fields are in local time.
@@ -32535,7 +36011,7 @@ var Demo = (function (exports) {
         c = specifier.charCodeAt(i++);
         if (c === 37) {
           c = specifier.charAt(i++);
-          parse = parses[c in pads$4 ? specifier.charAt(i++) : c];
+          parse = parses[c in pads$5 ? specifier.charAt(i++) : c];
           if (!parse || ((j = parse(d, string, j)) < 0)) return -1;
         } else if (c != string.charCodeAt(j++)) {
           return -1;
@@ -32629,7 +36105,7 @@ var Demo = (function (exports) {
         return f;
       },
       parse: function(specifier) {
-        var p = newParse(specifier += "", localDate$4);
+        var p = newParse(specifier += "", localDate$5);
         p.toString = function() { return specifier; };
         return p;
       },
@@ -32639,298 +36115,298 @@ var Demo = (function (exports) {
         return f;
       },
       utcParse: function(specifier) {
-        var p = newParse(specifier, utcDate$4);
+        var p = newParse(specifier, utcDate$5);
         p.toString = function() { return specifier; };
         return p;
       }
     };
   }
 
-  var pads$4 = {"-": "", "_": " ", "0": "0"},
-      numberRe$4 = /^\s*\d+/, // note: ignores next directive
-      percentRe$4 = /^%/,
-      requoteRe$4 = /[\\^$*+?|[\]().{}]/g;
+  var pads$5 = {"-": "", "_": " ", "0": "0"},
+      numberRe$5 = /^\s*\d+/, // note: ignores next directive
+      percentRe$5 = /^%/,
+      requoteRe$5 = /[\\^$*+?|[\]().{}]/g;
 
-  function pad$4(value, fill, width) {
+  function pad$5(value, fill, width) {
     var sign = value < 0 ? "-" : "",
         string = (sign ? -value : value) + "",
         length = string.length;
     return sign + (length < width ? new Array(width - length + 1).join(fill) + string : string);
   }
 
-  function requote$4(s) {
-    return s.replace(requoteRe$4, "\\$&");
+  function requote$5(s) {
+    return s.replace(requoteRe$5, "\\$&");
   }
 
-  function formatRe$4(names) {
-    return new RegExp("^(?:" + names.map(requote$4).join("|") + ")", "i");
+  function formatRe$5(names) {
+    return new RegExp("^(?:" + names.map(requote$5).join("|") + ")", "i");
   }
 
-  function formatLookup$4(names) {
+  function formatLookup$5(names) {
     var map = {}, i = -1, n = names.length;
     while (++i < n) map[names[i].toLowerCase()] = i;
     return map;
   }
 
-  function parseWeekdayNumberSunday$4(d, string, i) {
-    var n = numberRe$4.exec(string.slice(i, i + 1));
+  function parseWeekdayNumberSunday$5(d, string, i) {
+    var n = numberRe$5.exec(string.slice(i, i + 1));
     return n ? (d.w = +n[0], i + n[0].length) : -1;
   }
 
-  function parseWeekdayNumberMonday$4(d, string, i) {
-    var n = numberRe$4.exec(string.slice(i, i + 1));
+  function parseWeekdayNumberMonday$5(d, string, i) {
+    var n = numberRe$5.exec(string.slice(i, i + 1));
     return n ? (d.u = +n[0], i + n[0].length) : -1;
   }
 
-  function parseWeekNumberSunday$4(d, string, i) {
-    var n = numberRe$4.exec(string.slice(i, i + 2));
+  function parseWeekNumberSunday$5(d, string, i) {
+    var n = numberRe$5.exec(string.slice(i, i + 2));
     return n ? (d.U = +n[0], i + n[0].length) : -1;
   }
 
-  function parseWeekNumberISO$4(d, string, i) {
-    var n = numberRe$4.exec(string.slice(i, i + 2));
+  function parseWeekNumberISO$5(d, string, i) {
+    var n = numberRe$5.exec(string.slice(i, i + 2));
     return n ? (d.V = +n[0], i + n[0].length) : -1;
   }
 
-  function parseWeekNumberMonday$4(d, string, i) {
-    var n = numberRe$4.exec(string.slice(i, i + 2));
+  function parseWeekNumberMonday$5(d, string, i) {
+    var n = numberRe$5.exec(string.slice(i, i + 2));
     return n ? (d.W = +n[0], i + n[0].length) : -1;
   }
 
-  function parseFullYear$4(d, string, i) {
-    var n = numberRe$4.exec(string.slice(i, i + 4));
+  function parseFullYear$5(d, string, i) {
+    var n = numberRe$5.exec(string.slice(i, i + 4));
     return n ? (d.y = +n[0], i + n[0].length) : -1;
   }
 
-  function parseYear$4(d, string, i) {
-    var n = numberRe$4.exec(string.slice(i, i + 2));
+  function parseYear$5(d, string, i) {
+    var n = numberRe$5.exec(string.slice(i, i + 2));
     return n ? (d.y = +n[0] + (+n[0] > 68 ? 1900 : 2000), i + n[0].length) : -1;
   }
 
-  function parseZone$4(d, string, i) {
+  function parseZone$5(d, string, i) {
     var n = /^(Z)|([+-]\d\d)(?::?(\d\d))?/.exec(string.slice(i, i + 6));
     return n ? (d.Z = n[1] ? 0 : -(n[2] + (n[3] || "00")), i + n[0].length) : -1;
   }
 
-  function parseMonthNumber$4(d, string, i) {
-    var n = numberRe$4.exec(string.slice(i, i + 2));
+  function parseMonthNumber$5(d, string, i) {
+    var n = numberRe$5.exec(string.slice(i, i + 2));
     return n ? (d.m = n[0] - 1, i + n[0].length) : -1;
   }
 
-  function parseDayOfMonth$4(d, string, i) {
-    var n = numberRe$4.exec(string.slice(i, i + 2));
+  function parseDayOfMonth$5(d, string, i) {
+    var n = numberRe$5.exec(string.slice(i, i + 2));
     return n ? (d.d = +n[0], i + n[0].length) : -1;
   }
 
-  function parseDayOfYear$4(d, string, i) {
-    var n = numberRe$4.exec(string.slice(i, i + 3));
+  function parseDayOfYear$5(d, string, i) {
+    var n = numberRe$5.exec(string.slice(i, i + 3));
     return n ? (d.m = 0, d.d = +n[0], i + n[0].length) : -1;
   }
 
-  function parseHour24$4(d, string, i) {
-    var n = numberRe$4.exec(string.slice(i, i + 2));
+  function parseHour24$5(d, string, i) {
+    var n = numberRe$5.exec(string.slice(i, i + 2));
     return n ? (d.H = +n[0], i + n[0].length) : -1;
   }
 
-  function parseMinutes$4(d, string, i) {
-    var n = numberRe$4.exec(string.slice(i, i + 2));
+  function parseMinutes$5(d, string, i) {
+    var n = numberRe$5.exec(string.slice(i, i + 2));
     return n ? (d.M = +n[0], i + n[0].length) : -1;
   }
 
-  function parseSeconds$4(d, string, i) {
-    var n = numberRe$4.exec(string.slice(i, i + 2));
+  function parseSeconds$5(d, string, i) {
+    var n = numberRe$5.exec(string.slice(i, i + 2));
     return n ? (d.S = +n[0], i + n[0].length) : -1;
   }
 
-  function parseMilliseconds$4(d, string, i) {
-    var n = numberRe$4.exec(string.slice(i, i + 3));
+  function parseMilliseconds$5(d, string, i) {
+    var n = numberRe$5.exec(string.slice(i, i + 3));
     return n ? (d.L = +n[0], i + n[0].length) : -1;
   }
 
-  function parseMicroseconds$4(d, string, i) {
-    var n = numberRe$4.exec(string.slice(i, i + 6));
+  function parseMicroseconds$5(d, string, i) {
+    var n = numberRe$5.exec(string.slice(i, i + 6));
     return n ? (d.L = Math.floor(n[0] / 1000), i + n[0].length) : -1;
   }
 
-  function parseLiteralPercent$4(d, string, i) {
-    var n = percentRe$4.exec(string.slice(i, i + 1));
+  function parseLiteralPercent$5(d, string, i) {
+    var n = percentRe$5.exec(string.slice(i, i + 1));
     return n ? i + n[0].length : -1;
   }
 
-  function parseUnixTimestamp$4(d, string, i) {
-    var n = numberRe$4.exec(string.slice(i));
+  function parseUnixTimestamp$5(d, string, i) {
+    var n = numberRe$5.exec(string.slice(i));
     return n ? (d.Q = +n[0], i + n[0].length) : -1;
   }
 
-  function parseUnixTimestampSeconds$4(d, string, i) {
-    var n = numberRe$4.exec(string.slice(i));
+  function parseUnixTimestampSeconds$5(d, string, i) {
+    var n = numberRe$5.exec(string.slice(i));
     return n ? (d.Q = (+n[0]) * 1000, i + n[0].length) : -1;
   }
 
-  function formatDayOfMonth$4(d, p) {
-    return pad$4(d.getDate(), p, 2);
+  function formatDayOfMonth$5(d, p) {
+    return pad$5(d.getDate(), p, 2);
   }
 
-  function formatHour24$4(d, p) {
-    return pad$4(d.getHours(), p, 2);
+  function formatHour24$5(d, p) {
+    return pad$5(d.getHours(), p, 2);
   }
 
-  function formatHour12$4(d, p) {
-    return pad$4(d.getHours() % 12 || 12, p, 2);
+  function formatHour12$5(d, p) {
+    return pad$5(d.getHours() % 12 || 12, p, 2);
   }
 
-  function formatDayOfYear$4(d, p) {
-    return pad$4(1 + day$4.count(year$4(d), d), p, 3);
+  function formatDayOfYear$5(d, p) {
+    return pad$5(1 + day$5.count(year$5(d), d), p, 3);
   }
 
-  function formatMilliseconds$4(d, p) {
-    return pad$4(d.getMilliseconds(), p, 3);
+  function formatMilliseconds$5(d, p) {
+    return pad$5(d.getMilliseconds(), p, 3);
   }
 
-  function formatMicroseconds$4(d, p) {
-    return formatMilliseconds$4(d, p) + "000";
+  function formatMicroseconds$5(d, p) {
+    return formatMilliseconds$5(d, p) + "000";
   }
 
-  function formatMonthNumber$4(d, p) {
-    return pad$4(d.getMonth() + 1, p, 2);
+  function formatMonthNumber$5(d, p) {
+    return pad$5(d.getMonth() + 1, p, 2);
   }
 
-  function formatMinutes$4(d, p) {
-    return pad$4(d.getMinutes(), p, 2);
+  function formatMinutes$5(d, p) {
+    return pad$5(d.getMinutes(), p, 2);
   }
 
-  function formatSeconds$4(d, p) {
-    return pad$4(d.getSeconds(), p, 2);
+  function formatSeconds$5(d, p) {
+    return pad$5(d.getSeconds(), p, 2);
   }
 
-  function formatWeekdayNumberMonday$4(d) {
+  function formatWeekdayNumberMonday$5(d) {
     var day = d.getDay();
     return day === 0 ? 7 : day;
   }
 
-  function formatWeekNumberSunday$4(d, p) {
-    return pad$4(sunday$4.count(year$4(d), d), p, 2);
+  function formatWeekNumberSunday$5(d, p) {
+    return pad$5(sunday$5.count(year$5(d), d), p, 2);
   }
 
-  function formatWeekNumberISO$4(d, p) {
+  function formatWeekNumberISO$5(d, p) {
     var day = d.getDay();
-    d = (day >= 4 || day === 0) ? thursday$4(d) : thursday$4.ceil(d);
-    return pad$4(thursday$4.count(year$4(d), d) + (year$4(d).getDay() === 4), p, 2);
+    d = (day >= 4 || day === 0) ? thursday$5(d) : thursday$5.ceil(d);
+    return pad$5(thursday$5.count(year$5(d), d) + (year$5(d).getDay() === 4), p, 2);
   }
 
-  function formatWeekdayNumberSunday$4(d) {
+  function formatWeekdayNumberSunday$5(d) {
     return d.getDay();
   }
 
-  function formatWeekNumberMonday$4(d, p) {
-    return pad$4(monday$4.count(year$4(d), d), p, 2);
+  function formatWeekNumberMonday$5(d, p) {
+    return pad$5(monday$5.count(year$5(d), d), p, 2);
   }
 
-  function formatYear$4(d, p) {
-    return pad$4(d.getFullYear() % 100, p, 2);
+  function formatYear$5(d, p) {
+    return pad$5(d.getFullYear() % 100, p, 2);
   }
 
-  function formatFullYear$4(d, p) {
-    return pad$4(d.getFullYear() % 10000, p, 4);
+  function formatFullYear$5(d, p) {
+    return pad$5(d.getFullYear() % 10000, p, 4);
   }
 
-  function formatZone$4(d) {
+  function formatZone$5(d) {
     var z = d.getTimezoneOffset();
     return (z > 0 ? "-" : (z *= -1, "+"))
-        + pad$4(z / 60 | 0, "0", 2)
-        + pad$4(z % 60, "0", 2);
+        + pad$5(z / 60 | 0, "0", 2)
+        + pad$5(z % 60, "0", 2);
   }
 
-  function formatUTCDayOfMonth$4(d, p) {
-    return pad$4(d.getUTCDate(), p, 2);
+  function formatUTCDayOfMonth$5(d, p) {
+    return pad$5(d.getUTCDate(), p, 2);
   }
 
-  function formatUTCHour24$4(d, p) {
-    return pad$4(d.getUTCHours(), p, 2);
+  function formatUTCHour24$5(d, p) {
+    return pad$5(d.getUTCHours(), p, 2);
   }
 
-  function formatUTCHour12$4(d, p) {
-    return pad$4(d.getUTCHours() % 12 || 12, p, 2);
+  function formatUTCHour12$5(d, p) {
+    return pad$5(d.getUTCHours() % 12 || 12, p, 2);
   }
 
-  function formatUTCDayOfYear$4(d, p) {
-    return pad$4(1 + utcDay$4.count(utcYear$4(d), d), p, 3);
+  function formatUTCDayOfYear$5(d, p) {
+    return pad$5(1 + utcDay$5.count(utcYear$5(d), d), p, 3);
   }
 
-  function formatUTCMilliseconds$4(d, p) {
-    return pad$4(d.getUTCMilliseconds(), p, 3);
+  function formatUTCMilliseconds$5(d, p) {
+    return pad$5(d.getUTCMilliseconds(), p, 3);
   }
 
-  function formatUTCMicroseconds$4(d, p) {
-    return formatUTCMilliseconds$4(d, p) + "000";
+  function formatUTCMicroseconds$5(d, p) {
+    return formatUTCMilliseconds$5(d, p) + "000";
   }
 
-  function formatUTCMonthNumber$4(d, p) {
-    return pad$4(d.getUTCMonth() + 1, p, 2);
+  function formatUTCMonthNumber$5(d, p) {
+    return pad$5(d.getUTCMonth() + 1, p, 2);
   }
 
-  function formatUTCMinutes$4(d, p) {
-    return pad$4(d.getUTCMinutes(), p, 2);
+  function formatUTCMinutes$5(d, p) {
+    return pad$5(d.getUTCMinutes(), p, 2);
   }
 
-  function formatUTCSeconds$4(d, p) {
-    return pad$4(d.getUTCSeconds(), p, 2);
+  function formatUTCSeconds$5(d, p) {
+    return pad$5(d.getUTCSeconds(), p, 2);
   }
 
-  function formatUTCWeekdayNumberMonday$4(d) {
+  function formatUTCWeekdayNumberMonday$5(d) {
     var dow = d.getUTCDay();
     return dow === 0 ? 7 : dow;
   }
 
-  function formatUTCWeekNumberSunday$4(d, p) {
-    return pad$4(utcSunday$4.count(utcYear$4(d), d), p, 2);
+  function formatUTCWeekNumberSunday$5(d, p) {
+    return pad$5(utcSunday$5.count(utcYear$5(d), d), p, 2);
   }
 
-  function formatUTCWeekNumberISO$4(d, p) {
+  function formatUTCWeekNumberISO$5(d, p) {
     var day = d.getUTCDay();
-    d = (day >= 4 || day === 0) ? utcThursday$4(d) : utcThursday$4.ceil(d);
-    return pad$4(utcThursday$4.count(utcYear$4(d), d) + (utcYear$4(d).getUTCDay() === 4), p, 2);
+    d = (day >= 4 || day === 0) ? utcThursday$5(d) : utcThursday$5.ceil(d);
+    return pad$5(utcThursday$5.count(utcYear$5(d), d) + (utcYear$5(d).getUTCDay() === 4), p, 2);
   }
 
-  function formatUTCWeekdayNumberSunday$4(d) {
+  function formatUTCWeekdayNumberSunday$5(d) {
     return d.getUTCDay();
   }
 
-  function formatUTCWeekNumberMonday$4(d, p) {
-    return pad$4(utcMonday$4.count(utcYear$4(d), d), p, 2);
+  function formatUTCWeekNumberMonday$5(d, p) {
+    return pad$5(utcMonday$5.count(utcYear$5(d), d), p, 2);
   }
 
-  function formatUTCYear$4(d, p) {
-    return pad$4(d.getUTCFullYear() % 100, p, 2);
+  function formatUTCYear$5(d, p) {
+    return pad$5(d.getUTCFullYear() % 100, p, 2);
   }
 
-  function formatUTCFullYear$4(d, p) {
-    return pad$4(d.getUTCFullYear() % 10000, p, 4);
+  function formatUTCFullYear$5(d, p) {
+    return pad$5(d.getUTCFullYear() % 10000, p, 4);
   }
 
-  function formatUTCZone$4() {
+  function formatUTCZone$5() {
     return "+0000";
   }
 
-  function formatLiteralPercent$4() {
+  function formatLiteralPercent$5() {
     return "%";
   }
 
-  function formatUnixTimestamp$4(d) {
+  function formatUnixTimestamp$5(d) {
     return +d;
   }
 
-  function formatUnixTimestampSeconds$4(d) {
+  function formatUnixTimestampSeconds$5(d) {
     return Math.floor(+d / 1000);
   }
 
-  var locale$6;
-  var timeFormat$4;
-  var timeParse$4;
-  var utcFormat$4;
-  var utcParse$4;
+  var locale$7;
+  var timeFormat$5;
+  var timeParse$5;
+  var utcFormat$5;
+  var utcParse$5;
 
-  defaultLocale$6({
+  defaultLocale$7({
     dateTime: "%x, %X",
     date: "%-m/%-d/%Y",
     time: "%-I:%M:%S %p",
@@ -32941,33 +36417,106 @@ var Demo = (function (exports) {
     shortMonths: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
   });
 
-  function defaultLocale$6(definition) {
-    locale$6 = formatLocale$6(definition);
-    timeFormat$4 = locale$6.format;
-    timeParse$4 = locale$6.parse;
-    utcFormat$4 = locale$6.utcFormat;
-    utcParse$4 = locale$6.utcParse;
-    return locale$6;
+  function defaultLocale$7(definition) {
+    locale$7 = formatLocale$7(definition);
+    timeFormat$5 = locale$7.format;
+    timeParse$5 = locale$7.parse;
+    utcFormat$5 = locale$7.utcFormat;
+    utcParse$5 = locale$7.utcParse;
+    return locale$7;
   }
 
-  var isoSpecifier$4 = "%Y-%m-%dT%H:%M:%S.%LZ";
+  var isoSpecifier$5 = "%Y-%m-%dT%H:%M:%S.%LZ";
 
-  function formatIsoNative$4(date) {
+  function formatIsoNative$5(date) {
     return date.toISOString();
   }
 
-  var formatIso$4 = Date.prototype.toISOString
-      ? formatIsoNative$4
-      : utcFormat$4(isoSpecifier$4);
+  var formatIso$5 = Date.prototype.toISOString
+      ? formatIsoNative$5
+      : utcFormat$5(isoSpecifier$5);
 
-  function parseIsoNative$4(string) {
+  function parseIsoNative$5(string) {
     var date = new Date(string);
     return isNaN(date) ? null : date;
   }
 
-  var parseIso$4 = +new Date("2000-01-01T00:00:00.000Z")
-      ? parseIsoNative$4
-      : utcParse$4(isoSpecifier$4);
+  var parseIso$5 = +new Date("2000-01-01T00:00:00.000Z")
+      ? parseIsoNative$5
+      : utcParse$5(isoSpecifier$5);
+
+  function ascending$9(a, b) {
+    return a < b ? -1 : a > b ? 1 : a >= b ? 0 : NaN;
+  }
+
+  function bisector$7(compare) {
+    if (compare.length === 1) compare = ascendingComparator$7(compare);
+    return {
+      left: function(a, x, lo, hi) {
+        if (lo == null) lo = 0;
+        if (hi == null) hi = a.length;
+        while (lo < hi) {
+          var mid = lo + hi >>> 1;
+          if (compare(a[mid], x) < 0) lo = mid + 1;
+          else hi = mid;
+        }
+        return lo;
+      },
+      right: function(a, x, lo, hi) {
+        if (lo == null) lo = 0;
+        if (hi == null) hi = a.length;
+        while (lo < hi) {
+          var mid = lo + hi >>> 1;
+          if (compare(a[mid], x) > 0) hi = mid;
+          else lo = mid + 1;
+        }
+        return lo;
+      }
+    };
+  }
+
+  function ascendingComparator$7(f) {
+    return function(d, x) {
+      return ascending$9(f(d), x);
+    };
+  }
+
+  var ascendingBisect$7 = bisector$7(ascending$9);
+
+  function mean$2(values, valueof) {
+    let count = 0;
+    let sum = 0;
+    if (valueof === undefined) {
+      for (let value of values) {
+        if (value != null && (value = +value) >= value) {
+          ++count, sum += value;
+        }
+      }
+    } else {
+      let index = -1;
+      for (let value of values) {
+        if ((value = valueof(value, ++index, values)) != null && (value = +value) >= value) {
+          ++count, sum += value;
+        }
+      }
+    }
+    if (count) return sum / count;
+  }
+  function kde(kernel, X) {
+      return function (V) {
+          return X.map(function (x) {
+              return [
+                  x,
+                  mean$2(V, function (v) { return kernel(x - v); })
+              ];
+          });
+      };
+  }
+  function kernelEpanechnikov(k) {
+      return function (v) {
+          return Math.abs(v /= k) <= 1 ? 0.75 * (1 - v * v) / k : 0;
+      };
+  }
 
   var Start = (function () {
       function Start() {
@@ -33027,7 +36576,8 @@ var Demo = (function (exports) {
                           var contourData = flatten(data);
                           contour.data(contourData);
                           plot.data(data).draw();
-                          var areaData = transformLineX(data);
+                          var areaData = transformLineX(data, plot.innerWidth());
+                          line.margin = plot.margin;
                           line.data(areaData).draw();
                       });
                       function flatten(data) {
@@ -33035,7 +36585,7 @@ var Demo = (function (exports) {
                           data.series.forEach(function (s) { return s.values.forEach(function (v) { return f.push(v); }); });
                           return f;
                       }
-                      function transformLineX(data) {
+                      function transformLineX(data, width) {
                           var r = {
                               series: [
                                   { label: "ED-based", values: [] },
@@ -33044,27 +36594,19 @@ var Demo = (function (exports) {
                           };
                           data.series.forEach(function (s) {
                               var i = s.label === "UCC-based" ? 1 : 0;
-                              s.values.forEach(function (v) { return r.series[i].values.push(v[0]); });
+                              s.values.forEach(function (v) {
+                                  r.series[i].values.push(v[0] * 100.0);
+                              });
                           });
                           r.series.forEach(function (s) {
-                              var ext = extent$4(s.values);
-                              var x = linear$5().domain(ext).range([0, 553]);
-                              var res = kernelDensityEstimator(kernelEpanechnikov(7), x.ticks(40))(s.values);
+                              var scale = linear$5()
+                                  .domain(extent$4(s.values))
+                                  .range([0, width]);
+                              var ticks = scale.ticks(s.values.length * 0.2);
+                              var res = kde(kernelEpanechnikov(7), ticks)(s.values);
                               s.values = res;
                           });
                           return r;
-                      }
-                      function kernelDensityEstimator(kernel, X) {
-                          return function (V) {
-                              return X.map(function (x) {
-                                  return [x, d3.mean(V, function (v) { return kernel(x - v); })];
-                              });
-                          };
-                      }
-                      function kernelEpanechnikov(k) {
-                          return function (v) {
-                              return Math.abs(v /= k) <= 1 ? 0.75 * (1 - v * v) / k : 0;
-                          };
                       }
                       document.querySelector(".ask")
                           .addEventListener("click", function (e) {
