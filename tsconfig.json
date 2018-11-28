@@ -1,11 +1,14 @@
 {
   "compilerOptions": {
     "lib": ["dom", "es2015", "scripthost"],
-    "module": "es6",
+    "module": "es2015",
     "moduleResolution": "node",
-    "outDir": "./dist",
+    "outDir": "./docs/scripts",
     "removeComments": true,
-    "target": "es5"
+    "target": "es5",
+    "types": [
+      "d3"
+    ]
   },
   "exclude": [
     "node_modules",

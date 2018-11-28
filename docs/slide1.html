@@ -7,7 +7,6 @@
     <link rel="icon" type="image/x-icon" href="./favicon.ico">
     <title>Overview</title>
     <link rel="stylesheet" type="text/css" href="css/demo.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3.min.js"></script>
     <style>
       main { flex-direction: column }
       .viz { height: 45vh; width: 100vw }
@@ -29,14 +28,11 @@
       </header>
       <main>
         <img src="images/ELC.png" height="400px" alt="East London patient flow" />
-        <!--<div id="sankey1" class="viz"></div>-->
         <div id="sankey2" class="viz"></div>
       </main>
     </article>
-    <script type="text/javascript" src="scripts/demo.js"></script>
-    <script type="text/javascript">
-      var demo = new Demo.Start();
-      demo.run(0);
-    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/5.7.0/d3.min.js"></script>
+    <script src="https://unpkg.com/d3-sankey@0.7.1/build/d3-sankey.min.js"></script>
+    <script type="text/javascript" src="scripts/slide1.js"></script>
   </body>
 </html>

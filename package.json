@@ -2,25 +2,27 @@
   "name": "demo",
   "namespace": "Demo",
   "version": "0.1.0",
-  "description": "",
+  "description": "ED demo",
   "scripts": {
     "http": "http-server ./docs -p 8000 -o",
-    "minify": "uglifyjs docs/scripts/demo.js --compress --mangle -o docs/scripts/demo.min.js",
+    "minify": "uglifyjs docs/scripts/*.js --compress --mangle -o dist/*.min.js",
     "publish": "npm run pub:ts && npm run minify",
     "pub:ts": "rollup -c",
     "test": "npm run http",
     "build": "rollup -cw"
   },
-  "author": "",
+  "author": "NEL",
   "license": "MIT",
   "devDependencies": {
     "@types/d3": "^5.0.1",
-    "d3": "^5.7.0",
-    "d3-array": "^2.0.2",
-    "d3-scale": "^2.1.2",
+    "http-server": "^0.11.1",
     "rollup": "^0.67.3",
     "rollup-plugin-node-resolve": "^3.4.0",
     "rollup-plugin-typescript2": "^0.18.0",
     "typescript": "^3.1.6"
+  },
+  "dependencies": {
+    "d3": "^5.7.0",
+    "d3-sankey": "^0.7.1"
   }
 }

@@ -27,7 +27,6 @@
       #mainPlot { height: 70vh }
       #sidePlot { background-color: #ccc; height: 70vh }
     </style>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3.min.js"></script>
   </head>
   <body>
     <noscript>You need to enable JavaScript to run these examples.</noscript>
@@ -66,11 +65,13 @@
         <p>If we can determine that the variation with clusters is less than the variation between clusters, we're well-placed to infer significance.</p>
         <p>Peaks drawn in either axis give us the projection in either dimension (the ED/UCC streamed to ratio, and the % returning to UEC services); and these can be used to demonstrate significance in either dimension.</p>
       </div>
-    </article>   
-    <script type="text/javascript" src="scripts/demo.js"></script>
+    </article>
+    <script src="https://cdn.jsdelivr.net/npm/lodash@4.17.11/lodash.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3.min.js"></script>
     <script type="text/javascript">
-      var demo = new Demo.Start();
-      demo.run(3);
-    </script>
+      window.d3v3 = _.cloneDeep(window.d3);
+    </script>    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/5.7.0/d3.min.js"></script>
+    <script type="text/javascript" src="scripts/slide4.js"></script>
   </body>
 </html>
